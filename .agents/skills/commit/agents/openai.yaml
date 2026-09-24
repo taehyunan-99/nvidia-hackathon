@@ -1,0 +1,6 @@
+interface:
+  display_name: "Commit"
+  short_description: "원격 base 확인을 포함한 범위 지정 커밋 생성"
+  default_prompt: "Use $commit to inspect staged changes and create a team-compliant commit."
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,6 @@
+interface:
+  display_name: "agentic-project-init"
+  short_description: "Explicit project workflow: agentic-project-init"
+  default_prompt: "Use $agentic-project-init for this repository task."
+policy:
+  allow_implicit_invocation: false

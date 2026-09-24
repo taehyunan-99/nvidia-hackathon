@@ -1,0 +1,6 @@
+interface:
+  display_name: "Handoff"
+  short_description: "Verified handoffs with a standalone portable runtime."
+  default_prompt: "Use $handoff pause to transfer this unfinished work to a new session."
+policy:
+  allow_implicit_invocation: false

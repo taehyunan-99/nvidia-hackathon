@@ -1,0 +1,7 @@
+interface:
+  display_name: "Project Test Maker"
+  short_description: "프로젝트 위험 기반 테스트 분석·생성·로컬 검증"
+  default_prompt: "Use $project-test-maker to analyze this repository's highest-risk test gaps and propose the smallest trustworthy test plan. Do not modify files unless I explicitly ask."
+
+policy:
+  allow_implicit_invocation: false

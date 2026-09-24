@@ -1,0 +1,2 @@
+# Shared project configuration. Intentionally no model or permission overrides.
+# Project skills live in .agents/skills/; do not duplicate them in .codex/skills/.

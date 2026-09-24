@@ -1,0 +1,6 @@
+interface:
+  display_name: "guide-audit"
+  short_description: "Explicit project workflow: guide-audit"
+  default_prompt: "Use $guide-audit for this repository task."
+policy:
+  allow_implicit_invocation: false

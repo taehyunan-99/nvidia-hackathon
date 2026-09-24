@@ -1,0 +1,6 @@
+interface:
+  display_name: "update"
+  short_description: "Explicit project workflow: update"
+  default_prompt: "Use $update for this repository task."
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,6 @@
+interface:
+  display_name: "learn"
+  short_description: "Explicit project workflow: learn"
+  default_prompt: "Use $learn for this repository task."
+policy:
+  allow_implicit_invocation: false

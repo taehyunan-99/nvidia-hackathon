@@ -1,0 +1,228 @@
+{
+  "version": "3.6.0",
+  "purpose": "Compile a project-specific 100-point rubric for tests and fixtures created or materially modified by Project Test Maker.",
+  "total_points": 100,
+  "core_points": 60,
+  "module_points": 40,
+  "acceptance": {
+    "total_score_min": 90,
+    "c1_module_score_min": 90,
+    "c1_behavior_rating_min": "complete",
+    "max_refinement_rounds": 3
+  },
+  "scoring_scale": [
+    {
+      "rating": "missing",
+      "score_percent": 0,
+      "anchor": "No current-run artifact evidence demonstrates the criterion."
+    },
+    {
+      "rating": "weak",
+      "score_percent": 50,
+      "anchor": "Some relevant current-run evidence exists, but the oracle, failure detection, or important boundary is materially incomplete."
+    },
+    {
+      "rating": "strong",
+      "score_percent": 80,
+      "anchor": "Current-run evidence credibly covers the main behavior, with a specific remaining gap that prevents complete confidence in the generated test artifact."
+    },
+    {
+      "rating": "complete",
+      "score_percent": 100,
+      "anchor": "Current-run evidence fully satisfies the criterion's stated anchor with an approved oracle and proportionate deterministic verification."
+    }
+  ],
+  "delivery_forms": [
+    "hosted",
+    "local",
+    "hybrid",
+    "library",
+    "cli",
+    "worker",
+    "data_pipeline",
+    "client"
+  ],
+  "core_criteria": [
+    {
+      "id": "core.traceability",
+      "name": "Project risk and requirement traceability",
+      "points": 12,
+      "anchor": "Generated tests trace to approved project outcomes, risks, and artifact scope."
+    },
+    {
+      "id": "core.oracle",
+      "name": "Oracle independence and correctness",
+      "points": 15,
+      "anchor": "Expected behavior comes from approved contracts, invariants, policies, references, or owners rather than copied implementation output."
+    },
+    {
+      "id": "core.failure_detection",
+      "name": "Demonstrated failure-detection power",
+      "points": 15,
+      "anchor": "Critical generated tests have red-green, mutation, seeded-fault, differential, or equivalent failure evidence."
+    },
+    {
+      "id": "core.negative_boundaries",
+      "name": "Critical, negative, and boundary-case coverage",
+      "points": 8,
+      "anchor": "Generated tests include important forbidden behavior and boundary conditions, not only happy paths."
+    },
+    {
+      "id": "core.determinism",
+      "name": "Determinism and isolation",
+      "points": 5,
+      "anchor": "Generated tests are reproducible, isolated, and avoid uncontrolled time, order, network, or shared state."
+    },
+    {
+      "id": "core.maintainability",
+      "name": "Readability and maintainability",
+      "points": 5,
+      "anchor": "Generated tests express intent, avoid unnecessary implementation coupling, and remain proportionate to the protected behavior."
+    }
+  ],
+  "hard_gates": [
+    {
+      "id": "artifacts_load_and_execute",
+      "name": "Generated artifacts parse, compile, load, and reach their assertions in the intended harness"
+    },
+    {
+      "id": "no_test_weakening",
+      "name": "No critical skip, assertion weakening, uncontrolled snapshot, or pass-by-timeout behavior"
+    },
+    {
+      "id": "reproducible",
+      "name": "Generated tests are reproducible or have an explicitly approved deterministic boundary"
+    },
+    {
+      "id": "lane_budget",
+      "name": "Generated tests fit their approved execution lane or have an explicit exception"
+    },
+    {
+      "id": "failures_classified",
+      "name": "Every observed failure is classified with evidence"
+    }
+  ],
+  "modules": [
+    {
+      "id": "hosted_deployment",
+      "name": "Hosted deployment and release",
+      "allowed_delivery_forms": ["hosted", "hybrid"],
+      "criteria": [
+        {"id": "artifact_config", "name": "Artifact and configuration parity", "relative_weight": 25},
+        {"id": "migration_compatibility", "name": "Migration and compatibility behavior", "relative_weight": 25},
+        {"id": "smoke_canary", "name": "Smoke, canary, and observable invariants", "relative_weight": 25},
+        {"id": "rollback", "name": "Rollback and failed-release recovery", "relative_weight": 25}
+      ]
+    },
+    {
+      "id": "local_lifecycle",
+      "name": "Local application lifecycle",
+      "allowed_delivery_forms": ["local", "hybrid", "client"],
+      "criteria": [
+        {"id": "install_update_uninstall", "name": "Install, update, and uninstall behavior", "relative_weight": 25},
+        {"id": "filesystem_permissions", "name": "Filesystem and OS-permission boundaries", "relative_weight": 25},
+        {"id": "offline_transitions", "name": "Offline and network-transition behavior", "relative_weight": 25},
+        {"id": "local_data_lifecycle", "name": "Clean-state, upgrade-state, and local-data recovery", "relative_weight": 25}
+      ]
+    },
+    {
+      "id": "authorization_tenancy",
+      "name": "Web/API authorization and tenancy",
+      "allowed_delivery_forms": ["hosted", "local", "hybrid", "worker", "data_pipeline", "client"],
+      "criteria": [
+        {"id": "actor_resource_action", "name": "Actor-resource-action matrix", "relative_weight": 25},
+        {"id": "horizontal_vertical", "name": "Horizontal and vertical privilege boundaries", "relative_weight": 25},
+        {"id": "tenant_boundaries", "name": "Tenant, organization, and user data isolation", "relative_weight": 25},
+        {"id": "secondary_paths", "name": "Cache, export, file, search, and background paths", "relative_weight": 25}
+      ]
+    },
+    {
+      "id": "database_migration",
+      "name": "Database and migration",
+      "allowed_delivery_forms": ["hosted", "local", "hybrid", "library", "cli", "worker", "data_pipeline", "client"],
+      "criteria": [
+        {"id": "engine_semantics", "name": "Real-engine constraints and isolation", "relative_weight": 25},
+        {"id": "schema_evolution", "name": "Schema evolution and compatibility", "relative_weight": 25},
+        {"id": "rollback_recovery", "name": "Migration rollback and recovery", "relative_weight": 25},
+        {"id": "data_preservation", "name": "Data preservation and invariant checks", "relative_weight": 25}
+      ]
+    },
+    {
+      "id": "async_event_time",
+      "name": "Async, event, and time",
+      "allowed_delivery_forms": ["hosted", "local", "hybrid", "library", "cli", "worker", "data_pipeline", "client"],
+      "criteria": [
+        {"id": "idempotency", "name": "Idempotency and duplicate delivery", "relative_weight": 25},
+        {"id": "ordering_retry", "name": "Ordering, retry, timeout, and DLQ behavior", "relative_weight": 25},
+        {"id": "virtual_time", "name": "Virtual time and expiry behavior", "relative_weight": 25},
+        {"id": "restart_replay", "name": "Restart, replay, and partial-failure recovery", "relative_weight": 25}
+      ]
+    },
+    {
+      "id": "cloud_external",
+      "name": "Cloud and external providers",
+      "allowed_delivery_forms": ["hosted", "local", "hybrid", "cli", "worker", "data_pipeline", "client"],
+      "criteria": [
+        {"id": "fake_fidelity", "name": "Stateful fake or emulator fidelity", "relative_weight": 25},
+        {"id": "identity_configuration", "name": "Identity and configuration parity", "relative_weight": 25},
+        {"id": "limits_triggers", "name": "Configured limits, triggers, and provider events", "relative_weight": 25},
+        {"id": "error_semantics", "name": "Provider error and recovery semantics", "relative_weight": 25}
+      ]
+    },
+    {
+      "id": "ui_client",
+      "name": "UI, client, and accessibility",
+      "allowed_delivery_forms": ["hosted", "local", "hybrid", "client"],
+      "criteria": [
+        {"id": "critical_journeys", "name": "Critical user journeys", "relative_weight": 25},
+        {"id": "state_restoration", "name": "State restoration and interrupted flows", "relative_weight": 25},
+        {"id": "accessibility_input", "name": "Accessibility and input modalities", "relative_weight": 25},
+        {"id": "environment_matrix", "name": "Supported client environment matrix", "relative_weight": 25}
+      ]
+    },
+    {
+      "id": "library_sdk",
+      "name": "Library and SDK compatibility",
+      "allowed_delivery_forms": ["library"],
+      "criteria": [
+        {"id": "public_api", "name": "Public API and behavior contracts", "relative_weight": 25},
+        {"id": "versioning", "name": "Semantic versioning and compatibility", "relative_weight": 25},
+        {"id": "runtime_matrix", "name": "Runtime and platform matrix", "relative_weight": 25},
+        {"id": "packaging_examples", "name": "Packaging and executable examples", "relative_weight": 25}
+      ]
+    },
+    {
+      "id": "cli_process",
+      "name": "CLI and process behavior",
+      "allowed_delivery_forms": ["local", "hybrid", "cli"],
+      "criteria": [
+        {"id": "exit_status", "name": "Exit status and failure contracts", "relative_weight": 25},
+        {"id": "stdio", "name": "stdout, stderr, and pipe behavior", "relative_weight": 25},
+        {"id": "signals", "name": "Signal, cancellation, and cleanup behavior", "relative_weight": 25},
+        {"id": "locale_paths", "name": "Locale, encoding, and path behavior", "relative_weight": 25}
+      ]
+    },
+    {
+      "id": "data_pipeline",
+      "name": "Data pipeline and backfill",
+      "allowed_delivery_forms": ["hosted", "hybrid", "worker", "data_pipeline"],
+      "criteria": [
+        {"id": "schema_lineage", "name": "Schema evolution and lineage", "relative_weight": 25},
+        {"id": "replay_backfill", "name": "Replay and backfill behavior", "relative_weight": 25},
+        {"id": "partial_failure", "name": "Partial failure and restart", "relative_weight": 25},
+        {"id": "data_quality", "name": "Data-quality invariants", "relative_weight": 25}
+      ]
+    },
+    {
+      "id": "performance_recovery",
+      "name": "Performance, concurrency, and recovery",
+      "allowed_delivery_forms": ["hosted", "local", "hybrid", "library", "cli", "worker", "data_pipeline", "client"],
+      "criteria": [
+        {"id": "limits", "name": "Resource and workload limits", "relative_weight": 25},
+        {"id": "concurrency", "name": "Concurrency and race behavior", "relative_weight": 25},
+        {"id": "restart", "name": "Restart and degraded-mode behavior", "relative_weight": 25},
+        {"id": "recovery", "name": "Backup, restore, and recovery invariants", "relative_weight": 25}
+      ]
+    }
+  ]
+}
