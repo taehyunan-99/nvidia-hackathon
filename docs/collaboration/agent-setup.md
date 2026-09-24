@@ -20,6 +20,10 @@ GitHub 최신 both 모드도 AGENTS.md 원본과 CLAUDE.md import 방식을 사�
 `learn`은 Codex에서 `$learn`, Claude에서 `/learn`으로 명시 호출한다.
 원본의 메모·대상·근거 확인 절차를 거친 후 해당 영역 LEARNED_CAUTIONS.md에 누적한다. 본문 가이드의 8번 섹션에서 이 파일을 참조한다.
 
+## Git 작업 준비
+
+`$task-workflow` 또는 `/task-workflow`는 현재 checkout과 원격 main을 확인해 작업을 준비한다. 현재는 main 직접 작업이 기본이고 별도 branch·worktree는 요청할 때만 만든다. 커밋·push·PR·정리는 각각 요청한 범위에서만 수행한다.
+
 ## 개인별 설정과 최초 확인
 
 `.codex/config.toml`은 공통 설정 자리이며 현재 모델·권한 강제값은 없다. `.claude/settings.json`도 빈 설정이다.

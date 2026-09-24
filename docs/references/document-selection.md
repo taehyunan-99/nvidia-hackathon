@@ -2,7 +2,7 @@
 
 정리일: 2026-09-24. 원본 위치: 기존 `nvidia/docs/`. 원본 파일은 수정·삭제하지 않았다.
 이관은 현재 작업 파일을 기준으로 하며 기존 저장소의 미커밋 문서도 포함했다.
-보존 대상은 대회 진행 자료와 HER2 설계 관련 내용이다. 최종 주제 선정으로 해석하지 않는다.
+보존 대상은 대회 진행 자료와 HER2 설계 관련 내용이다. 현재 진행 주제와 구현 범위는 [프로젝트 개요](../topics/her2/overview.md)를 기준으로 한다.
 
 ## 이관 또는 선별 편집
 
@@ -20,7 +20,7 @@
 | `18-bionemo-molecule-protein-skills-tools.md` | 선별 편집 | [tools/her2-toolkit.md](../tools/her2-toolkit.md) | 사용자 확인: HER2 관련 도구만 발췌 |
 | `22-nemoclaw-dli-course-notes.md` | 이관 | [hackathon/nemoclaw-course-notes.md](../hackathon/nemoclaw-course-notes.md) | 대회 안내 교육 참고 |
 | `23-application-form-snapshot.md` | 이관 | [hackathon/application-form.md](../hackathon/application-form.md) | 제출 필드·미확인 조건 |
-| `24-her2-antibody-agent-design.md` | 이관 | [topics/her2/agent-design.md](../topics/her2/agent-design.md) | 남기는 유일한 주제 후보 |
+| `24-her2-antibody-agent-design.md` | 이관 | [topics/her2/agent-design.md](../topics/her2/agent-design.md) | 현재 진행하는 프로젝트의 원문 설계 |
 
 ## 제외
 
@@ -38,7 +38,7 @@
 | `20-bionemo-topic-evidence.md` | 여러 주제의 근거 목록 |
 | `21-bionemo-topic-scenarios-explained.md` | 25개 주제 시나리오 |
 | `24-her2-antibody-agent-design.pdf` | Markdown 원문과 중복되는 파생 PDF |
-| `README.md` | 새 팀 문서 목차로 재작성 |
+| `README.md` | 별도 목차 대신 docs/AGENTS.md의 영역 지도로 안내 |
 | `catalog/README.md`, `catalog/skills-01.md`~`skills-05.md` | 전체 366개 스킬 색인; 기존 자료에서 유지 |
 
 기존 `output/` 발표자료와 임시 생성 폴더는 이번 docs 선별 범위에 포함하지 않았다.

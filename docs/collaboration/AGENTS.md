@@ -14,7 +14,7 @@
 
 ## 3. HOW — 수정 방법
 
-설정 변경 전 영향받는 클라이언트를 확인한다. 스킬 원본은 .agents/skills에 두고 Claude 진입 파일도 연결한다.
+설정 변경 전 영향받는 클라이언트를 확인한다. 스킬 원본은 .agents/skills에 두고 Claude 진입 파일도 연결한다. task-workflow는 현재 main 직접 작업 규칙을 따르며 요청하지 않은 branch·worktree를 만들지 않는다.
 
 ## 4. ⛔ HOW NOT — 주의할 함정
 
@@ -27,10 +27,11 @@
 ## 6. WHY — 배경
 
 Windows 팀원이 있어 심볼릭 링크 없이 일반 파일·상대 경로를 사용한다. 모델·개인 권한·기술 스택은 강제하지 않는다.
+팀은 서비스 1명과 로직·워크플로우 2명으로 일하며, 세부 담당과 연결 규격은 진행하면서 합의한다. [현재 분담](../topics/her2/overview.md#팀-작업-분담)을 참고한다.
 
 ## 7. COMMANDS — 검증 명령
 
-저장소 루트에서 `git diff --check`로 공백 오류를 확인하고 변경 문서의 상대 링크·import 대상을 직접 확인한다. 앱 빌드·테스트 명령은 아직 없다.
+저장소 루트에서 `git diff --check`와 상대 링크·import 대상을 확인한다. handoff 실행 도구를 바꿀 때는 Python 3.11+ 환경에서 `python3 -m unittest discover -s .agents/skills/handoff/tests -p 'test_*.py'`와 `node --test .agents/skills/handoff/tests/parallel-wait.test.cjs`를 실행한다. 이는 공통 스킬 검사이며 HER2 앱 테스트는 아직 없다.
 
 ## 8. ⚠️ LEARNED CAUTIONS — 학습된 주의사항
 

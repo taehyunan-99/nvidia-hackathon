@@ -1,0 +1,6 @@
+interface:
+  display_name: "Task Workflow"
+  short_description: "팀 저장소의 main 직접 작업과 선택적 branch·worktree 준비"
+  default_prompt: "$task-workflow를 사용해 현재 작업 상태와 원격 main을 확인한다."
+policy:
+  allow_implicit_invocation: false

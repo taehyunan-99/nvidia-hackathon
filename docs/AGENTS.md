@@ -2,22 +2,23 @@
 
 ## 1. WHAT — 역할
 
-해커톤 운영, 보존된 HER2 주제 후보, 도구와 협업 규칙을 찾는 문서 지도.
+해커톤 운영, 현재 HER2 프로젝트, 도구와 협업 규칙을 찾는 문서 지도.
 
 ## 2. CONTENTS — 파일과 형식
 
 - `hackathon/` — 규정·신청·교육·데모
-- `topics/her2/` — HER2 후보 설계
+- [topics/her2/overview.md](topics/her2/overview.md) — 현재 프로젝트 목적·입력·산출물
+- [topics/her2/agent-design.md](topics/her2/agent-design.md) — 에이전트 판단 흐름
+- [topics/her2/validation.md](topics/her2/validation.md) — 전체 데모·첫 검증·미정 항목
 - `tools/` — 실행 도구·스킬·환경
 - `references/` — 출처·선별 기록
 - `collaboration/` — 팀 공통 설정
-- `README.md` — 문서 목차
 
 형식: Markdown 중심. 애플리케이션 기술 스택은 미확정.
 
 ## 3. HOW — 수정 방법
 
-작업할 하위 영역의 AGENTS.md를 먼저 읽는다. 새 문서는 해당 폴더에 넣고 docs/README.md를 갱신한다. 파일명은 번호 없는 영문 kebab-case를 쓴다.
+작업할 하위 영역의 AGENTS.md를 먼저 읽는다. 새 문서는 해당 폴더에 넣고 해당 영역 AGENTS.md의 경로와 설명을 갱신한다. 파일명은 번호 없는 영문 kebab-case를 쓴다.
 
 ## 4. ⛔ HOW NOT — 주의할 함정
 

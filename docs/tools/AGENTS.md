@@ -26,7 +26,7 @@
 
 ## 5. WHERE — 의존성과 경계
 
-../topics/her2/agent-design.md에서 필요한 기능을 정의하며 ../hackathon/requirements.md가 공식 요구사항의 기준이다.
+../topics/her2/overview.md가 기능 목적, agent-design.md가 도구의 실행 역할, validation.md가 완료 확인의 기준이며 ../hackathon/requirements.md가 공식 요구사항의 기준이다.
 
 ## 6. WHY — 배경
 
