@@ -10,6 +10,7 @@ const decisions: Record<string, string> = {
 const states: Record<string, string> = {
   unknown: "미확인",
   not_run: "미실행",
+  failed: "실행 실패",
   measured: "측정됨",
   not_applicable: "해당 없음",
 };
