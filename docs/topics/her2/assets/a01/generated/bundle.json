@@ -1,0 +1,34 @@
+{
+  "bundle_version": "a01-1",
+  "purpose": "public_reference_input_audit",
+  "final_demo_selection": false,
+  "coordinate_unit": "angstrom",
+  "files": [
+    {
+      "artifact_id": "1n8z-assembly-1-mmcif",
+      "repository_path": "docs/topics/her2/assets/a01/sources/1N8Z-assembly1.cif"
+    },
+    {
+      "artifact_id": "1s78-assembly-1-mmcif",
+      "repository_path": "docs/topics/her2/assets/a01/sources/1S78-assembly1.cif"
+    },
+    {
+      "artifact_id": "1s78-assembly-2-mmcif",
+      "repository_path": "docs/topics/her2/assets/a01/sources/1S78-assembly2.cif"
+    }
+  ],
+  "input": "review-input.json",
+  "structures": "structures.json",
+  "artifacts": "artifacts.json",
+  "residue_mapping": "residue-mapping.csv",
+  "source_lock": "../source-lock.json",
+  "sequence_position_basis": {
+    "target": "full UniProt P04626 FASTA",
+    "heavy_light": "deposited entity FASTA",
+    "nonpolymer": null
+  },
+  "analysis_ranges_approved": false,
+  "metrics_state": "not_run",
+  "alignment": null,
+  "assembly_choice": "Assembly 1 for D1 example; 1S78 assembly 2 retained as alternate, not an extra candidate"
+}

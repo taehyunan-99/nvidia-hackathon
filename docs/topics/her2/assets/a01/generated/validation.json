@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "tests_run": 9,
+  "tests": [
+    "test_generated_outputs_are_reproducible",
+    "test_missing_annotation_removal_is_rejected",
+    "test_nonpolymer_author_chains_are_not_polymer_identity",
+    "test_pertuzumab_insertion_codes_are_distinct",
+    "test_rcsb_deposited_and_modeled_counts",
+    "test_reference_sequence_and_known_missing_segment",
+    "test_separate_assemblies_and_service_sequence_basis",
+    "test_wrong_author_number_is_rejected",
+    "test_wrong_target_sequence_is_rejected"
+  ],
+  "failures": [],
+  "errors": [],
+  "evidence_basis": "RCSB entry counts, inspected mmCIF residue anchors, corruption rejection, offline rebuild"
+}
