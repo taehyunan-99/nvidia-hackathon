@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AgentStart, About, Team } from "./AgentStart";
 import { ReviewOverview } from "./ReviewOverview";
 import { parseScenarioFile, type ScenarioFile } from "./scenario-file";
+import PredictedStructure, { type PredictedView } from "./PredictedStructure";
 
 // 개발 중에는 vite와 실행부가 다른 포트에 뜬다. 배포 시 같은 출처면 빈 문자열로 둔다.
 const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8010";
@@ -11,6 +12,52 @@ import "./tokens.css";
 import "./style.css";
 import "./nvidia-theme.css";
 import "./agent-experience.css";
+
+/**
+ * 이번 실행이 만든 예측 구조만 골라 화면에 넘길 모양으로 맞춘다.
+ *
+ * 공개 실험 구조는 여기서 다루지 않는다. 프런트가 이미 파일을 가지고
+ * 있어서 받아올 필요가 없다.
+ *
+ * 사슬 대응이나 파일 해시가 없으면 그 구조는 건너뛴다. 3D로 띄울 때
+ * 무엇을 어느 색으로 칠할지 정할 수 없기 때문이다. 짐작해서 칠하면
+ * 틀린 잔기를 강조하게 된다.
+ */
+function predictedViews(result: any, candidates: any[]): PredictedView[] {
+  const views: PredictedView[] = [];
+  for (const s of result.structures ?? []) {
+    if (s.kind !== "predicted") continue;
+    const artifact = (result.artifacts ?? []).find(
+      (a: any) => a.artifact_id === s.artifact_id,
+    );
+    if (!artifact?.sha256) continue;
+    const byRole = (role: string) =>
+      (s.chain_mapping ?? []).find((c: any) => c.role === role)?.label_asym_id;
+    const chains = [byRole("target"), byRole("heavy"), byRole("light")];
+    if (chains.some((c) => !c)) continue;
+    const contact = (result.evidence ?? []).find(
+      (e: any) =>
+        e.structure_id === s.structure_id &&
+        e.topic === "interface_contact_residues",
+    );
+    views.push({
+      runId: result.run_id,
+      artifactId: s.artifact_id,
+      structureId: s.structure_id,
+      candidateName:
+        candidates.find((c) => c.candidate_id === s.candidate_id)?.name ??
+        s.candidate_id,
+      sha256: artifact.sha256,
+      chains: chains as string[],
+      residues: contact?.residues ?? [],
+      unmeasuredReason:
+        contact && contact.measurement_state === "measured"
+          ? null
+          : (contact?.reason ?? "접촉 잔기 근거가 결과에 없습니다."),
+    });
+  }
+  return views;
+}
 
 const pages = ["검토 입력", "분석 진행", "구조 비교", "결과 보고"];
 const labels: Record<string, string> = {
@@ -458,22 +505,73 @@ function App() {
                           </article>
                         ))}
                       </div>
+                      {(() => {
+                        const views = predictedViews(
+                          result,
+                          scenarioFile.input.candidates,
+                        );
+                        if (!views.length) return null;
+                        return (
+                          <section aria-label="예측 구조 3D">
+                            <div className="section-heading">
+                              <div>
+                                <h3>이번 실행이 만든 예측 구조</h3>
+                                <span className="caption">
+                                  NVIDIA Boltz-2 응답을 그대로 표시합니다
+                                </span>
+                              </div>
+                            </div>
+                            <div className="two-col">
+                              {views.map((v) => (
+                                <PredictedStructure
+                                  key={v.artifactId}
+                                  apiBase={API_BASE}
+                                  view={v}
+                                />
+                              ))}
+                            </div>
+                          </section>
+                        );
+                      })()}
                       <section className="download-row">
                         <div>
                           <h3>결과를 이어서 검토하기</h3>
-                          <p>실제 파일이 생성되면 내려받을 수 있습니다.</p>
+                          <p>
+                            이번 실행이 만든 예측 구조만 내려받을 수 있습니다.
+                            공개 실험 구조는 RCSB에서 직접 받으세요.
+                          </p>
                         </div>
                         <div className="actions">
-                          {result.artifacts.map((a) => (
-                            <button
-                              className="secondary"
-                              disabled
-                              key={a.artifact_id}
-                              title={a.reason ?? "파일 미제공"}
-                            >
-                              {a.format.toUpperCase()} ↓
-                            </button>
-                          ))}
+                          {result.artifacts.map((a: any) => {
+                            // 운영부가 내보내는 것은 work_dir에 쓴 예측 구조뿐이다.
+                            // 공개 실험 구조는 저장소 파일이라 그 경로로 나가지 않는다.
+                            const predicted = (result.structures ?? []).some(
+                              (s: any) =>
+                                s.artifact_id === a.artifact_id &&
+                                s.kind === "predicted",
+                            );
+                            if (!predicted)
+                              return (
+                                <button
+                                  className="secondary"
+                                  disabled
+                                  key={a.artifact_id}
+                                  title="공개 실험 구조는 RCSB에서 받으세요."
+                                >
+                                  {a.format.toUpperCase()} ↓
+                                </button>
+                              );
+                            return (
+                              <a
+                                className="secondary"
+                                key={a.artifact_id}
+                                href={`${API_BASE}/api/runs/${result.run_id}/artifacts/${a.artifact_id}`}
+                                download={a.file_name ?? `${a.artifact_id}.cif`}
+                              >
+                                {a.format.toUpperCase()} ↓
+                              </a>
+                            );
+                          })}
                         </div>
                       </section>
                     </>

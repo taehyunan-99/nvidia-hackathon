@@ -20,7 +20,7 @@ import pytest
 from logic import structures
 from logic.agent import Decider
 from logic.flow import run_flow
-from logic.nvidia_client import MissingCredentials
+from logic.nvidia_client import CallFailed, MissingCredentials
 from logic.tests.test_flow import (
     PERTUZUMAB,
     TRASTUZUMAB,
@@ -211,3 +211,52 @@ def test_the_rule_agrees_with_the_model_instead_of_contradicting_it(tmp_path):
     ]
     assert measured, "근거를 하나도 계산하지 못했다면 다른 문제다"
     assert opinion["limitations"], "무엇이 모자란지 남아 있어야 한다"
+
+
+def test_the_model_is_told_whether_prediction_is_even_possible(tmp_path):
+    """구조 검색 결과만 주면 "일치 없음"을 "자료 부족"으로 읽는다.
+
+    실제로 그렇게 보류한 실행을 화면에서 봤다. 서열은 충분히 길었는데
+    모델에게는 그걸 알 방법이 없었다.
+    """
+    client = ScriptedClient("predict", "needs_confirmation")
+
+    run_flow(
+        make_request(_unmatched_candidate(), tmp_path, target_fasta=_long("HERTWOSEQ", 300)),
+        client=client,
+        decider=Decider(client, model="test-model"),
+    )
+
+    asked = client.asked[0]
+    for label in ("표적", "중쇄", "경쇄"):
+        assert f"{label} 서열 길이" in asked
+    assert "예측 입력으로 충분" in asked
+
+
+def test_the_raw_server_error_body_does_not_end_up_on_screen(tmp_path):
+    """화면에서 {"error":{"message":...}}가 문장 안에 박힌 것을 봤다.
+
+    규칙으로 갔다는 사실은 남기되, 서버 응답 본문까지 보여줄 필요는 없다.
+    자세한 내용은 call_log.jsonl에 있다.
+    """
+
+    class Overloaded(ScriptedClient):
+        def chat(self, model, messages, **kwargs):
+            raise CallFailed(
+                'nemotron.chat 호출이 HTTP 503로 실패했다: '
+                '{"error":{"message":"Service temporarily overloaded",'
+                '"type":"Service Unavailable","code":503}}',
+                status=503,
+            )
+
+    client = Overloaded()
+    output, _ = run_flow(
+        make_request(_matched_candidate(), tmp_path, target_fasta=_long("HERTWOSEQ", 300)),
+        client=client,
+        decider=Decider(client, model="test-model"),
+    )
+
+    reason = _mine(output, "trastuzumab")[0]["reason"]
+    assert "판단: 규칙" in reason, "규칙으로 갔다는 사실은 남아야 한다"
+    assert '"code":503' not in reason
+    assert len(reason) < 200

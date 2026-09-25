@@ -49,7 +49,13 @@ def _explain(decision) -> str:
     """
     if decision.decided_by == "model":
         return f"{decision.reason} (판단: {decision.model})"
-    return f"{decision.reason} (판단: 규칙 — {decision.fallback_reason})"
+    # 실패 사유에는 서버가 돌려준 본문이 통째로 들어 있다. 화면에서 보니
+    # {"error":{"message":...}} 가 그대로 문장 안에 박혔다. 자세한 내용은
+    # call_log.jsonl에 남아 있으므로 여기서는 짧게 줄인다.
+    why = decision.fallback_reason or ""
+    if len(why) > 80:
+        why = why[:80].rstrip() + "…"
+    return f"{decision.reason} (판단: 규칙 — {why})"
 
 
 @dataclass
@@ -166,7 +172,7 @@ class Flow:
 
         # ③ 분기: 기존 구조 / 예측 / 자료 부족
         # 규칙이 아니라 판단부가 고른다. 모델이 없으면 default로 돌아간다.
-        choice = self._choose_source(cid, match)
+        choice = self._choose_source(cid, candidate, match)
         if choice.action == "use_experimental":
             structure_id = self._record_experimental(cid, match)
             self._emit(cid, "prediction", "skipped", _explain(choice))
@@ -225,7 +231,9 @@ class Flow:
         return problems
 
     # ------------------------------------------------------------ 판단 분기
-    def _choose_source(self, cid: str, match: structures.StructureMatch):
+    def _choose_source(
+        self, cid: str, candidate: dict[str, Any], match: structures.StructureMatch
+    ):
         """이 후보를 무엇으로 검토할지 고른다.
 
         설계 문서의 "일치하는 공개 실험 구조로 충분하면 불필요한 복합체
@@ -241,6 +249,23 @@ class Flow:
             f"경쇄 서열 정확히 일치: {'예' if match.light_exact else '아니오'}",
             f"같은 구조에 표적 사슬 있음: {'예' if match.target_entity else '아니오'}",
         ]
+        # 예측에 쓸 자료가 있는지도 사실로 넣는다. 구조 검색 결과만 주면
+        # 모델은 "일치하는 구조가 없다"를 "자료가 부족하다"로 읽는다.
+        # 실제로 그렇게 보류한 실행을 화면에서 확인했다.
+        lengths = {
+            "표적": len(
+                structures.normalize_sequence(
+                    self.request["input"]["target"].get("fasta") or ""
+                )
+            ),
+            "중쇄": len(structures.normalize_sequence(candidate["heavy_chain_fasta"])),
+            "경쇄": len(structures.normalize_sequence(candidate["light_chain_fasta"])),
+        }
+        facts += [
+            f"{label} 서열 길이 {n}자 "
+            f"({'예측 입력으로 충분' if n >= MIN_CHAIN_LENGTH else f'{MIN_CHAIN_LENGTH}자 미만이라 예측 불가'})"
+            for label, n in lengths.items()
+        ]
         if match.complete:
             options = [
                 Option("use_experimental", "이미 있는 공개 실험 구조로 검토한다. 예측을 건너뛴다."),
@@ -248,16 +273,31 @@ class Flow:
             ]
             default = "use_experimental"
         else:
+            # 문구를 두 번 고쳤다. 처음엔 "Boltz-2로 예측해 검토한다"였는데
+            # 모델이 "일치하는 공개 구조가 없다"를 보류 사유로 읽고 계속
+            # hold를 골랐다. 예측이 **없는 구조를 만들어 내는 행동**이라는
+            # 것을 몰랐던 것이다. 답을 유도하는 게 아니라 각 행동이 실제로
+            # 무엇을 하는지 적는다. hold의 조건은 코드의 MIN_CHAIN_LENGTH가
+            # 이미 정해 둔 것과 같다.
             options = [
-                Option("predict", "Boltz-2로 복합체를 예측해 검토한다."),
-                Option("hold", "자료가 모자라 예측하지 않고 보류한다. 사람이 보완해야 한다."),
+                Option(
+                    "predict",
+                    "표적·중쇄·경쇄 서열을 Boltz-2에 보내 복합체 구조를 새로 만든다. "
+                    "공개 구조가 없을 때 쓰는 정상 경로다.",
+                ),
+                Option(
+                    "hold",
+                    "예측 입력으로 쓸 서열 자체가 없거나 너무 짧을 때만 고른다. "
+                    "서열이 충분하면 고르지 않는다.",
+                ),
             ]
             default = "predict"
         return self.decider.choose(
             "structure_source",
             question=(
                 f"후보 {cid}를 검토할 구조를 어디서 얻을 것인가? "
-                "부분 일치는 같은 항체로 보지 않는다."
+                "부분 일치는 같은 항체로 보지 않는다. "
+                "일치하는 공개 구조가 없다는 것 자체는 보류 사유가 아니다."
             ),
             facts=facts,
             options=options,
