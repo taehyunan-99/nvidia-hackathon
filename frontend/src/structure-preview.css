@@ -1,0 +1,193 @@
+.structure-preview {
+  min-width: 0;
+  padding: var(--space-5, 20px);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+}
+.structure-candidates,
+.structure-controls,
+.structure-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-block: 12px;
+  align-items: center;
+}
+.structure-candidates button {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+.structure-candidates small {
+  display: block;
+  color: var(--text-secondary);
+}
+.structure-candidates button[aria-pressed="true"] {
+  border-color: var(--color-accent-ink);
+  background: var(--color-accent-05);
+}
+.structure-controls {
+  justify-content: space-between;
+  font-size: 13px;
+}
+.structure-controls select {
+  padding: 6px;
+}
+.structure-controls input {
+  width: auto;
+}
+.molecule-canvas {
+  height: 400px;
+  position: relative;
+  background: #fff;
+}
+.molecule-canvas canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+.structure-status {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+}
+.structure-legend {
+  font-size: 12px;
+}
+.structure-legend span:nth-child(1) {
+  color: #177e75;
+}
+.structure-legend span:nth-child(2) {
+  color: #a85c0e;
+}
+.structure-legend span:nth-child(3) {
+  color: #705abc;
+}
+.structure-legend span:nth-child(4) {
+  color: #a43b84;
+}
+.structure-preview p,
+.structure-source {
+  font-size: 13px;
+}
+.structure-preview p {
+  margin-block: 12px;
+}
+@media (max-width: 600px) {
+  .molecule-canvas {
+    height: 320px;
+  }
+}
+.rotation-toggle {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  min-height: 44px;
+}
+.structure-controls label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.structure-controls label {
+  white-space: nowrap;
+}
+.viewer-button,
+.structure-views button,
+.context-action button {
+  padding: 10px 14px;
+  min-height: 44px;
+  border: 1px solid var(--border);
+}
+.structure-views {
+  display: flex;
+  gap: 8px;
+  margin-block: 12px;
+}
+.structure-views button {
+  flex: 1;
+}
+.structure-views button[aria-pressed="true"] {
+  background: var(--color-accent-05);
+  border-color: var(--color-accent-ink);
+}
+.context-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-block: 12px;
+  padding: 12px;
+  background: var(--bg-tertiary);
+}
+.context-action label,
+.structure-adjustments label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.context-action input,
+.structure-adjustments input[type="checkbox"] {
+  width: auto;
+}
+.structure-adjustments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-block: 12px;
+  border-top: 1px solid var(--border);
+}
+.structure-adjustments .opacity-control {
+  flex-wrap: wrap;
+  width: 100%;
+}
+.opacity-control input {
+  flex: 1;
+  min-width: 100px;
+}
+.opacity-control output {
+  min-width: 40px;
+}
+.molecule-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: #ffffffed;
+  color: #172537;
+  border-left: 3px solid;
+  padding: 3px 7px;
+  font-size: 12px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.canvas-mode {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  color: #344353;
+  background: #ffffffe8;
+  padding: 4px 8px;
+  font-size: 12px;
+  pointer-events: none;
+}
+.view-explanation {
+  min-height: 40px;
+}
+.representation-control {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.structure-source {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}

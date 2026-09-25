@@ -6,6 +6,8 @@ HER2 분석 로직을 서비스 화면·연동·운영 관점에서 읽고, 구�
 
 ## 2. CONTENTS — 파일과 형식
 
+- [3d-viewer.md](3d-viewer.md) — 3D 파일·표현·뷰어 비교, 실험 좌표 이미지와 구현 전 검토
+- [result-presentation-research.md](result-presentation-research.md) — 전문가 결과 검토·AI 시대 변화와 시각 중심 출력 구조 제안
 - [bio-agent-experience.md](bio-agent-experience.md) — 분석·소개·팀 탭과 바이오 에이전트 표현 기준
 - [researcher-ux-research.md](researcher-ux-research.md) — 전문가 UX 근거·화면 가설·인터뷰·평가안
 - [nvidia-design-research.md](nvidia-design-research.md) — NVIDIA 공식 디자인 출처·적용 근거·범위
