@@ -426,6 +426,7 @@ function App() {
                           result={result}
                           candidate={candidate}
                           conditionKind={conditionKind}
+                          evidenceId={expanded}
                           onSelect={(id, kind, evidenceId) => {
                             setCandidate(id);
                             setConditionKind(kind);
@@ -433,89 +434,91 @@ function App() {
                           }}
                         />
                       )}
-                      <div className="compare-grid">
-                        <section className="viewer">
-                          <div className="section-heading">
-                            <span className="eyebrow">STRUCTURE VIEW</span>
-                            <span className="tag">구조 미제공</span>
-                          </div>
-                          <div className="viewer-empty">
-                            <span className="outline-icon">◇</span>
-                            <h2>구조가 연결될 자리입니다</h2>
-                            <p>
-                              이 모의 자료에는 실제 좌표가 없습니다.
-                              <br />
-                              구조가 제공되면 선택한 근거의 위치를 함께
-                              확인합니다.
-                            </p>
-                          </div>
-                          <span className="caption">
-                            현재 3D 렌더링·잔기 강조는 제공하지 않습니다.
-                          </span>
-                        </section>
-                        <section className="panel evidence-panel">
-                          <div className="eyebrow">EVIDENCE</div>
-                          <h2>확인된 것과 남은 것</h2>
-                          <p className="caption">
-                            수치만으로 후보의 우열을 정하지 않습니다.
-                          </p>
-                          {conditions.length === 0 ? (
-                            <div className="empty">
-                              <h3>이 조건의 자료가 없습니다</h3>
+                      {comparisonLayout === "original" && (
+                        <div className="compare-grid">
+                          <section className="viewer">
+                            <div className="section-heading">
+                              <span className="eyebrow">STRUCTURE VIEW</span>
+                              <span className="tag">구조 미제공</span>
+                            </div>
+                            <div className="viewer-empty">
+                              <span className="outline-icon">◇</span>
+                              <h2>구조가 연결될 자리입니다</h2>
                               <p>
-                                주변 구조가 없다는 뜻이 아닙니다. 자료 보완이
-                                필요합니다.
+                                이 모의 자료에는 실제 좌표가 없습니다.
+                                <br />
+                                구조가 제공되면 선택한 근거의 위치를 함께
+                                확인합니다.
                               </p>
                             </div>
-                          ) : (
-                            evidence.map((e) => (
-                              <div className="evidence" key={e.evidence_id}>
-                                <button
-                                  className="evidence-toggle"
-                                  aria-expanded={expanded === e.evidence_id}
-                                  onClick={() =>
-                                    setExpanded(
-                                      expanded === e.evidence_id
-                                        ? null
-                                        : e.evidence_id,
-                                    )
-                                  }
-                                >
-                                  <span>
-                                    접촉 근거{" "}
-                                    <small>{labels[e.kind] ?? e.kind}</small>
-                                  </span>
-                                  <span>
-                                    {labels[e.measurement_state] ??
-                                      e.measurement_state}{" "}
-                                    ＋
-                                  </span>
-                                </button>
-                                {expanded === e.evidence_id && (
-                                  <div className="evidence-detail">
-                                    <p>{e.reason}</p>
-                                    <p>측정값: {e.value ?? "미제공"}</p>
-                                    <p>
-                                      출처:{" "}
-                                      {e.sources.length
-                                        ? "제공된 출처"
-                                        : "미제공"}{" "}
-                                      · 대응 좌표: 미제공
-                                    </p>
-                                  </div>
-                                )}
+                            <span className="caption">
+                              현재 3D 렌더링·잔기 강조는 제공하지 않습니다.
+                            </span>
+                          </section>
+                          <section className="panel evidence-panel">
+                            <div className="eyebrow">EVIDENCE</div>
+                            <h2>확인된 것과 남은 것</h2>
+                            <p className="caption">
+                              수치만으로 후보의 우열을 정하지 않습니다.
+                            </p>
+                            {conditions.length === 0 ? (
+                              <div className="empty">
+                                <h3>이 조건의 자료가 없습니다</h3>
+                                <p>
+                                  주변 구조가 없다는 뜻이 아닙니다. 자료 보완이
+                                  필요합니다.
+                                </p>
                               </div>
-                            ))
-                          )}
-                          {conditions
-                            .flatMap((c) => c.gaps)
-                            .map((g, i) => (
-                              <p className="notice" key={i}>
-                                {g}
-                              </p>
-                            ))}
-                        </section>
-                      </div>
+                            ) : (
+                              evidence.map((e) => (
+                                <div className="evidence" key={e.evidence_id}>
+                                  <button
+                                    className="evidence-toggle"
+                                    aria-expanded={expanded === e.evidence_id}
+                                    onClick={() =>
+                                      setExpanded(
+                                        expanded === e.evidence_id
+                                          ? null
+                                          : e.evidence_id,
+                                      )
+                                    }
+                                  >
+                                    <span>
+                                      접촉 근거{" "}
+                                      <small>{labels[e.kind] ?? e.kind}</small>
+                                    </span>
+                                    <span>
+                                      {labels[e.measurement_state] ??
+                                        e.measurement_state}{" "}
+                                      ＋
+                                    </span>
+                                  </button>
+                                  {expanded === e.evidence_id && (
+                                    <div className="evidence-detail">
+                                      <p>{e.reason}</p>
+                                      <p>측정값: {e.value ?? "미제공"}</p>
+                                      <p>
+                                        출처:{" "}
+                                        {e.sources.length
+                                          ? "제공된 출처"
+                                          : "미제공"}{" "}
+                                        · 대응 좌표: 미제공
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              ))
+                            )}
+                            {conditions
+                              .flatMap((c) => c.gaps)
+                              .map((g, i) => (
+                                <p className="notice" key={i}>
+                                  {g}
+                                </p>
+                              ))}
+                          </section>
+                        </div>
+                      )}
                       <div className="actions end">
                         <button className="primary" onClick={() => go(3)}>
                           검토 보고 보기 ↗

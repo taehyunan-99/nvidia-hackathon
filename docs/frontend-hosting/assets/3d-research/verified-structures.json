@@ -1,0 +1,211 @@
+{
+  "1N8Z": {
+    "_entity.id": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6"
+    ],
+    "_entity.pdbx_description": [
+      "Herceptin Fab (antibody) - light chain",
+      "Herceptin Fab (antibody) - heavy chain",
+      "Receptor protein-tyrosine kinase erbB-2",
+      "2-acetamido-2-deoxy-beta-D-glucopyranose",
+      "SULFATE ION",
+      "water"
+    ],
+    "_struct_asym.id": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I"
+    ],
+    "_struct_asym.entity_id": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "4",
+      "5",
+      "6",
+      "6",
+      "6"
+    ],
+    "_pdbx_struct_assembly_gen.assembly_id": [
+      "1"
+    ],
+    "_pdbx_struct_assembly_gen.oper_expression": [
+      "1"
+    ],
+    "_pdbx_struct_assembly_gen.asym_id_list": [
+      "A,B,C,D,E,F,G,H,I"
+    ],
+    "sha256": "9f22f02b6e514de56dab8a48bc31a16302a51397779e64c398ad3a7f05cb19a2",
+    "label_author_pairs": [
+      [
+        "A",
+        "A"
+      ],
+      [
+        "B",
+        "B"
+      ],
+      [
+        "C",
+        "C"
+      ],
+      [
+        "D",
+        "C"
+      ],
+      [
+        "E",
+        "C"
+      ],
+      [
+        "F",
+        "C"
+      ],
+      [
+        "G",
+        "A"
+      ],
+      [
+        "H",
+        "B"
+      ],
+      [
+        "I",
+        "C"
+      ]
+    ],
+    "atoms": 7890,
+    "source": "https://files.rcsb.org/download/1N8Z.cif",
+    "verified_date": "2026-09-25"
+  },
+  "1S78": {
+    "_entity.id": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6"
+    ],
+    "_entity.pdbx_description": [
+      "Receptor protein-tyrosine kinase erbB-2",
+      "Pertuzumab Fab light chain",
+      "Pertuzumab Fab heavy chain",
+      "2-acetamido-2-deoxy-beta-D-glucopyranose-(1-4)-2-acetamido-2-deoxy-beta-D-glucopyranose",
+      "beta-D-mannopyranose-(1-4)-2-acetamido-2-deoxy-beta-D-glucopyranose-(1-4)-2-acetamido-2-deoxy-beta-D-glucopyranose",
+      "2-acetamido-2-deoxy-beta-D-glucopyranose"
+    ],
+    "_struct_asym.id": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M"
+    ],
+    "_struct_asym.entity_id": [
+      "1",
+      "1",
+      "2",
+      "3",
+      "2",
+      "3",
+      "4",
+      "4",
+      "4",
+      "5",
+      "4",
+      "6",
+      "6"
+    ],
+    "_pdbx_struct_assembly_gen.assembly_id": [
+      "1",
+      "2"
+    ],
+    "_pdbx_struct_assembly_gen.oper_expression": [
+      "1",
+      "1"
+    ],
+    "_pdbx_struct_assembly_gen.asym_id_list": [
+      "A,C,D,G,H,L",
+      "B,E,F,I,J,K,M"
+    ],
+    "sha256": "468b0fa0d3368c1d8971d26e896a7ed8b938437dfa5eb55132ef24ef0033d9f0",
+    "label_author_pairs": [
+      [
+        "A",
+        "A"
+      ],
+      [
+        "B",
+        "B"
+      ],
+      [
+        "C",
+        "C"
+      ],
+      [
+        "D",
+        "D"
+      ],
+      [
+        "E",
+        "E"
+      ],
+      [
+        "F",
+        "F"
+      ],
+      [
+        "G",
+        "G"
+      ],
+      [
+        "H",
+        "H"
+      ],
+      [
+        "I",
+        "I"
+      ],
+      [
+        "J",
+        "J"
+      ],
+      [
+        "K",
+        "K"
+      ],
+      [
+        "L",
+        "A"
+      ],
+      [
+        "M",
+        "B"
+      ]
+    ],
+    "atoms": 15481,
+    "source": "https://files.rcsb.org/download/1S78.cif",
+    "verified_date": "2026-09-25"
+  }
+}
