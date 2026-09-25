@@ -501,10 +501,20 @@ class Flow:
                 )
             )
         else:
+            # 예측 구조는 실행할 때마다 새로 생기므로 미리 계산해 둔 결과가 없다.
+            # 실험 구조 후보와 같은 기준으로 좌표에서 직접 고른다.
+            record = next(
+                (s for s in self.structures if s["structure_id"] == structure_id), None
+            )
             measurements.append(
-                analysis.Measurement.not_run(
-                    "interface_contact_residues",
-                    "예측 구조의 접촉 잔기 계산은 A의 계산 함수(A-02) 인계 후에 한다.",
+                analysis.predicted_contact_measurement(
+                    self.work_dir / f"{structure_id}.cif",
+                    record["chain_mapping"] if record else [],
+                    {
+                        "title": "NVIDIA Boltz-2 NIM 예측 구조에서 직접 계산",
+                        "url": "https://build.nvidia.com/mit/boltz2",
+                        "record_id": self.run_id,
+                    },
                 )
             )
         measurements.extend(analysis.pending_measurements("예측·실험 구조 공통으로"))

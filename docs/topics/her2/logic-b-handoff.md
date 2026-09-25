@@ -12,6 +12,7 @@
 | B-03 보류·입력 오류 분기 | **동작** | 테스트 38건 통과 (`python -m pytest logic/tests -q`) |
 | B-01 계정·실제 호출 | **확인** | `list_models` 성공(모델 82개). Boltz-2 소형 입력 5.5초 |
 | B-02 HER2 예측 연결 | **1건 확인** | HER2 복합체 1,047잔기 → 12.0초. 반환 사슬이 입력과 일치 |
+| B-03 예측 후보 접촉 계산 | **동작** | 변이체 예측 구조에서 39건. trastuzumab과 표적 잔기 겹침 0 |
 | B-04 장애·한도·재현성 | **부분** | 실패·timeout 분기는 테스트로만. 분당 한도·재시도 미확인 |
 
 B-02는 **한 조합으로 1건** 성공했다. 다른 길이·`diffusion_samples > 1`·호출 한도는 아직 모른다.
@@ -62,6 +63,11 @@ output, flow = run_flow(request_dict, progress=on_progress)
 `not_run` · `failed`. `measured`가 아닌 근거는 스키마가 `value: null` + `reason`을 **강제**한다.
 화면에서 `not_run`을 0으로 표시하지 않는다.
 
+`interface_contact_residues`는 실험 구조·예측 구조 **둘 다 `measured`**로 나간다.
+예측 구조는 좌표에서 직접 계산하며(`logic/contacts.py`), 선택 기준은 실험 구조 쪽
+(`contacts.json`)과 같다. 그 동일성은 공개 구조 두 개에서 잔기 집합 전체를 대조해 지킨다.
+사슬 대응을 못 찾은 예측 구조는 계산하지 않고 `not_run`으로 남긴다.
+
 현재 `not_run`으로 나가는 항목: `atom_clash`, `surface_exposure`.
 A-02·A-03의 계산 함수가 들어오면 [logic/analysis.py](../../../logic/analysis.py)의 자리에 연결한다.
 
@@ -107,8 +113,7 @@ B는 **Biopython·freesasa를 쓰지 않는다.** 그 의존성은 로직 A 쪽�
 ## 6. 미확인·결정 필요
 
 - 예측은 **한 조합 1건**만 확인했다. 이것으로 예측 경로 전체를 검증했다고 보지 않는다.
-- 예측 구조의 접촉·충돌 계산이 없어 예측 후보의 `interface_contact_residues`는 `not_run`이다.
-  후보 비교의 근거가 실험 구조 후보에만 있다는 뜻이다. → **A-02 인계 후 해소**
+- 예측 구조의 **충돌·표면 노출** 계산은 아직 없다. 접촉 잔기는 해소됐다. → **A-02 인계 후 해소**
 - 접촉 잔기는 `contacts.json`의 4.5 Å 근접 선택이다. 그 생성 스크립트 자체가
   `Not binding assessment`라고 적고 있다. **결합력·효능 근거로 쓰지 않는다.**
 - 잔기 번호는 `auth_chains=False`로 만들어져 **label** 기준이다. `auth_seq_id`는 `null`이다.

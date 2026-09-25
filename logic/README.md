@@ -35,6 +35,7 @@ python -m pytest logic/tests -q
 | `contract.py` | 임시 계약 로딩·검증. 생산한 객체는 전부 스키마로 확인한 뒤 내보낸다 |
 | `structures.py` | 공개 실험 구조 조회와 후보 대응. mmCIF `_entity_poly` 파서 포함 |
 | `nvidia_client.py` | Boltz-2·Nemotron 호출. 요청 요약·응답·소요 시간을 `call_log.jsonl`에 남긴다 |
+| `contacts.py` | 좌표에서 접촉 잔기 직접 선택. 예측 구조용이며 기준은 실험 구조 쪽과 같다 |
 | `analysis.py` | 계산 결과를 Evidence 재료로 변환. 로직 A의 함수가 들어올 자리 |
 | `flow.py` | 다섯 단계와 분기 |
 | `run.py` | 실행부 진입점 (D4의 B쪽) |
@@ -62,6 +63,9 @@ python -m pytest logic/tests -q
 2026-09-26 기준.
 
 - 1N8Z·1S78 mmCIF 파싱과 `verified-structures.json`의 sha256 일치 — 두 파일 모두 확인.
+- `contacts.py`의 접촉 잔기 선택이 팀이 Biopython으로 만든 `contacts.json`과
+  **잔기 집합까지 완전히 일치**한다(1N8Z 39건·1S78 56건). 개수만이 아니라 어느
+  잔기인지까지 대조한다(`test_matches_the_biopython_selection_exactly`).
 - trastuzumab·pertuzumab 실제 서열 입력 → 두 후보 모두 예측 생략, 접촉 잔기 39·56건.
   이 수는 `contacts.json`을 직접 읽어 대조한다(`test_contact_evidence_matches_precomputed_file`).
 - 입력 오류·자료 부족·호출 실패·구조 없는 응답·키 없음 분기 — 테스트 통과.
@@ -74,6 +78,9 @@ python -m pytest logic/tests -q
   recycling 3·sampling 50·samples 1) — **12.0초**, 응답 mmCIF **791,331 bytes**,
   `confidence_scores[0] = 0.807`.
 - 반환 구조의 세 사슬 서열이 입력 세 서열과 **완전 일치**함을 파일에서 직접 읽어 대조했다.
+- 예측 구조의 접촉 잔기를 좌표에서 직접 계산했다. 변이체 후보 39건, 표적 쪽은
+  잔기 13–135·330–391. 같은 실행의 trastuzumab(실험 구조)은 557–605로
+  **표적 잔기가 하나도 겹치지 않는다.** 두 후보가 다른 부위에 닿는다는 뜻이다.
 
 이 호출로 드러나 고친 것 두 가지:
 
@@ -91,7 +98,7 @@ fixture `logic/tests/fixtures/boltz2-response-excerpt.cif`는 실제 응답에�
 - 예측 경로를 **한 조합으로만** 확인했다. 다른 후보·길이·`diffusion_samples > 1`,
   분당 호출 한도, 재시도 동작은 미확인이다.
 - 접촉 잔기는 `contacts.json`의 4.5 Å 근접 선택이다. 그 생성 스크립트 자체가 `Not binding assessment`라고 적고 있으므로 결합력·효능 근거로 쓰지 않는다.
-- 예측 구조의 접촉·충돌 계산은 아직 없다. 예측 후보의 `interface_contact_residues`는 `not_run`이다.
+- 예측 구조의 **충돌** 계산은 아직 없다. 접촉 잔기는 계산한다.
 - 충돌·표면 노출은 `not_run`이다. 기준 확정과 계산 함수는 로직 A(A-02·A-03)의 인계를 기다린다.
 - 잔기 번호는 `contacts.json`이 `auth_chains=False`로 만들어져 **label** 기준이다. `auth_seq_id`는 `null`로 두었고 대응 확인 전에는 화면 강조에 그대로 쓰면 안 된다.
 - `residue_mapping`과 `alignment`는 비어 있다. A의 D2 인계 후 채운다.
