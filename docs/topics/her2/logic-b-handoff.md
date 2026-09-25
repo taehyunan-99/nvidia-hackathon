@@ -1,6 +1,6 @@
 # 로직 B 인계 — 실행부 현재 상태와 D3–D6 초안
 
-기준일 2026-09-25. 대상은 로직 A와 서비스 운영부다.
+기준일 2026-09-26. 대상은 로직 A와 서비스 운영부다.
 계획서 [B-01·B-03](../../plan.md#6-로직-b-계획--외부-예측과-에이전트-흐름)의 인계 항목을
 **실제로 구현·실행한 범위만** 적는다. 코드 사용법은 [logic/README.md](../../../logic/README.md)에 있다.
 
@@ -9,13 +9,12 @@
 | 계획 항목 | 상태 | 근거 |
 |---|---|---|
 | B-03 기존 구조 경로 | **동작** | trastuzumab·pertuzumab 입력 → 두 후보 완료, 접촉 잔기 39·56건 |
-| B-03 보류·입력 오류 분기 | **동작** | 테스트 31건 통과 (`python -m pytest logic/tests -q`) |
-| B-01 계정·실제 호출 | **미확인** | `NVIDIA_API_KEY` 미발급. 실제 호출 0건 |
-| B-02 HER2 예측 연결 | **미확인** | 코드는 있으나 대역 client로만 실행 |
-| B-04 장애·한도·재현성 | **부분** | 실패·timeout 분기는 테스트로만. 실측 한도 없음 |
+| B-03 보류·입력 오류 분기 | **동작** | 테스트 38건 통과 (`python -m pytest logic/tests -q`) |
+| B-01 계정·실제 호출 | **확인** | `list_models` 성공(모델 82개). Boltz-2 소형 입력 5.5초 |
+| B-02 HER2 예측 연결 | **1건 확인** | HER2 복합체 1,047잔기 → 12.0초. 반환 사슬이 입력과 일치 |
+| B-04 장애·한도·재현성 | **부분** | 실패·timeout 분기는 테스트로만. 분당 한도·재시도 미확인 |
 
-예측 경로는 키가 생기면 `python -m logic.check_key` → 실제 요청 순으로 확인한다.
-`logic/call_log.jsonl`에 실제 기록이 남기 전까지 B-01·B-02를 완료로 적지 않는다.
+B-02는 **한 조합으로 1건** 성공했다. 다른 길이·`diffusion_samples > 1`·호출 한도는 아직 모른다.
 
 ## 2. D4 실행 계약 — 서비스 ↔ B
 
@@ -68,14 +67,23 @@ A-02·A-03의 계산 함수가 들어오면 [logic/analysis.py](../../../logic/a
 
 ## 4. D3 예측 결과 — B → A
 
-**아직 실제 응답이 없다.** 구현된 것은 요청 조립·응답 파싱·`call_log.jsonl` 기록까지다.
+실제 응답 1건으로 확인했다 (2026-09-26).
 
 - 호출 대상: `https://health.api.nvidia.com/v1/biology/mit/boltz2/predict`
+- 응답 최상위 키: `structures` · `confidence_scores` · `metrics` · `pae` · `pde` ·
+  `ptm_scores` · `iptm_scores` · `affinities` 등. `structures[i]`는
+  `{format, name, source, structure}`이고 `format`은 `mmcif`다.
 - 반환 구조는 `kind: "predicted"`로 `structures`에 들어가고 신뢰도는 `evidence`로 분리한다.
 - 반환되지 않은 지표는 채우지 않고 `not_run`으로 남긴다.
+- MSA 경로는 **요구하지 않았다.** 서열만 보내고 성공했다.
 
-A가 확인해야 할 것: 실제 응답의 사슬·잔기 번호가 입력 후보와 대응하는지.
-[확인 필요: 실제 Boltz-2 응답의 사슬 ID 규칙과 MSA 경로 요구 여부 — 키 발급 후]
+**사슬 ID 주의 — A가 반드시 알아야 할 것.**
+요청에 `A`·`H`·`L`로 보내도 Boltz-2는 **순서대로 `A`·`B`·`C`로 다시 붙인다.**
+그래서 B는 보낸 id를 적지 않고, 응답 파일의 서열로 대응을 찾아 `chain_mapping`에 넣는다.
+대응을 못 찾으면 지어내지 않고 `label_asym_id: null`로 둔다.
+`auth_asym_id`는 예측 구조에서 `null`이다.
+
+확인한 대조: 표적 607 · 중쇄 226 · 경쇄 214잔기가 각각 `A`·`B`·`C`와 **완전 일치**.
 
 ## 5. D6 배포 인계 초안
 
@@ -89,13 +97,18 @@ A가 확인해야 할 것: 실제 응답의 사슬·잔기 번호가 입력 후�
 | 호출 timeout | 기본 600초 | `DEFAULT_TIMEOUT` |
 | 작업 디렉터리 | `NvidiaClient(work_dir)`에 쓰기 권한 필요 (`call_log.jsonl`) | — |
 | GPU | 불필요 (예측은 원격 NIM) | — |
-| 실제 소요 시간·메모리·파일 용량 | [확인 필요: 실제 호출 후 측정 — B-02] | — |
+| 예측 1건 소요 시간 | 1,047잔기 기준 **12.0초** (recycling 3·sampling 50·samples 1) | `call_log.jsonl`의 `elapsed_s` |
+| 예측 응답 파일 크기 | **791,331 bytes** (mmCIF 1건) | 저장된 파일 |
+| 분당 호출 한도·재시도 | [확인 필요: 연속 호출로 측정 — B-04] | — |
+| 최대 메모리 | [확인 필요: B는 응답을 메모리에 올린다. 측정 필요] | — |
 
 B는 **Biopython·freesasa를 쓰지 않는다.** 그 의존성은 로직 A 쪽에서 나온다.
 
 ## 6. 미확인·결정 필요
 
-- **실제 NVIDIA 호출 0건.** 키 미발급. 예측 경로는 대역 client 검증뿐이다.
+- 예측은 **한 조합 1건**만 확인했다. 이것으로 예측 경로 전체를 검증했다고 보지 않는다.
+- 예측 구조의 접촉·충돌 계산이 없어 예측 후보의 `interface_contact_residues`는 `not_run`이다.
+  후보 비교의 근거가 실험 구조 후보에만 있다는 뜻이다. → **A-02 인계 후 해소**
 - 접촉 잔기는 `contacts.json`의 4.5 Å 근접 선택이다. 그 생성 스크립트 자체가
   `Not binding assessment`라고 적고 있다. **결합력·효능 근거로 쓰지 않는다.**
 - 잔기 번호는 `auth_chains=False`로 만들어져 **label** 기준이다. `auth_seq_id`는 `null`이다.

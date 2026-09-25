@@ -86,8 +86,13 @@ def _tokenize_loop_values(lines: list[str], start: int) -> tuple[list[str], int]
     while i < len(lines):
         raw = lines[i]
         stripped = raw.strip()
-        if stripped in ("#", "") or stripped.startswith("loop_") or stripped.startswith("_"):
+        if stripped == "#" or stripped.startswith(("loop_", "_", "data_")):
             break
+        if stripped == "":
+            # 빈 줄은 loop의 끝이 아니다. Boltz-2가 돌려주는 mmCIF는 세미콜론
+            # 블록 사이에 빈 줄을 넣는다. 여기서 멈추면 행이 통째로 사라진다.
+            i += 1
+            continue
         if raw.startswith(";"):
             block = [raw[1:]]
             i += 1

@@ -59,17 +59,39 @@ python -m pytest logic/tests -q
 
 ## 실행으로 확인한 것
 
-2026-09-25 기준.
+2026-09-26 기준.
 
 - 1N8Z·1S78 mmCIF 파싱과 `verified-structures.json`의 sha256 일치 — 두 파일 모두 확인.
 - trastuzumab·pertuzumab 실제 서열 입력 → 두 후보 모두 예측 생략, 접촉 잔기 39·56건.
   이 수는 `contacts.json`을 직접 읽어 대조한다(`test_contact_evidence_matches_precomputed_file`).
-- 입력 오류·자료 부족·호출 실패·구조 없는 응답·키 없음 분기 — 테스트 16건 통과.
+- 입력 오류·자료 부족·호출 실패·구조 없는 응답·키 없음 분기 — 테스트 통과.
+
+### 실제 NVIDIA 호출 (대역 client 아님)
+
+- `list_models` 성공 — 모델 82개, nemotron 계열 17개.
+- Boltz-2 소형 입력(65잔기, recycling 1·sampling 10) — **5.5초**.
+- Boltz-2 HER2 복합체(표적 607 + 중쇄 226 + 경쇄 214 = 1,047잔기, 기본 설정
+  recycling 3·sampling 50·samples 1) — **12.0초**, 응답 mmCIF **791,331 bytes**,
+  `confidence_scores[0] = 0.807`.
+- 반환 구조의 세 사슬 서열이 입력 세 서열과 **완전 일치**함을 파일에서 직접 읽어 대조했다.
+
+이 호출로 드러나 고친 것 두 가지:
+
+1. `_read_loop`가 loop 안의 빈 줄을 끝으로 판단했다. 공개 구조 파일에는 빈 줄이
+   없고 Boltz-2 응답에는 있어서, 예측 구조의 사슬이 통째로 안 읽혔다.
+2. `chain_mapping`이 요청에 보낸 사슬 id(A·H·L)를 그대로 적었다. Boltz-2는
+   순서대로 A·B·C로 다시 붙인다. 이제 응답 파일의 서열로 대응을 찾고, 못 찾으면
+   지어내지 않고 `null`로 둔다.
+
+둘 다 회귀 테스트가 있다(`test_structures.py`, `test_predicted_chain_mapping_uses_ids_from_the_response`).
+fixture `logic/tests/fixtures/boltz2-response-excerpt.cif`는 실제 응답에서 발췌한 것이다.
 
 ## 아직 확인하지 않은 것
 
-- **실제 NVIDIA 호출은 한 번도 하지 않았다.** `NVIDIA_API_KEY`가 없어 예측 경로는 대역 client로만 확인했다. `call_log.jsonl`에 실제 기록이 남기 전까지 B-01·B-02를 완료로 표시하지 않는다.
+- 예측 경로를 **한 조합으로만** 확인했다. 다른 후보·길이·`diffusion_samples > 1`,
+  분당 호출 한도, 재시도 동작은 미확인이다.
 - 접촉 잔기는 `contacts.json`의 4.5 Å 근접 선택이다. 그 생성 스크립트 자체가 `Not binding assessment`라고 적고 있으므로 결합력·효능 근거로 쓰지 않는다.
+- 예측 구조의 접촉·충돌 계산은 아직 없다. 예측 후보의 `interface_contact_residues`는 `not_run`이다.
 - 충돌·표면 노출은 `not_run`이다. 기준 확정과 계산 함수는 로직 A(A-02·A-03)의 인계를 기다린다.
 - 잔기 번호는 `contacts.json`이 `auth_chains=False`로 만들어져 **label** 기준이다. `auth_seq_id`는 `null`로 두었고 대응 확인 전에는 화면 강조에 그대로 쓰면 안 된다.
 - `residue_mapping`과 `alignment`는 비어 있다. A의 D2 인계 후 채운다.

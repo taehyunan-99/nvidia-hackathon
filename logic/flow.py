@@ -340,9 +340,41 @@ class Flow:
             self._hold_opinion(cid, "structure_availability", "not_assessed", reason)
             return None
 
-        return self._record_predicted(cid, response)
+        return self._record_predicted(
+            cid, response, {"target": target_seq, "heavy": heavy, "light": light}
+        )
 
-    def _record_predicted(self, cid: str, response: dict[str, Any]) -> str | None:
+    def _predicted_chain_mapping(
+        self, path: Path, sequences: dict[str, str]
+    ) -> list[dict[str, Any]]:
+        """반환된 mmCIF에서 실제 사슬 ID를 읽는다.
+
+        요청에 보낸 id를 그대로 믿지 않는다. 실제 응답에서 Boltz-2는 보낸
+        A·H·L을 순서대로 A·B·C로 다시 붙였다. 서열로 대응을 찾고, 찾지
+        못하면 지어내지 않고 null로 둔다.
+        """
+        by_sequence: dict[str, str] = {}
+        try:
+            entities, _ = structures.parse_entities(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError):
+            entities = ()
+        for entity in entities:
+            if entity.sequence and entity.strand_ids:
+                by_sequence.setdefault(entity.sequence, entity.strand_ids[0])
+        return [
+            {
+                "role": role,
+                "model_number": 1,
+                "label_asym_id": by_sequence.get(sequences.get(role, "")),
+                "auth_asym_id": None,
+                "operator_id": None,
+            }
+            for role in ("target", "heavy", "light")
+        ]
+
+    def _record_predicted(
+        self, cid: str, response: dict[str, Any], sequences: dict[str, str] | None = None
+    ) -> str | None:
         found = response.get("structures") or []
         if not found:
             reason = "예측 호출은 성공했지만 응답에 구조가 없다."
@@ -371,16 +403,7 @@ class Flow:
                 },
                 "model_number": 1,
                 "assembly_id": None,
-                "chain_mapping": [
-                    {
-                        "role": role,
-                        "model_number": 1,
-                        "label_asym_id": asym,
-                        "auth_asym_id": None,
-                        "operator_id": None,
-                    }
-                    for role, asym in (("target", "A"), ("heavy", "H"), ("light", "L"))
-                ],
+                "chain_mapping": self._predicted_chain_mapping(path, sequences or {}),
                 "residue_mapping": [],
                 "alignment": None,
             }

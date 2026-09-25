@@ -264,6 +264,77 @@ def test_prediction_path_records_returned_confidence(tmp_path):
     assert all(e["measurement_state"] == "not_run" and e["value"] is None for e in contacts)
 
 
+def _boltz2_cif(sequences: list[tuple[str, str]]) -> str:
+    """Boltz-2가 돌려주는 모양의 mmCIF. 세미콜론 블록 사이에 빈 줄이 들어간다."""
+    head = [
+        "data_predicted",
+        "#",
+        "loop_",
+        "_entity.id",
+        "_entity.pdbx_description",
+    ]
+    head += [f"{i} 'Model protein subunit'" for i, _ in enumerate(sequences, 1)]
+    head += [
+        "#",
+        "loop_",
+        "_entity_poly.entity_id",
+        "_entity_poly.pdbx_strand_id",
+        "_entity_poly.pdbx_seq_one_letter_code_can",
+    ]
+    for i, (asym, seq) in enumerate(sequences, 1):
+        head += [f"{i} {asym}", f";{seq}", ";", ""]
+    head.append("#")
+    return "\n".join(head) + "\n"
+
+
+def test_predicted_chain_mapping_uses_ids_from_the_response(tmp_path):
+    """보낸 id가 아니라 돌아온 파일의 사슬 ID를 적어야 한다.
+
+    실제 Boltz-2는 요청의 A·H·L을 순서대로 A·B·C로 다시 붙였다(2026-09-25 확인).
+    보낸 id를 그대로 적으면 화면이 엉뚱한 사슬을 강조한다.
+    """
+    candidates = _prediction_candidates()
+    target = _long("HERTWOSEQ", 300)
+    heavy = structures.normalize_sequence(candidates[0]["heavy_chain_fasta"])
+    light = structures.normalize_sequence(candidates[0]["light_chain_fasta"])
+    response = {
+        "structures": [
+            {"structure": _boltz2_cif([("A", target), ("B", heavy), ("C", light)])}
+        ],
+        "confidence_scores": [0.5],
+    }
+
+    output, _ = run_flow(
+        make_request(candidates, tmp_path, target_fasta=target),
+        client=StubClient(response=response),
+    )
+    validate(output, "LogicOutput")
+
+    made = next(s for s in output["result"]["structures"] if s["candidate_id"] == "novel-a")
+    mapping = {c["role"]: c["label_asym_id"] for c in made["chain_mapping"]}
+    assert mapping == {"target": "A", "heavy": "B", "light": "C"}
+
+
+def test_unmatched_chain_is_left_null_not_guessed(tmp_path):
+    """서열로 대응을 못 찾으면 지어내지 않고 비워 둔다."""
+    candidates = _prediction_candidates()
+    target = _long("HERTWOSEQ", 300)
+    response = {
+        "structures": [{"structure": _boltz2_cif([("A", target)])}],
+        "confidence_scores": [0.5],
+    }
+
+    output, _ = run_flow(
+        make_request(candidates, tmp_path, target_fasta=target),
+        client=StubClient(response=response),
+    )
+    validate(output, "LogicOutput")
+
+    made = next(s for s in output["result"]["structures"] if s["candidate_id"] == "novel-a")
+    mapping = {c["role"]: c["label_asym_id"] for c in made["chain_mapping"]}
+    assert mapping == {"target": "A", "heavy": None, "light": None}
+
+
 def test_prediction_without_confidence_is_unknown_not_zero(tmp_path):
     response = {"structures": [{"structure": "data_x\n#\n"}]}
     output, _ = run_flow(
