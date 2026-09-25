@@ -6,6 +6,10 @@
 
 ## 2. CONTENTS — 파일과 형식
 
+- [intent/INTENT.md](intent/INTENT.md) — HER2 프로젝트의 목적·사용자 문제·기능적 범위와 경계
+- [PRD.md](PRD.md) — 웹 서비스 요구사항·완료 조건·미결정 항목
+- [ARCHITECTURE.md](ARCHITECTURE.md) — 구성요소·데이터·실행 흐름·Docker와 AWS 배치안
+- [ADR.md](ADR.md) — 기술 선택의 배경·대안·결정 상태
 - `hackathon/` — 규정·신청·교육·데모
 - [topics/her2/overview.md](topics/her2/overview.md) — 현재 프로젝트 목적·입력·산출물
 - [topics/her2/agent-design.md](topics/her2/agent-design.md) — 에이전트 판단 흐름
@@ -14,7 +18,7 @@
 - `references/` — 출처·선별 기록
 - `collaboration/` — 팀 공통 설정
 
-형식: Markdown 중심. 애플리케이션 기술 스택은 미확정.
+형식: Markdown 중심. 현재 기술 선택과 잠정안은 ARCHITECTURE.md와 ADR.md에서 구분하며, 구현·배포는 미검증이다.
 
 ## 3. HOW — 수정 방법
 

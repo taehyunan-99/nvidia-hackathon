@@ -14,7 +14,7 @@
 - `runtime-and-costs.md` — Windows·GPU·비용
 - `her2-toolkit.md` — HER2 관련 도구만 선별
 
-형식: Markdown 중심. 애플리케이션 기술 스택은 미확정.
+형식: Markdown 중심. 웹 서비스 기술 선택·잠정안은 [ARCHITECTURE](../ARCHITECTURE.md)와 [ADR](../ADR.md)을 따른다. 구현·배포는 미검증이다.
 
 ## 3. HOW — 수정 방법
 

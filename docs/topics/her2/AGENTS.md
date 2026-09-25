@@ -10,7 +10,7 @@ HER2와 항체 후보를 비교·검토하는 현재 프로젝트의 기능·판
 - [agent-design.md](agent-design.md) — 상태에 따른 판단 분기·도구
 - [validation.md](validation.md) — 전체 데모·첫 기술 검증·미정 항목
 
-형식: Markdown 중심. 애플리케이션 기술 스택은 미확정.
+형식: Markdown 중심. 웹 서비스 기술 선택·잠정안은 [ARCHITECTURE](../../ARCHITECTURE.md)와 [ADR](../../ADR.md)을 따른다. 구현·배포는 미검증이다.
 
 ## 3. HOW — 수정 방법
 

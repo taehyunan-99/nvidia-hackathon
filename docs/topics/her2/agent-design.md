@@ -7,7 +7,7 @@
 
 원문 설계의 구성은 **[Nemotron 3 Nano](https://build.nvidia.com/nvidia/nemotron-3-nano-30b-a3b) + [NeMo Agent Toolkit(NAT)](https://github.com/NVIDIA/NeMo-Agent-Toolkit)**다.
 Nemotron은 상태에 따른 작업 선택과 결과 설명을, NAT는 함수 연결·실행 흐름·추적을 맡는 구성으로 설계한다.
-실제 모델 제공 상태·계정 접근·호환 버전은 구현 전에 확인한다. 애플리케이션의 프런트엔드·서버·배포 스택은 아직 정하지 않았다.
+실제 모델 제공 상태·계정 접근·호환 버전은 구현 전에 확인한다. 웹 서비스의 기술 선택·Docker 구성·잠정 AWS 배치안은 [ARCHITECTURE](../../ARCHITECTURE.md), 선택 이유와 결정 상태는 [ADR](../../ADR.md)을 따른다.
 
 NVIDIA 스킬은 실행 절차의 참고자료다. 자료 조회, 입력 검증, 번호 대응, 표면·접촉 계산, 예측 호출, 후보 비교와 보고서 생성 함수는 직접 연결·구현해야 한다.
 

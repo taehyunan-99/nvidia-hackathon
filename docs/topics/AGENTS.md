@@ -10,7 +10,7 @@
 - [her2/agent-design.md](her2/agent-design.md) — 판단 흐름
 - [her2/validation.md](her2/validation.md) — 구현·검증 범위
 
-형식: Markdown 중심. 애플리케이션 기술 스택은 미확정.
+형식: Markdown 중심. 웹 서비스 기술 선택·잠정안은 [ARCHITECTURE](../ARCHITECTURE.md)와 [ADR](../ADR.md)을 따른다. 구현·배포는 미검증이다.
 
 ## 3. HOW — 수정 방법
 
