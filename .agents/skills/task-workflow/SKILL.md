@@ -27,9 +27,12 @@ description: 사용자가 $task-workflow 또는 /task-workflow를 명시 호출�
 
 ## 선택: 작업 브랜치 또는 worktree를 요청한 경우
 
-1. 이름과 목적, base는 main임을 확정한다. 기존 브랜치가 있으면 정확한 head의 PR 상태와 현재 작업의 동일성을 확인한다. 병합된 PR 브랜치에는 새 작업을 이어 쓰지 않는다. PR 조회 실패를 미병합으로 간주하지 않는다.
-2. clean 상태의 현재 checkout에서 요청한 새 브랜치를 만들거나, 독립 작업이 필요한 경우 사용자가 지정·승인한 별도 경로에 linked worktree를 만든다. 다른 worktree가 사용 중인 브랜치를 강제로 checkout하지 않는다.
-3. 새 branch/worktree는 검증한 base SHA에서 시작하고, 생성 후 경로·공통 Git 디렉터리·branch·HEAD를 다시 확인한다. 진행 중인 작업과 미커밋 변경을 임의 복제하거나 버리지 않는다.
+1. 이름과 목적, PR 대상 base는 main임을 확정하고 **새 작업 시작**인지 **main에 이미 커밋한 작업의 PR 전환**인지 구분한다. 기존 브랜치가 있으면 정확한 head의 PR 상태와 현재 작업의 동일성을 확인한다. 병합된 PR 브랜치에는 새 작업을 이어 쓰지 않는다. PR 조회 실패를 미병합으로 간주하지 않는다.
+2. clean 상태의 현재 checkout에 요청한 새 브랜치를 둘지, 독립 작업을 위해 사용자가 지정·승인한 별도 경로에 linked worktree를 둘지 정한다. 실제 생성은 다음 단계의 시작 SHA 검토 후 수행한다. 다른 worktree가 사용 중인 브랜치를 강제로 checkout하지 않는다.
+3. 시작 SHA는 목적에 맞게 고정하고 생성 직전에 원본 branch·HEAD·작업 상태를 다시 확인한다. 달라졌으면 범위를 재검토한다.
+   - 새 작업은 검증한 원격 main SHA에서 시작한다.
+   - 기존 main 작업의 PR 전환을 명시 요청했다면 로컬 main SHA를 고정하고 원격 main과의 커밋 목록·diff를 검토한다. 원격 base가 로컬 main의 조상이고 앞선 커밋 전부가 요청 범위이면 그 **로컬 main SHA**에서 요청한 새 branch/worktree를 만든다. 다른 작업이 섞였거나 이력이 갈라졌으면 포함할 커밋과 분리 방법을 먼저 확인하며, 전체를 무조건 옮기지 않는다.
+   - 생성 후 경로·공통 Git 디렉터리·branch·HEAD와 PR 예정 diff를 확인한다. 원본 main과 진행 중인 작업·미커밋 변경은 보존하며, main을 reset하거나 force push하지 않는다. 원본 main을 보존한 상태에서 squash/rebase 병합하면 이후 main이 원격과 갈라질 수 있으며, 이 경우 after-pr는 자동 복구하지 않고 별도 정리 판단을 요청한다.
 4. 새 Codex 앱 세션을 만드는 기능은 이 스킬의 범위가 아니다. 별도 요청한 병렬 handoff는 [handoff](../handoff/SKILL.md)의 앱 식별·worktree 등록·실행 종료 검증을 사용한다.
 
 ## 커밋·push·PR·정리 경계

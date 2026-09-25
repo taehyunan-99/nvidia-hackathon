@@ -1,6 +1,6 @@
 interface:
   display_name: "After PR"
-  short_description: "merge 후 고정 worktree와 task branch를 안전하게 정리"
+  short_description: "병합 후 승인된 임시 worktree와 작업 브랜치를 안전하게 정리"
   default_prompt: "$after-pr를 사용해 merge된 작업의 worktree와 branch를 검증하고 정리한다."
 policy:
   allow_implicit_invocation: false
