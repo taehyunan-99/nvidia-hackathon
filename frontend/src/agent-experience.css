@@ -327,6 +327,16 @@ header {
   font-size: var(--text-caption);
   color: var(--text-secondary);
 }
+.live-buttons {
+  display: flex;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+@media (max-width: 720px) {
+  .live-buttons {
+    flex-direction: column;
+  }
+}
 .direct-input-link {
   display: block;
   margin: var(--space-6) auto 0;

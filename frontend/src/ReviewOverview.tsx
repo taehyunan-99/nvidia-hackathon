@@ -38,6 +38,7 @@ export function ReviewOverview({
     evidence: string | null,
   ) => void;
 }) {
+  const live = result.data_mode === "live";
   const conditions = result.conditions.filter(
     (c) => c.candidate_id === candidate && c.kind === conditionKind,
   );
@@ -57,7 +58,7 @@ export function ReviewOverview({
   return (
     <section className="review-overview" aria-label="시각 중심 검토 요약">
       <div className="review-context">
-        <span>합성 입력 · 실제 HER2 아님</span>
+        <span>{live ? "공개 구조에서 꺼낸 실제 서열" : "합성 입력 · 실제 HER2 아님"}</span>
         <span>
           {conditionKind === "core" ? "HER2–항체 중심" : "당쇄·주변 구조 포함"}
         </span>
@@ -76,7 +77,7 @@ export function ReviewOverview({
       <div className="matrix-scroll">
         <table className="review-matrix">
           <caption>
-            모의 자료의 준비 상태 · 후보를 선택하면 아래 근거가 함께 바뀝니다.
+            {live ? "실제 실행" : "모의 자료"}의 준비 상태 · 후보를 선택하면 아래 근거가 함께 바뀝니다.
           </caption>
           <thead>
             <tr>

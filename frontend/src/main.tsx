@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { AgentStart, About, Team } from "./AgentStart";
 import { ReviewOverview } from "./ReviewOverview";
 import { parseScenarioFile, type ScenarioFile } from "./scenario-file";
+
+// 개발 중에는 vite와 실행부가 다른 포트에 뜬다. 배포 시 같은 출처면 빈 문자열로 둔다.
+const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8010";
 import "./review-overview.css";
 import { createRoot } from "react-dom/client";
 import "./tokens.css";
@@ -71,12 +74,15 @@ function App() {
     [scenarioFile, setScenarioFile] = useState<ScenarioFile | null>(null),
     [fileName, setFileName] = useState(""),
     [fileError, setFileError] = useState(""),
+    [liveBusy, setLiveBusy] = useState(""),
+    [liveError, setLiveError] = useState(""),
     [frameIndex, setFrameIndex] = useState(0),
     [playing, setPlaying] = useState(false),
     [candidate, setCandidate] = useState(""),
     [conditionKind, setConditionKind] = useState("core"),
     [expanded, setExpanded] = useState<string | null>(null);
   const scenario = scenarioFile?.scenarios[frameIndex];
+  const live = scenarioFile?.data_mode === "live";
   const result = scenario?.result;
   const expired = scenario?.session.status === "expired";
   function go(n: number) {
@@ -94,15 +100,49 @@ function App() {
       return;
     }
     try {
-      const parsed = parseScenarioFile(JSON.parse(await file.text()));
-      setScenarioFile(parsed);
-      setFileName(file.name);
-      setFrameIndex(0);
-      setCandidate(parsed.input.candidates[0].candidate_id);
-      setConditionKind("core");
-      setPage(0);
+      apply(parseScenarioFile(JSON.parse(await file.text())), file.name);
     } catch (error) {
       setFileError(error instanceof Error ? error.message : "JSON 파일을 읽지 못했습니다.");
+    }
+  }
+  function apply(parsed: ScenarioFile, label: string) {
+    setScenarioFile(parsed);
+    setFileName(label);
+    setFrameIndex(0);
+    setCandidate(parsed.input.candidates[0].candidate_id);
+    setConditionKind("core");
+    setPage(0);
+  }
+  async function runLive(preset: string) {
+    setLiveError("");
+    setFileError("");
+    setScenarioFile(null);
+    setPlaying(false);
+    setLiveBusy(preset);
+    try {
+      const response = await fetch(`${API_BASE}/api/review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ preset }),
+      });
+      if (!response.ok) {
+        // 실패를 성공한 분석으로 보이지 않게 한다. 본문을 그대로 보여준다.
+        throw new Error(`실행부가 ${response.status}로 응답했습니다. ${await response.text()}`.slice(0, 400));
+      }
+      apply(parseScenarioFile(await response.json()), `실제 실행 · ${preset}`);
+      // 실제 실행은 프레임이 하나다. 모의 시나리오처럼 자동 재생하지 않고
+      // 방금 돌아간 단계를 바로 보여준다.
+      setSection("analysis");
+      setPlaying(false);
+      setPage(1);
+    } catch (error) {
+      setLiveError(
+        error instanceof Error
+          ? `${error.message} (실행부가 ${API_BASE}에서 떠 있는지 확인하세요.)`
+          : "실행부를 부르지 못했습니다.",
+      );
+    } finally {
+      setLiveBusy("");
     }
   }
   function advance() {
@@ -157,7 +197,7 @@ function App() {
           </button>
         </nav>
         <span className="prototype">
-          NVIDIA HACKATHON · TEAM PROJECT <span>모의 데이터</span>
+          NVIDIA HACKATHON · TEAM PROJECT <span>{live ? "실제 실행" : "모의 데이터"}</span>
         </span>
         <ThemeSelector />
       </header>
@@ -192,6 +232,9 @@ function App() {
                   fileName={fileName}
                   error={fileError}
                   onFile={(file) => void loadFile(file)}
+                  onRunLive={(preset) => void runLive(preset)}
+                  liveBusy={liveBusy}
+                  liveError={liveError}
                   onStart={() => {
                     setFrameIndex(0);
                     setPlaying(true);
@@ -201,9 +244,9 @@ function App() {
               ) : scenario && scenarioFile ? (
                 <>
                   <div className="request-context">
-                    <span>업로드한 검토</span>
+                    <span>{live ? "실제 실행" : "업로드한 검토"}</span>
                     <p>{fileName}</p>
-                    <small>모의 재생 · 실제 분석 아님</small>
+                    <small>{live ? "실제 분석 결과" : "모의 재생 · 실제 분석 아님"}</small>
                   </div>
                   <div className="workspace-title">
                     <div>
@@ -223,10 +266,10 @@ function App() {
                             : "검토 의견과 미확인 사항을 함께 확인하세요."}
                       </p>
                     </div>
-                    <span className="tag">기록 {frameIndex + 1} / {scenarioFile.scenarios.length}{playing ? " · 모의 재생 중" : ""}</span>
+                    <span className="tag">기록 {frameIndex + 1} / {scenarioFile.scenarios.length}{playing ? " · 모의 재생 중" : ""}{live ? " · 실제 실행" : ""}</span>
                   </div>
                   <div className="notice">
-                    <span className="tag">모의 재생 · {labels[scenario.name] ?? scenario.name}</span>{" "}
+                    <span className="tag">{live ? "실제 실행" : "모의 재생"} · {labels[scenario.name] ?? scenario.name}</span>{" "}
                     {scenario.description}
                   </div>
                   {expired ? (
@@ -272,9 +315,11 @@ function App() {
                               <section className="panel" key={c.candidate_id}>
                                 <div className="section-heading">
                                   <h3>{scenarioFile.input.candidates.find((item) => item.candidate_id === c.candidate_id)?.name ?? c.candidate_id}</h3>
-                                  <span className="caption">
-                                    실제 항체 아님
-                                  </span>
+                                  {!live && (
+                                    <span className="caption">
+                                      실제 항체 아님
+                                    </span>
+                                  )}
                                 </div>
                                 <ol className="timeline">
                                   {c.steps.map((s) => (
@@ -301,7 +346,7 @@ function App() {
                             </p>
                           )}
                           <div className="actions end">
-                            <span className="caption">저장된 상태를 보여줍니다. 실제 분석은 실행되지 않습니다.</span>
+                            <span className="caption">{live ? "실제 분석을 실행한 결과입니다." : "저장된 상태를 보여줍니다. 실제 분석은 실행되지 않습니다."}</span>
                             {frameIndex < scenarioFile.scenarios.length - 1 ? (
                               <button className="primary" onClick={advance}>다음 기록 보기 →</button>
                             ) : (
@@ -440,7 +485,7 @@ function App() {
         </main>
         <footer>
           <span>HER2 · Evidence-led antibody review</span>
-          <span>독립 해커톤 프로젝트 · 모의 화면 · NVIDIA 공식 제품 아님</span>
+          <span>독립 해커톤 프로젝트 · {live ? "실제 분석 결과" : "모의 화면"} · NVIDIA 공식 제품 아님</span>
         </footer>
       </div>
     </>
