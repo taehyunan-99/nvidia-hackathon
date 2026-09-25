@@ -15,13 +15,15 @@
 
 from __future__ import annotations
 
+import hashlib
+import re
 import tempfile
 import time
 import uuid
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -73,6 +75,43 @@ def preset(name: str) -> dict[str, Any]:
     review_input = builder()
     validate(review_input, "ReviewInput")
     return review_input
+
+
+# run_id·artifact_id는 URL에서 온다. 우리가 만든 모양만 받아들인다.
+# 느슨하게 두면 ../로 work_dir 밖 파일을 읽어갈 수 있다.
+_RUN_ID = re.compile(r"^run-[0-9a-f]{12}$")
+_ARTIFACT_ID = re.compile(r"^af-(st-[A-Za-z0-9_-]{1,64})$")
+
+
+@app.get("/api/runs/{run_id}/artifacts/{artifact_id}")
+def artifact(run_id: str, artifact_id: str) -> Response:
+    """예측 구조 mmCIF를 내보낸다.
+
+    Boltz-2가 돌려준 구조를 화면에서 보려면 파일이 나가야 한다. 공개 실험
+    구조는 이미 프런트가 직접 가지고 있으므로 여기서 다루지 않는다.
+
+    sha256을 헤더로 같이 보낸다. 프런트는 공개 구조에 하던 것과 똑같이
+    받은 내용을 직접 해시해서 대조할 수 있다.
+    """
+    match = _ARTIFACT_ID.match(artifact_id)
+    if not _RUN_ID.match(run_id) or not match:
+        raise HTTPException(404, "모르는 실행 또는 산출물이다.")
+
+    run_dir = (WORK_ROOT / run_id).resolve()
+    path = (run_dir / f"{match.group(1)}.cif").resolve()
+    # resolve 뒤에도 확인한다. 심볼릭 링크로도 밖으로 나갈 수 있다.
+    if not path.is_file() or run_dir not in path.parents:
+        raise HTTPException(404, "산출물 파일이 없다.")
+
+    data = path.read_bytes()
+    return Response(
+        content=data,
+        media_type="chemical/x-mmcif",
+        headers={
+            "X-Artifact-Sha256": hashlib.sha256(data).hexdigest(),
+            "Access-Control-Expose-Headers": "X-Artifact-Sha256",
+        },
+    )
 
 
 @app.post("/api/review")

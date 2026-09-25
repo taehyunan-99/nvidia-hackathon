@@ -155,3 +155,65 @@ def test_broken_result_is_not_served_as_success(monkeypatch):
 
     assert response.status_code == 500
     assert "계약" in response.text
+
+
+# ---------------------------------------------------------------- 산출물 내보내기
+def test_predicted_structure_is_served_with_its_hash(tmp_path, monkeypatch):
+    """예측 구조가 화면으로 나가지 못하면 Boltz-2를 부른 결과를 보여줄 수 없다."""
+    import hashlib
+
+    monkeypatch.setattr(service_app, "WORK_ROOT", tmp_path)
+    run_dir = tmp_path / "run-0123456789ab"
+    run_dir.mkdir()
+    body = b"data_x\n_entity.id 1\n"
+    (run_dir / "st-cand-boltz2.cif").write_bytes(body)
+
+    r = client.get("/api/runs/run-0123456789ab/artifacts/af-st-cand-boltz2")
+
+    assert r.status_code == 200
+    assert r.content == body
+    assert r.headers["X-Artifact-Sha256"] == hashlib.sha256(body).hexdigest()
+
+
+def test_a_symlink_out_of_the_run_directory_is_refused(tmp_path, monkeypatch):
+    """파일명 검사만으로는 부족하다. 링크는 이름이 멀쩡한 채로 밖을 가리킨다."""
+    monkeypatch.setattr(service_app, "WORK_ROOT", tmp_path)
+    outside = tmp_path / "secret.txt"
+    outside.write_text("work_dir 밖의 내용", encoding="utf-8")
+    run_dir = tmp_path / "run-0123456789ab"
+    run_dir.mkdir()
+    (run_dir / "st-evil.cif").symlink_to(outside)
+
+    r = client.get("/api/runs/run-0123456789ab/artifacts/af-st-evil")
+
+    assert r.status_code == 404
+    assert "밖의 내용" not in r.text
+
+
+def test_a_run_id_we_did_not_issue_is_refused(tmp_path, monkeypatch):
+    """파일이 실제로 있어도 우리가 만든 모양이 아니면 내보내지 않는다."""
+    monkeypatch.setattr(service_app, "WORK_ROOT", tmp_path)
+    run_dir = tmp_path / "not-a-run"
+    run_dir.mkdir()
+    (run_dir / "st-cand-boltz2.cif").write_bytes(b"data_x\n")
+
+    assert client.get("/api/runs/not-a-run/artifacts/af-st-cand-boltz2").status_code == 404
+
+
+def test_only_structure_artifacts_are_served(tmp_path, monkeypatch):
+    """work_dir에는 호출 기록도 있다. 구조 산출물만 내보낸다."""
+    monkeypatch.setattr(service_app, "WORK_ROOT", tmp_path)
+    run_dir = tmp_path / "run-0123456789ab"
+    run_dir.mkdir()
+    # 파일은 실제로 있다. 막는 것은 파일 부재가 아니라 id 모양이어야 한다.
+    (run_dir / "notes.cif").write_text("data_x\n", encoding="utf-8")
+
+    assert client.get("/api/runs/run-0123456789ab/artifacts/af-notes").status_code == 404
+
+
+def test_a_missing_artifact_is_404_not_a_crash(tmp_path, monkeypatch):
+    monkeypatch.setattr(service_app, "WORK_ROOT", tmp_path)
+
+    r = client.get("/api/runs/run-0123456789ab/artifacts/af-st-absent")
+
+    assert r.status_code == 404
