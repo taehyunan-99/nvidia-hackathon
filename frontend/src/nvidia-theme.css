@@ -1,6 +1,7 @@
 /* Project adaptation of nvidia.com/ko-kr, inspected 2026-09-25.
    This is an independent hackathon UI, not an official NVIDIA product. */
 :root {
+  color-scheme: light;
   --color-accent: #76b900;
   --color-accent-hover: #91d514;
   --color-accent-ink: #426700;
@@ -60,6 +61,7 @@ header {
   padding-inline: max(var(--space-8), calc((100% - 1296px) / 2));
 }
 .shell > nav {
+  justify-content: center;
   margin-inline: calc(-1 * max(var(--space-8), (100vw - 1296px) / 2));
   background: var(--visual-bg);
   padding: var(--space-3) max(var(--space-8), calc((100% - 1296px) / 2));
@@ -160,18 +162,18 @@ nav button[aria-current] {
 footer {
   padding-block: var(--space-8);
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg-primary: #111111;
-    --bg-secondary: #191919;
-    --bg-tertiary: #252525;
-    --text-primary: #eeeeee;
-    --text-secondary: #b8b8b8;
-    --border: #555555;
-    --border-subtle: #333333;
-    --color-accent-ink: #a2d45b;
-  }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-primary: #111111;
+  --bg-secondary: #191919;
+  --bg-tertiary: #252525;
+  --text-primary: #eeeeee;
+  --text-secondary: #b8b8b8;
+  --border: #555555;
+  --border-subtle: #333333;
+  --color-accent-ink: #a2d45b;
 }
+
 @media (max-width: 900px) {
   .hero {
     grid-template-columns: 1fr;
@@ -195,4 +197,38 @@ footer {
   .hero h1 {
     font-size: var(--text-h1);
   }
+}
+
+.theme-selector {
+  display: flex;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  padding: 3px;
+  gap: 2px;
+}
+.theme-selector button {
+  min-height: 36px;
+  padding: 4px 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.theme-selector button[aria-pressed="true"] {
+  background: var(--color-accent);
+  color: var(--button-ink);
+  font-weight: 700;
+}
+@media (max-width: 1100px) {
+  header .prototype { display: none; }
+}
+@media (max-width: 600px) {
+  header:has(.theme-selector) {
+    height: auto;
+    min-height: 64px;
+    flex-wrap: wrap;
+    padding-block: 8px;
+    gap: 8px;
+  }
+  header .site-tabs { gap: 4px; }
+  .theme-selector { margin-left: auto; }
+  .theme-selector button { padding-inline: 8px; }
 }

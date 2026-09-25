@@ -501,14 +501,6 @@ summary {
   z-index: 10;
   padding: var(--space-4);
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-accent-ink: #76d8cf;
-  }
-  .primary {
-    color: var(--bg-primary);
-  }
-}
 @media (max-width: 900px) {
   .hero {
     grid-template-columns: 1fr;

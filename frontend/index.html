@@ -1,8 +1,16 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <script>
+      try {
+        document.documentElement.dataset.theme =
+          localStorage.getItem("her2-theme") === "dark" ? "dark" : "light";
+      } catch {
+        // Storage may be unavailable; the default remains light.
+      }
+    </script>
     <title>HER2 · 항체 후보 검토</title>
     <link
       rel="stylesheet"

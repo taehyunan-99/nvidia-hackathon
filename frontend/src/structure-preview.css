@@ -58,6 +58,8 @@
   background: var(--bg-secondary);
 }
 .structure-legend {
+  background: #fff;
+  padding: 8px;
   font-size: 12px;
 }
 .structure-legend span:nth-child(1) {
@@ -190,4 +192,8 @@
 .structure-source {
   border-top: 1px solid var(--border);
   padding-top: 16px;
+}
+
+.structure-source a {
+  color: var(--color-accent-ink);
 }

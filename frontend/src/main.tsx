@@ -37,6 +37,32 @@ const labels: Record<string, string> = {
   measured: "측정됨",
   not_applicable: "해당 없음",
 };
+function ThemeSelector() {
+  const [theme, setTheme] = useState(document.documentElement.dataset.theme);
+  function chooseTheme(next: string) {
+    document.documentElement.dataset.theme = next;
+    setTheme(next);
+    try {
+      localStorage.setItem("her2-theme", next);
+    } catch {
+      // Theme selection still works when browser storage is unavailable.
+    }
+  }
+  return (
+    <div className="theme-selector" role="group" aria-label="화면 테마">
+      {(["light", "dark"] as const).map((value) => (
+        <button
+          key={value}
+          aria-pressed={theme === value}
+          onClick={() => chooseTheme(value)}
+        >
+          {value === "light" ? "라이트" : "다크"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function App() {
   const [section, setSection] = useState<"analysis" | "about" | "team">(
     "analysis",
@@ -116,6 +142,7 @@ function App() {
         <span className="prototype">
           NVIDIA HACKATHON · TEAM PROJECT <span>모의 데이터</span>
         </span>
+        <ThemeSelector />
       </header>
       <div
         className={`shell ${section === "about" ? "landing-shell" : page === 0 ? "agent-shell" : "workspace-shell"}`}
