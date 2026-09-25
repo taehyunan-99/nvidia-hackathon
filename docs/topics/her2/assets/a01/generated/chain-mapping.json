@@ -1,0 +1,525 @@
+[
+  {
+    "pdb_id": "1N8Z",
+    "label_asym_id": "A",
+    "auth_asym_id": "A",
+    "entity_id": "1",
+    "role": "light",
+    "entity_type": "polymer",
+    "description": "Herceptin Fab (antibody) - light chain",
+    "sequence_length": 214,
+    "observed_residues": 214,
+    "missing_residues": 0,
+    "missing_label_ranges": [],
+    "insertion_residues": [],
+    "uniprot_ranges": [],
+    "atom_count": 1645,
+    "components": {}
+  },
+  {
+    "pdb_id": "1N8Z",
+    "label_asym_id": "B",
+    "auth_asym_id": "B",
+    "entity_id": "2",
+    "role": "heavy",
+    "entity_type": "polymer",
+    "description": "Herceptin Fab (antibody) - heavy chain",
+    "sequence_length": 220,
+    "observed_residues": 220,
+    "missing_residues": 0,
+    "missing_label_ranges": [],
+    "insertion_residues": [],
+    "uniprot_ranges": [],
+    "atom_count": 1642,
+    "components": {}
+  },
+  {
+    "pdb_id": "1N8Z",
+    "label_asym_id": "C",
+    "auth_asym_id": "C",
+    "entity_id": "3",
+    "role": "target",
+    "entity_type": "polymer",
+    "description": "Receptor protein-tyrosine kinase erbB-2",
+    "sequence_length": 607,
+    "observed_residues": 581,
+    "missing_residues": 26,
+    "missing_label_ranges": [
+      [
+        102,
+        110
+      ],
+      [
+        303,
+        305
+      ],
+      [
+        361,
+        364
+      ],
+      [
+        581,
+        590
+      ]
+    ],
+    "insertion_residues": [],
+    "uniprot_ranges": [
+      [
+        23,
+        629
+      ]
+    ],
+    "atom_count": 4491,
+    "components": {}
+  },
+  {
+    "pdb_id": "1N8Z",
+    "label_asym_id": "D",
+    "auth_asym_id": "C",
+    "entity_id": "4",
+    "role": "context",
+    "entity_type": "non-polymer",
+    "description": "2-acetamido-2-deoxy-beta-D-glucopyranose",
+    "sequence_length": null,
+    "observed_residues": 1,
+    "missing_residues": 0,
+    "missing_label_ranges": [],
+    "insertion_residues": [],
+    "uniprot_ranges": [],
+    "atom_count": 14,
+    "components": {
+      "NAG": 1
+    }
+  },
+  {
+    "pdb_id": "1N8Z",
+    "label_asym_id": "E",
+    "auth_asym_id": "C",
+    "entity_id": "4",
+    "role": "context",
+    "entity_type": "non-polymer",
+    "description": "2-acetamido-2-deoxy-beta-D-glucopyranose",
+    "sequence_length": null,
+    "observed_residues": 1,
+    "missing_residues": 0,
+    "missing_label_ranges": [],
+    "insertion_residues": [],
+    "uniprot_ranges": [],
+    "atom_count": 14,
+    "components": {
+      "NAG": 1
+    }
+  },
+  {
+    "pdb_id": "1N8Z",
+    "label_asym_id": "F",
+    "auth_asym_id": "C",
+    "entity_id": "5",
+    "role": "other",
+    "entity_type": "non-polymer",
+    "description": "SULFATE ION",
+    "sequence_length": null,
+    "observed_residues": 1,
+    "missing_residues": 0,
+    "missing_label_ranges": [],
+    "insertion_residues": [],
+    "uniprot_ranges": [],
+    "atom_count": 5,
+    "components": {
+      "SO4": 1
+    }
+  },
+  {
+    "pdb_id": "1N8Z",
+    "label_asym_id": "G",
+    "auth_asym_id": "A",
+    "entity_id": "6",
+    "role": "other",
+    "entity_type": "water",
+    "description": "water",
+    "sequence_length": null,
+    "observed_residues": 19,
+    "missing_residues": 0,
+    "missing_label_ranges": [],
+    "insertion_residues": [],
+    "uniprot_ranges": [],
+    "atom_count": 19,
+    "components": {
+      "HOH": 19
+    }
+  },
+  {
+    "pdb_id": "1N8Z",
+    "label_asym_id": "H",
+    "auth_asym_id": "B",
+    "entity_id": "6",
+    "role": "other",
+    "entity_type": "water",
+    "description": "water",
+    "sequence_length": null,
+    "observed_residues": 13,
+    "missing_residues": 0,
+    "missing_label_ranges": [],
+    "insertion_residues": [],
+    "uniprot_ranges": [],
+    "atom_count": 13,
+    "components": {
+      "HOH": 13
+    }
+  },
+  {
+    "pdb_id": "1N8Z",
+    "label_asym_id": "I",
+    "auth_asym_id": "C",
+    "entity_id": "6",
+    "role": "other",
+    "entity_type": "water",
+    "description": "water",
+    "sequence_length": null,
+    "observed_residues": 47,
+    "missing_residues": 0,
+    "missing_label_ranges": [],
+    "insertion_residues": [],
+    "uniprot_ranges": [],
+    "atom_count": 47,
+    "components": {
+      "HOH": 47
+    }
+  },
+  {
+    "pdb_id": "1S78",
+    "label_asym_id": "A",
+    "auth_asym_id": "A",
+    "entity_id": "1",
+    "role": "target",
+    "entity_type": "polymer",
+    "description": "Receptor protein-tyrosine kinase erbB-2",
+    "sequence_length": 624,
+    "observed_residues": 555,
+    "missing_residues": 69,
+    "missing_label_ranges": [
+      [
+        102,
+        110
+      ],
+      [
+        565,
+        624
+      ]
+    ],
+    "insertion_residues": [],
+    "uniprot_ranges": [
+      [
+        23,
+        646
+      ]
+    ],
+    "atom_count": 4277,
+    "components": {}
+  },
+  {
+    "pdb_id": "1S78",
+    "label_asym_id": "B",
+    "auth_asym_id": "B",
+    "entity_id": "1",
+    "role": "target",
+    "entity_type": "polymer",
+    "description": "Receptor protein-tyrosine kinase erbB-2",
+    "sequence_length": 624,
+    "observed_residues": 568,
+    "missing_residues": 56,
+    "missing_label_ranges": [
+      [
+        102,
+        110
+      ],
+      [
+        578,
+        624
+      ]
+    ],
+    "insertion_residues": [],
+    "uniprot_ranges": [
+      [
+        23,
+        646
+      ]
+    ],
+    "atom_count": 4381,
+    "components": {}
+  },
+  {
+    "pdb_id": "1S78",
+    "label_asym_id": "C",
+    "auth_asym_id": "C",
+    "entity_id": "2",
+    "role": "light",
+    "entity_type": "polymer",
+    "description": "Pertuzumab Fab light chain",
+    "sequence_length": 214,
+    "observed_residues": 214,
+    "missing_residues": 0,
+    "missing_label_ranges": [],
+    "insertion_residues": [],
+    "uniprot_ranges": [],
+    "atom_count": 1657,
+    "components": {}
+  },
+  {
+    "pdb_id": "1S78",
+    "label_asym_id": "D",
+    "auth_asym_id": "D",
+    "entity_id": "3",
+    "role": "heavy",
+    "entity_type": "polymer",
+    "description": "Pertuzumab Fab heavy chain",
+    "sequence_length": 226,
+    "observed_residues": 222,
+    "missing_residues": 4,
+    "missing_label_ranges": [
+      [
+        223,
+        226
+      ]
+    ],
+    "insertion_residues": [
+      {
+        "label": 53,
+        "auth": 52,
+        "code": "A"
+      },
+      {
+        "label": 84,
+        "auth": 82,
+        "code": "A"
+      },
+      {
+        "label": 85,
+        "auth": 82,
+        "code": "B"
+      },
+      {
+        "label": 86,
+        "auth": 82,
+        "code": "C"
+      },
+      {
+        "label": 104,
+        "auth": 99,
+        "code": "A"
+      },
+      {
+        "label": 105,
+        "auth": 99,
+        "code": "B"
+      }
+    ],
+    "uniprot_ranges": [],
+    "atom_count": 1665,
+    "components": {}
+  },
+  {
+    "pdb_id": "1S78",
+    "label_asym_id": "E",
+    "auth_asym_id": "E",
+    "entity_id": "2",
+    "role": "light",
+    "entity_type": "polymer",
+    "description": "Pertuzumab Fab light chain",
+    "sequence_length": 214,
+    "observed_residues": 214,
+    "missing_residues": 0,
+    "missing_label_ranges": [],
+    "insertion_residues": [],
+    "uniprot_ranges": [],
+    "atom_count": 1657,
+    "components": {}
+  },
+  {
+    "pdb_id": "1S78",
+    "label_asym_id": "F",
+    "auth_asym_id": "F",
+    "entity_id": "3",
+    "role": "heavy",
+    "entity_type": "polymer",
+    "description": "Pertuzumab Fab heavy chain",
+    "sequence_length": 226,
+    "observed_residues": 222,
+    "missing_residues": 4,
+    "missing_label_ranges": [
+      [
+        223,
+        226
+      ]
+    ],
+    "insertion_residues": [
+      {
+        "label": 53,
+        "auth": 52,
+        "code": "A"
+      },
+      {
+        "label": 84,
+        "auth": 82,
+        "code": "A"
+      },
+      {
+        "label": 85,
+        "auth": 82,
+        "code": "B"
+      },
+      {
+        "label": 86,
+        "auth": 82,
+        "code": "C"
+      },
+      {
+        "label": 104,
+        "auth": 99,
+        "code": "A"
+      },
+      {
+        "label": 105,
+        "auth": 99,
+        "code": "B"
+      }
+    ],
+    "uniprot_ranges": [],
+    "atom_count": 1665,
+    "components": {}
+  },
+  {
+    "pdb_id": "1S78",
+    "label_asym_id": "G",
+    "auth_asym_id": "G",
+    "entity_id": "4",
+    "role": "context",
+    "entity_type": "branched",
+    "description": "2-acetamido-2-deoxy-beta-D-glucopyranose-(1-4)-2-acetamido-2-deoxy-beta-D-glucopyranose",
+    "sequence_length": null,
+    "observed_residues": 2,
+    "missing_residues": 0,
+    "missing_label_ranges": [],
+    "insertion_residues": [],
+    "uniprot_ranges": [],
+    "atom_count": 28,
+    "components": {
+      "NAG": 2
+    }
+  },
+  {
+    "pdb_id": "1S78",
+    "label_asym_id": "H",
+    "auth_asym_id": "H",
+    "entity_id": "4",
+    "role": "context",
+    "entity_type": "branched",
+    "description": "2-acetamido-2-deoxy-beta-D-glucopyranose-(1-4)-2-acetamido-2-deoxy-beta-D-glucopyranose",
+    "sequence_length": null,
+    "observed_residues": 2,
+    "missing_residues": 0,
+    "missing_label_ranges": [],
+    "insertion_residues": [],
+    "uniprot_ranges": [],
+    "atom_count": 28,
+    "components": {
+      "NAG": 2
+    }
+  },
+  {
+    "pdb_id": "1S78",
+    "label_asym_id": "I",
+    "auth_asym_id": "I",
+    "entity_id": "4",
+    "role": "context",
+    "entity_type": "branched",
+    "description": "2-acetamido-2-deoxy-beta-D-glucopyranose-(1-4)-2-acetamido-2-deoxy-beta-D-glucopyranose",
+    "sequence_length": null,
+    "observed_residues": 2,
+    "missing_residues": 0,
+    "missing_label_ranges": [],
+    "insertion_residues": [],
+    "uniprot_ranges": [],
+    "atom_count": 28,
+    "components": {
+      "NAG": 2
+    }
+  },
+  {
+    "pdb_id": "1S78",
+    "label_asym_id": "J",
+    "auth_asym_id": "J",
+    "entity_id": "5",
+    "role": "context",
+    "entity_type": "branched",
+    "description": "beta-D-mannopyranose-(1-4)-2-acetamido-2-deoxy-beta-D-glucopyranose-(1-4)-2-acetamido-2-deoxy-beta-D-glucopyranose",
+    "sequence_length": null,
+    "observed_residues": 3,
+    "missing_residues": 0,
+    "missing_label_ranges": [],
+    "insertion_residues": [],
+    "uniprot_ranges": [],
+    "atom_count": 39,
+    "components": {
+      "NAG": 2,
+      "BMA": 1
+    }
+  },
+  {
+    "pdb_id": "1S78",
+    "label_asym_id": "K",
+    "auth_asym_id": "K",
+    "entity_id": "4",
+    "role": "context",
+    "entity_type": "branched",
+    "description": "2-acetamido-2-deoxy-beta-D-glucopyranose-(1-4)-2-acetamido-2-deoxy-beta-D-glucopyranose",
+    "sequence_length": null,
+    "observed_residues": 2,
+    "missing_residues": 0,
+    "missing_label_ranges": [],
+    "insertion_residues": [],
+    "uniprot_ranges": [],
+    "atom_count": 28,
+    "components": {
+      "NAG": 2
+    }
+  },
+  {
+    "pdb_id": "1S78",
+    "label_asym_id": "L",
+    "auth_asym_id": "A",
+    "entity_id": "6",
+    "role": "context",
+    "entity_type": "non-polymer",
+    "description": "2-acetamido-2-deoxy-beta-D-glucopyranose",
+    "sequence_length": null,
+    "observed_residues": 1,
+    "missing_residues": 0,
+    "missing_label_ranges": [],
+    "insertion_residues": [],
+    "uniprot_ranges": [],
+    "atom_count": 14,
+    "components": {
+      "NAG": 1
+    }
+  },
+  {
+    "pdb_id": "1S78",
+    "label_asym_id": "M",
+    "auth_asym_id": "B",
+    "entity_id": "6",
+    "role": "context",
+    "entity_type": "non-polymer",
+    "description": "2-acetamido-2-deoxy-beta-D-glucopyranose",
+    "sequence_length": null,
+    "observed_residues": 1,
+    "missing_residues": 0,
+    "missing_label_ranges": [],
+    "insertion_residues": [],
+    "uniprot_ranges": [],
+    "atom_count": 14,
+    "components": {
+      "NAG": 1
+    }
+  }
+]

@@ -1,0 +1,4 @@
+sources/* -text
+sources/*.cif whitespace=-blank-at-eol
+generated/*.csv text eol=lf
+generated/*.fasta text eol=lf
