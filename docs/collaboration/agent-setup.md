@@ -24,7 +24,7 @@ GitHub 최신 both 모드도 AGENTS.md 원본과 CLAUDE.md import 방식을 사�
 
 ## Git 작업 준비
 
-`$task-workflow` 또는 `/task-workflow`는 현재 checkout과 원격 main을 확인해 작업을 준비한다. 현재는 main 직접 작업이 기본이고 별도 branch·worktree는 요청할 때만 만든다. 커밋·push·PR·정리는 각각 요청한 범위에서만 수행한다.
+`$task-workflow` 또는 `/task-workflow` 실행은 원격 main을 확인하고 해당 작업 브랜치를 생성·전환하거나 같은 작업의 미병합 브랜치를 재개한다. 호출 자체가 브랜치 준비를 허용하며 별도 생성 승인을 반복 요청하지 않는다. main 직접 작업은 사용자 명시 예외이고, 별도 worktree는 필요할 때 지정·승인된 경로에 만든다. 커밋·push·PR·정리는 각각 요청한 범위에서만 수행한다.
 
 ## 개인별 설정과 최초 확인
 

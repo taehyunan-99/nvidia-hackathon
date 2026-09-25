@@ -1,6 +1,6 @@
 ---
 name: task-workflow
-description: 명시 호출 시 현재 저장소의 main·변경·작업 위치를 확인하고 요청한 작업을 준비한다.
+description: 명시 실행 시 원격 main을 확인하고 새 작업 브랜치를 생성하거나 같은 작업의 미병합 브랜치를 재개한다.
 disable-model-invocation: true
 ---
 
