@@ -1,0 +1,23 @@
+pdb_id,label_asym_id,auth_asym_id,entity_id,role,entity_type,description,sequence_length,observed_residues,missing_residues,missing_label_ranges,insertion_residues,uniprot_ranges,atom_count,components
+1N8Z,A,A,1,light,polymer,Herceptin Fab (antibody) - light chain,214,214,0,[],[],[],1645,{}
+1N8Z,B,B,2,heavy,polymer,Herceptin Fab (antibody) - heavy chain,220,220,0,[],[],[],1642,{}
+1N8Z,C,C,3,target,polymer,Receptor protein-tyrosine kinase erbB-2,607,581,26,"[[102, 110], [303, 305], [361, 364], [581, 590]]",[],"[[23, 629]]",4491,{}
+1N8Z,D,C,4,context,non-polymer,2-acetamido-2-deoxy-beta-D-glucopyranose,,1,0,[],[],[],14,"{""NAG"": 1}"
+1N8Z,E,C,4,context,non-polymer,2-acetamido-2-deoxy-beta-D-glucopyranose,,1,0,[],[],[],14,"{""NAG"": 1}"
+1N8Z,F,C,5,other,non-polymer,SULFATE ION,,1,0,[],[],[],5,"{""SO4"": 1}"
+1N8Z,G,A,6,other,water,water,,19,0,[],[],[],19,"{""HOH"": 19}"
+1N8Z,H,B,6,other,water,water,,13,0,[],[],[],13,"{""HOH"": 13}"
+1N8Z,I,C,6,other,water,water,,47,0,[],[],[],47,"{""HOH"": 47}"
+1S78,A,A,1,target,polymer,Receptor protein-tyrosine kinase erbB-2,624,555,69,"[[102, 110], [565, 624]]",[],"[[23, 646]]",4277,{}
+1S78,B,B,1,target,polymer,Receptor protein-tyrosine kinase erbB-2,624,568,56,"[[102, 110], [578, 624]]",[],"[[23, 646]]",4381,{}
+1S78,C,C,2,light,polymer,Pertuzumab Fab light chain,214,214,0,[],[],[],1657,{}
+1S78,D,D,3,heavy,polymer,Pertuzumab Fab heavy chain,226,222,4,"[[223, 226]]","[{""label"": 53, ""auth"": 52, ""code"": ""A""}, {""label"": 84, ""auth"": 82, ""code"": ""A""}, {""label"": 85, ""auth"": 82, ""code"": ""B""}, {""label"": 86, ""auth"": 82, ""code"": ""C""}, {""label"": 104, ""auth"": 99, ""code"": ""A""}, {""label"": 105, ""auth"": 99, ""code"": ""B""}]",[],1665,{}
+1S78,E,E,2,light,polymer,Pertuzumab Fab light chain,214,214,0,[],[],[],1657,{}
+1S78,F,F,3,heavy,polymer,Pertuzumab Fab heavy chain,226,222,4,"[[223, 226]]","[{""label"": 53, ""auth"": 52, ""code"": ""A""}, {""label"": 84, ""auth"": 82, ""code"": ""A""}, {""label"": 85, ""auth"": 82, ""code"": ""B""}, {""label"": 86, ""auth"": 82, ""code"": ""C""}, {""label"": 104, ""auth"": 99, ""code"": ""A""}, {""label"": 105, ""auth"": 99, ""code"": ""B""}]",[],1665,{}
+1S78,G,G,4,context,branched,2-acetamido-2-deoxy-beta-D-glucopyranose-(1-4)-2-acetamido-2-deoxy-beta-D-glucopyranose,,2,0,[],[],[],28,"{""NAG"": 2}"
+1S78,H,H,4,context,branched,2-acetamido-2-deoxy-beta-D-glucopyranose-(1-4)-2-acetamido-2-deoxy-beta-D-glucopyranose,,2,0,[],[],[],28,"{""NAG"": 2}"
+1S78,I,I,4,context,branched,2-acetamido-2-deoxy-beta-D-glucopyranose-(1-4)-2-acetamido-2-deoxy-beta-D-glucopyranose,,2,0,[],[],[],28,"{""NAG"": 2}"
+1S78,J,J,5,context,branched,beta-D-mannopyranose-(1-4)-2-acetamido-2-deoxy-beta-D-glucopyranose-(1-4)-2-acetamido-2-deoxy-beta-D-glucopyranose,,3,0,[],[],[],39,"{""NAG"": 2, ""BMA"": 1}"
+1S78,K,K,4,context,branched,2-acetamido-2-deoxy-beta-D-glucopyranose-(1-4)-2-acetamido-2-deoxy-beta-D-glucopyranose,,2,0,[],[],[],28,"{""NAG"": 2}"
+1S78,L,A,6,context,non-polymer,2-acetamido-2-deoxy-beta-D-glucopyranose,,1,0,[],[],[],14,"{""NAG"": 1}"
+1S78,M,B,6,context,non-polymer,2-acetamido-2-deoxy-beta-D-glucopyranose,,1,0,[],[],[],14,"{""NAG"": 1}"

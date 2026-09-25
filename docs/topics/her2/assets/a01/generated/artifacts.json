@@ -1,0 +1,32 @@
+[
+  {
+    "artifact_id": "1n8z-assembly-1-mmcif",
+    "role": "structure",
+    "format": "mmcif",
+    "status": "ready",
+    "file_name": "1N8Z-assembly1.cif",
+    "size_bytes": 865993,
+    "sha256": "c1acde91132892d4dfbc64a203c55fa14276e199150752ad65dc9ae49a85ce6a",
+    "reason": null
+  },
+  {
+    "artifact_id": "1s78-assembly-1-mmcif",
+    "role": "structure",
+    "format": "mmcif",
+    "status": "ready",
+    "file_name": "1S78-assembly1.cif",
+    "size_bytes": 844907,
+    "sha256": "933bc8fd987ab26d3ddac45386e36b6860814fb22268016f11347fcaee55f602",
+    "reason": null
+  },
+  {
+    "artifact_id": "1s78-assembly-2-mmcif",
+    "role": "structure",
+    "format": "mmcif",
+    "status": "ready",
+    "file_name": "1S78-assembly2.cif",
+    "size_bytes": 860588,
+    "sha256": "6c7c34b56f5d017d99536e394d277922ec324292cf3f90264d5042d3a1b3e580",
+    "reason": null
+  }
+]
