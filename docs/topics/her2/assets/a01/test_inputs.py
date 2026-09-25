@@ -62,6 +62,34 @@ class ReferenceInputTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'UniProt sequence mismatch'):
             builder.inspect_entry('1N8Z', wrong)
 
+    def test_approved_ranges_preserve_sequence_and_missing_coordinates(self):
+        review = json.loads((builder.OUT / 'review-input.json').read_text(encoding='utf-8'))
+        self.assertEqual(review['target']['analysis_range'], {'start': 23, 'end': 629})
+        self.assertEqual(''.join(review['target']['fasta'].splitlines()[1:]), self.canonical)
+        expected = {'reference-trastuzumab-fab': ('1N8Z', 220, 214),
+                    'reference-pertuzumab-fab': ('1S78', 226, 214)}
+        self.assertEqual({c['candidate_id'] for c in review['candidates']}, set(expected))
+        for candidate in review['candidates']:
+            pdb, heavy, light = expected[candidate['candidate_id']]
+            for role, length in [('heavy', heavy), ('light', light)]:
+                self.assertEqual(candidate[f'{role}_analysis_range'], {'start': 1, 'end': length})
+                self.assertEqual(len(''.join(candidate[f'{role}_chain_fasta'].splitlines()[1:])), length)
+            target = [r for r in self.entries[pdb][2] if r['role'] == 'target']
+            self.assertTrue(set(range(23, 630)).issubset({r['sequence_position'] for r in target}))
+        structure = next(s for s in self.structures if s['structure_id'] == '1s78-assembly-1')
+        missing = [r for r in structure['residue_mapping']
+                   if r['label_asym_id'] == 'A' and not r['has_coordinates']
+                   and 23 <= r['sequence_position'] <= 629]
+        self.assertEqual({r['sequence_position'] for r in missing},
+                         set(range(124, 133)) | set(range(587, 630)))
+        self.assertTrue(any(r['label_asym_id'] == 'A' and r['sequence_position'] == 646
+                            for r in structure['residue_mapping']))
+        self.assertEqual({(u['candidate_id'], u['file_name']) for u in review['uploads']},
+                         {(key, f'{value[0]}-assembly1.cif') for key, value in expected.items()})
+        bundle = json.loads((builder.OUT / 'bundle.json').read_text(encoding='utf-8'))
+        self.assertTrue(bundle['analysis_ranges_approved'])
+        self.assertFalse(bundle['final_demo_selection'])
+
     def test_wrong_author_number_is_rejected(self):
         changed = copy.deepcopy(self.entries['1S78'][0])
         index = next(i for i, (chain, pos) in enumerate(zip(changed['_atom_site.label_asym_id'],

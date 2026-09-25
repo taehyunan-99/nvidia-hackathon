@@ -806,7 +806,7 @@
     "service_schema_fragments": "PASS"
   },
   "not_validated": [
-    "Q04 final candidates/ranges",
+    "Q04 final demo selection and general input limits",
     "G1 producer-consumer review",
     "3D viewer residue selection",
     "A-02 contact/clash/SASA/alignment metrics",

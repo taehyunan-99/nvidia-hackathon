@@ -220,7 +220,8 @@ def main():
             'antibody_format': 'Fab',
             'heavy_chain_fasta': fasta(f'{pdb}|heavy|entity={heavy["entity_id"]}', polymers[heavy['entity_id']]),
             'light_chain_fasta': fasta(f'{pdb}|light|entity={light["entity_id"]}', polymers[light['entity_id']]),
-            'heavy_analysis_range': None, 'light_analysis_range': None, 'sources': [source(pdb)],
+            'heavy_analysis_range': {'start': 1, 'end': heavy['sequence_length']},
+            'light_analysis_range': {'start': 1, 'end': light['sequence_length']}, 'sources': [source(pdb)],
         })
         assemblies = []
         operations = {r['id']: r for r in rows(cif, '_pdbx_struct_oper_list')}
@@ -275,7 +276,8 @@ def main():
         })
     review_input = {
         'schema_version': '0.1.0', 'example_id': None, 'public_data_confirmed': True,
-        'target': {'identifier': 'UniProt:P04626', 'fasta': canonical_fasta, 'analysis_range': None,
+        'target': {'identifier': 'UniProt:P04626', 'fasta': canonical_fasta,
+                   'analysis_range': {'start': 23, 'end': 629},
                    'sources': [{'title': 'UniProtKB P04626', 'url': 'https://www.uniprot.org/uniprotkb/P04626/entry',
                                 'record_id': 'P04626'}]},
         'candidates': candidates, 'uploads': uploads,
@@ -302,19 +304,21 @@ def main():
         'checks': {'source_hashes': 'PASS', 'sequence_table_agreement': 'PASS', 'uniprot_sequence_agreement': 'PASS',
                    'missing_annotation_agreement': 'PASS', 'all_atoms_accounted_for': 'PASS',
                    'assembly_coordinate_agreement': 'PASS', 'service_schema_fragments': 'PASS'},
-        'not_validated': ['Q04 final candidates/ranges', 'G1 producer-consumer review', '3D viewer residue selection',
+        'not_validated': ['Q04 final demo selection and general input limits', 'G1 producer-consumer review', '3D viewer residue selection',
                           'A-02 contact/clash/SASA/alignment metrics', 'full glycan/cell environment', 'clinical efficacy'],
         'runtime': {'python': platform.python_version(), 'biopython': version('biopython'), 'jsonschema': version('jsonschema')},
     })
     write_json('bundle.json', {
-        'bundle_version': 'a01-1', 'purpose': 'public_reference_input_audit', 'final_demo_selection': False,
+        'bundle_version': 'a01-2', 'purpose': 'public_reference_input_audit', 'final_demo_selection': False,
         'coordinate_unit': 'angstrom', 'files': files,
         'input': 'review-input.json', 'structures': 'structures.json', 'artifacts': 'artifacts.json',
         'residue_mapping': 'residue-mapping.csv', 'source_lock': '../source-lock.json',
         'sequence_position_basis': {'target': 'full UniProt P04626 FASTA', 'heavy_light': 'deposited entity FASTA',
                                     'nonpolymer': None},
-        'analysis_ranges_approved': False, 'metrics_state': 'not_run', 'alignment': None,
-        'assembly_choice': 'Assembly 1 for D1 example; 1S78 assembly 2 retained as alternate, not an extra candidate',
+        'analysis_ranges_approved': True,
+        'approval_scope': 'User-approved first public-structure analysis on 2026-09-26; team consumer confirmation pending',
+        'metrics_state': 'not_run', 'alignment': None,
+        'assembly_choice': 'Assembly 1 approved for first analysis; 1S78 assembly 2 retained as alternate, not an extra candidate',
     })
     print(json.dumps({'status': 'PASS', 'polymer_chains': sum(r['sequence_length'] is not None for r in all_chains),
                       'mapping_rows': len(all_residues), 'assemblies': len(structures),

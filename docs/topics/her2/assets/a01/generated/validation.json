@@ -1,7 +1,8 @@
 {
   "status": "PASS",
-  "tests_run": 9,
+  "tests_run": 10,
   "tests": [
+    "test_approved_ranges_preserve_sequence_and_missing_coordinates",
     "test_generated_outputs_are_reproducible",
     "test_missing_annotation_removal_is_rejected",
     "test_nonpolymer_author_chains_are_not_polymer_identity",

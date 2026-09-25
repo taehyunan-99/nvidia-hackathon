@@ -11,7 +11,7 @@ python docs/topics/her2/assets/a01/test_inputs.py
 
 프로젝트 가상환경을 사용할 때는 `python` 대신 `.venv/Scripts/python.exe`를 사용한다.
 `build_inputs.py`는 잠긴 원본을 검증한 뒤 `generated/`의 파생 산출물을 재생성하며 원본은 수정하지 않는다.
-`test_inputs.py`는 9개 검사를 실행하고 `generated/validation.json`에 결과를 저장한다. 대량 잔기·원자 목록은 터미널에 출력하지 않는다.
+`test_inputs.py`는 10개 검사를 실행하고 `generated/validation.json`에 결과를 저장한다. 대량 잔기·원자 목록은 터미널에 출력하지 않는다.
 
 원본은 `sources/`에 포함돼 있어 평소 실행에 네트워크가 필요 없다.
 공개 배포 원본과 재대조하거나 누락된 같은 버전 파일을 복구할 때만 다음을 실행한다.
@@ -30,6 +30,6 @@ python docs/topics/her2/assets/a01/fetch_sources.py
 잔기 identity에는 label/auth 사슬, 번호와 삽입 코드가 필요하며, 비단백질에는 label_seq_id가 없다.
 `has_coordinates`는 원자 레코드 존재 여부다. positive occupancy 원자 수도 별도 기록했고 이번 두 파일에는 zero occupancy 원자가 없다.
 
-입력 서열의 analysis_range는 null이고 최종 데모 채택은 미정이다. 서비스 스키마 통과만으로 분석 실행 승인을 의미하지 않는다.
-D1 예시는 assembly 1 두 개를 사용하며 assembly 2는 같은 pertuzumab 후보의 대체 자료다.
+2026-09-26 사용자가 첫 공개 구조 분석 범위를 채택했다. `a01-2` 입력은 HER2 UniProt 23–629, 1N8Z 중쇄 1–220·경쇄 1–214, 1S78 중쇄 1–226·경쇄 1–214를 명시한다. 전체 입력 서열·좌표 누락·구간 밖 대응표는 보존한다.
+각 assembly 1을 첫 분석에 사용하며 1S78 assembly 2는 같은 pertuzumab 후보의 대체 자료다. `analysis_ranges_approved=true`는 이 사용자 결정만 뜻하며, 최종 데모 선정·팀 소비 확인·첫 계산 완료를 뜻하지 않는다.
 전체 설명은 [bundle.json](generated/bundle.json), 기탁 잔기의 원자 존재·번호·UniProt 대응은 [residue-mapping.csv](generated/residue-mapping.csv), 원본 링크·해시는 [source-lock.json](source-lock.json)에 있다.
