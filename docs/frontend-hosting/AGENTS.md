@@ -6,6 +6,11 @@ HER2 분석 로직을 서비스 화면·연동·운영 관점에서 읽고, 구�
 
 ## 2. CONTENTS — 파일과 형식
 
+- [bio-agent-experience.md](bio-agent-experience.md) — 분석·소개·팀 탭과 바이오 에이전트 표현 기준
+- [researcher-ux-research.md](researcher-ux-research.md) — 전문가 UX 근거·화면 가설·인터뷰·평가안
+- [nvidia-design-research.md](nvidia-design-research.md) — NVIDIA 공식 디자인 출처·적용 근거·범위
+- [design-guide.md](design-guide.md) — 사용자 확인 시각 방향과 토큰·표현 기준
+- [screen-plan.md](screen-plan.md) — 네 화면·상태·임시 구현 범위
 - [overview.md](overview.md) — 조사 범위·확인 상태·사용자 인터뷰·후속 작업
 - [agent-logic.md](agent-logic.md) — 분석 분기·산출물·공개 구조에서 확인한 연결 주의점
 - [frontend-contract.md](frontend-contract.md) — 화면이 소비할 데이터·상태·3D 연결·계약 검토 항목

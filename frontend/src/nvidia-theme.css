@@ -1,0 +1,198 @@
+/* Project adaptation of nvidia.com/ko-kr, inspected 2026-09-25.
+   This is an independent hackathon UI, not an official NVIDIA product. */
+:root {
+  --color-accent: #76b900;
+  --color-accent-hover: #91d514;
+  --color-accent-ink: #426700;
+  --color-accent-10: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  --color-accent-05: color-mix(in srgb, var(--color-accent) 5%, transparent);
+  --bg-primary: #ffffff;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #eeeeee;
+  --text-primary: #111111;
+  --text-secondary: #555555;
+  --border: #c5c5c5;
+  --border-subtle: #dddddd;
+  --font-en: Arial, Helvetica, sans-serif;
+  --font-ko: "SUIT Variable", Arial, sans-serif;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --shadow-card: none;
+  --button-ink: #111111;
+  --visual-bg: #080b08;
+  --visual-ink: #ffffff;
+  --visual-muted: #c5cdc1;
+  --visual-grid: #253022;
+  --visual-green: #76b900;
+  --visual-silver: #b5c6a5;
+  --gradient-wash: linear-gradient(
+    135deg,
+    var(--color-accent-05),
+    var(--bg-secondary)
+  );
+  --hero-size: clamp(36px, 3.8vw, 56px);
+}
+header {
+  height: 56px;
+  background: var(--bg-secondary);
+  padding-inline: max(var(--space-8), calc((100% - 1296px) / 2));
+}
+.brand {
+  font-weight: 700;
+}
+.primary {
+  background: var(--color-accent);
+  color: var(--button-ink);
+  font-weight: 700;
+}
+.primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  filter: none;
+}
+.secondary {
+  font-weight: 700;
+  border-color: var(--text-primary);
+}
+.shell {
+  max-width: none;
+  padding-inline: max(var(--space-8), calc((100% - 1296px) / 2));
+}
+.shell > nav {
+  margin-inline: calc(-1 * max(var(--space-8), (100vw - 1296px) / 2));
+  background: var(--visual-bg);
+  padding: var(--space-3) max(var(--space-8), calc((100% - 1296px) / 2));
+}
+nav button {
+  color: var(--visual-muted);
+  font-weight: 600;
+}
+nav button[aria-current] {
+  color: var(--visual-ink);
+}
+.landing-shell > nav {
+  margin-inline: calc(-1 * max(var(--space-8), (100vw - 1296px) / 2));
+}
+.hero {
+  position: relative;
+  isolation: isolate;
+  min-height: 600px;
+  grid-template-columns: 1.05fr 1fr;
+  margin-inline: calc(-1 * max(var(--space-8), (100vw - 1296px) / 2));
+  padding: var(--space-12) max(var(--space-8), calc((100vw - 1296px) / 2));
+  background:
+    radial-gradient(ellipse at 78% 55%, #29400b, transparent 48%),
+    var(--visual-bg);
+  color: var(--visual-ink);
+  overflow: hidden;
+}
+.hero h1 {
+  font-size: var(--hero-size);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.25;
+}
+.hero em {
+  color: var(--visual-ink);
+}
+.hero .eyebrow {
+  color: var(--visual-ink);
+  font-size: var(--text-body);
+  letter-spacing: 0;
+  font-weight: 700;
+}
+.hero-copy {
+  position: relative;
+  z-index: 2;
+}
+.hero-copy > p {
+  color: var(--visual-muted);
+}
+.hero .secondary {
+  border-color: var(--visual-muted);
+  color: var(--visual-ink);
+  background: transparent;
+}
+.hero .secondary:hover {
+  background: var(--visual-grid);
+}
+.intro-grid {
+  padding-block: var(--space-12);
+  border-top: 0;
+}
+.intro-grid h3 {
+  font-size: var(--text-h3);
+  font-weight: 700;
+}
+.intro-grid p {
+  font-size: var(--text-body);
+  max-width: none;
+}
+.workspace-title {
+  margin-block: var(--space-6);
+}
+.workspace-title h1 {
+  font-size: var(--text-h2);
+  font-weight: 700;
+}
+.workspace-title .eyebrow,
+.review-heading .eyebrow {
+  color: var(--text-secondary);
+  letter-spacing: 0.06em;
+}
+.panel,
+.layout-comparison,
+.issue-card {
+  border-color: var(--border-subtle);
+}
+.segmented button[aria-pressed="true"] {
+  box-shadow: inset 0 -3px var(--color-accent);
+}
+.review-heading h2,
+.evidence-panel h2 {
+  font-weight: 700;
+}
+.prototype span,
+.tag {
+  border-radius: var(--radius-sm);
+}
+footer {
+  padding-block: var(--space-8);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-primary: #111111;
+    --bg-secondary: #191919;
+    --bg-tertiary: #252525;
+    --text-primary: #eeeeee;
+    --text-secondary: #b8b8b8;
+    --border: #555555;
+    --border-subtle: #333333;
+    --color-accent-ink: #a2d45b;
+  }
+}
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+@media (max-width: 600px) {
+  header,
+  .shell {
+    padding-inline: var(--space-4);
+  }
+  .shell > nav,
+  .landing-shell > nav {
+    margin-inline: calc(-1 * var(--space-4));
+    padding-inline: var(--space-4);
+  }
+  .hero {
+    margin-inline: calc(-1 * var(--space-4));
+    padding: var(--space-8) var(--space-4);
+  }
+  .hero h1 {
+    font-size: var(--text-h1);
+  }
+}
