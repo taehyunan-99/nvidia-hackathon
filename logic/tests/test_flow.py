@@ -68,7 +68,12 @@ def make_request(candidates: list[dict], work_dir: Path, *, target_fasta: str | 
 
 
 class StubClient:
-    """호출부 대역. 실제 NVIDIA 응답이 아니다."""
+    """호출부 대역. 실제 NVIDIA 응답이 아니다.
+
+    chat은 일부러 실패시킨다. 이 파일의 시험은 **모델 없이 규칙만으로
+    돌 때** 흐름이 어떻게 갈라지는지를 고정한다. 모델이 붙었을 때의
+    분기 선택은 test_agent.py와 test_flow_decisions.py에서 본다.
+    """
 
     def __init__(self, response=None, error=None):
         self._response = response
@@ -80,6 +85,9 @@ class StubClient:
         if self._error:
             raise self._error
         return self._response
+
+    def chat(self, model, messages, **kwargs):
+        raise MissingCredentials("대역 client는 모델을 부르지 않는다.")
 
 
 # ---------------------------------------------------------------- 기존 구조 경로

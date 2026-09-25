@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from . import analysis, structures
+from .agent import Decider, Option
 from .contract import SCHEMA_VERSION, now_rfc3339, validate
 from .nvidia_client import CallFailed, MissingCredentials, NvidiaClient
 
@@ -38,6 +39,17 @@ STEP_IDS = (
 MIN_CHAIN_LENGTH = 50
 
 ProgressCallback = Callable[[dict[str, Any]], None]
+
+
+def _explain(decision) -> str:
+    """판단 결과를 화면에 그대로 쓸 문장으로.
+
+    누가 정했는지를 문장 안에 넣는다. 모델이 못 답해서 규칙으로 간
+    것을 모델이 판단한 것처럼 보이게 두면, 화면이 사실과 달라진다.
+    """
+    if decision.decided_by == "model":
+        return f"{decision.reason} (판단: {decision.model})"
+    return f"{decision.reason} (판단: 규칙 — {decision.fallback_reason})"
 
 
 @dataclass
@@ -72,6 +84,7 @@ class Flow:
         *,
         client: NvidiaClient | None = None,
         progress: ProgressCallback | None = None,
+        decider: Decider | None = None,
     ):
         validate(request, "LogicRequest")
         self.request = request
@@ -82,6 +95,8 @@ class Flow:
         self.work_dir = Path(request["work_dir"])
         self.work_dir.mkdir(parents=True, exist_ok=True)
         self.client = client if client is not None else NvidiaClient(self.work_dir)
+        # 분기 선택은 판단부가 한다. 모델을 못 부르면 아래 default로 돌아간다.
+        self.decider = decider if decider is not None else Decider(self.client)
         self._progress = progress
 
         self.states: dict[str, _CandidateState] = {
@@ -150,9 +165,22 @@ class Flow:
         self._emit(cid, "input_mapping", "completed", None)
 
         # ③ 분기: 기존 구조 / 예측 / 자료 부족
-        if match.complete:
+        # 규칙이 아니라 판단부가 고른다. 모델이 없으면 default로 돌아간다.
+        choice = self._choose_source(cid, match)
+        if choice.action == "use_experimental":
             structure_id = self._record_experimental(cid, match)
-            self._emit(cid, "prediction", "skipped", "일치하는 공개 실험 구조가 있어 예측하지 않았다.")
+            self._emit(cid, "prediction", "skipped", _explain(choice))
+        elif choice.action == "hold":
+            # 판단부가 지금 예측하지 않기로 했다. 실패가 아니라 보류다.
+            reason = _explain(choice)
+            self._emit(cid, "evidence_review", "held", reason)
+            self._emit(cid, "prediction", "held", reason)
+            for step in ("structure_comparison", "reporting"):
+                self._emit(cid, step, "skipped", "예측 구조가 없어 진행하지 않았다.")
+            state.status = "partial"
+            state.reason = reason
+            self._hold_opinion(cid, "structure_availability", "hold", reason)
+            return
         else:
             structure_id = self._predict(cid, candidate, match)
             if structure_id is None:
@@ -195,6 +223,46 @@ class Flow:
                         f"{label} 분석 구간의 끝({rng['end']})이 서열 길이({len(seq)})를 넘는다."
                     )
         return problems
+
+    # ------------------------------------------------------------ 판단 분기
+    def _choose_source(self, cid: str, match: structures.StructureMatch):
+        """이 후보를 무엇으로 검토할지 고른다.
+
+        설계 문서의 "일치하는 공개 실험 구조로 충분하면 불필요한 복합체
+        예측을 생략한다"가 이 자리다. 규칙만 두면 부분 일치·자료 부족이
+        전부 예측 호출로 떠밀린다.
+
+        사실은 전부 코드가 조회한 것이다. 모델은 이 값들을 읽고 고르기만
+        한다.
+        """
+        facts = [
+            f"공개 구조 검색 결과: {match.pdb_id or '일치 후보 없음'}",
+            f"중쇄 서열 정확히 일치: {'예' if match.heavy_exact else '아니오'}",
+            f"경쇄 서열 정확히 일치: {'예' if match.light_exact else '아니오'}",
+            f"같은 구조에 표적 사슬 있음: {'예' if match.target_entity else '아니오'}",
+        ]
+        if match.complete:
+            options = [
+                Option("use_experimental", "이미 있는 공개 실험 구조로 검토한다. 예측을 건너뛴다."),
+                Option("predict", "그래도 Boltz-2로 새로 예측해 교차 확인한다."),
+            ]
+            default = "use_experimental"
+        else:
+            options = [
+                Option("predict", "Boltz-2로 복합체를 예측해 검토한다."),
+                Option("hold", "자료가 모자라 예측하지 않고 보류한다. 사람이 보완해야 한다."),
+            ]
+            default = "predict"
+        return self.decider.choose(
+            "structure_source",
+            question=(
+                f"후보 {cid}를 검토할 구조를 어디서 얻을 것인가? "
+                "부분 일치는 같은 항체로 보지 않는다."
+            ),
+            facts=facts,
+            options=options,
+            default=default,
+        )
 
     # ------------------------------------------------------------ 기존 구조 경로
     def _record_experimental(self, cid: str, match: structures.StructureMatch) -> str:
@@ -531,17 +599,30 @@ class Flow:
         measured = [e for e in mine if e["measurement_state"] == "measured"]
         unmeasured = [e for e in mine if e["measurement_state"] != "measured"]
 
-        decision = "reviewable" if measured else "needs_confirmation"
-        if match.complete:
-            reason = (
-                f"{match.pdb_id}의 실험 구조와 후보 서열이 정확히 일치해 예측 없이 검토했다. "
-                f"근거 {len(measured)}건을 계산했고 {len(unmeasured)}건은 아직 계산하지 않았다."
-            )
-        else:
-            reason = (
-                f"일치하는 공개 실험 구조가 없어 예측 구조로 검토했다. "
-                f"근거 {len(measured)}건을 확보했고 {len(unmeasured)}건은 아직 계산하지 않았다."
-            )
+        # ⑥ 두 번째 분기. 지금까지 모은 근거로 검토 의견을 낼 수 있는가?
+        # 설계 문서의 "어느 부분까지 근거가 있고 어떤 질문이 남는가"다.
+        facts = [
+            f"계산해 확보한 근거 {len(measured)}건, 아직 계산하지 않은 항목 {len(unmeasured)}건.",
+            *(
+                f"{e['topic']}: {e['value']}{e['unit'] or ''} ({e['definition']})"
+                for e in measured
+                if e["definition"]
+            ),
+            *(f"{e['topic']}: 미계산 — {e['reason']}" for e in unmeasured if e["reason"]),
+        ]
+        verdict = self.decider.choose(
+            "review_opinion",
+            question=(
+                f"후보 {cid}에 대해 지금 검토 의견을 낼 수 있는가? "
+                "결합력·효능이 아니라 구조상 검토 가능 여부만 본다."
+            ),
+            facts=facts,
+            options=[
+                Option("reviewable", "확보한 근거로 구조상 검토 의견을 낼 수 있다."),
+                Option("needs_confirmation", "근거가 모자라 사람의 확인이 필요하다."),
+            ],
+            default="reviewable" if measured else "needs_confirmation",
+        )
 
         self.opinions.append(
             {
@@ -549,10 +630,10 @@ class Flow:
                 "candidate_id": cid,
                 "condition_id": condition_id,
                 "topic": "interface_review",
-                "decision": decision,
+                "decision": verdict.action,
                 "evidence_ids": [e["evidence_id"] for e in measured],
                 "conflicting_evidence_ids": [],
-                "reason": reason,
+                "reason": _explain(verdict),
                 "limitations": [e["reason"] for e in unmeasured if e["reason"]],
                 "follow_up_questions": self._follow_ups(match),
             }
@@ -668,6 +749,7 @@ def run_flow(
     *,
     client: NvidiaClient | None = None,
     progress: ProgressCallback | None = None,
+    decider: Decider | None = None,
 ) -> tuple[dict[str, Any], Flow]:
-    flow = Flow(request, client=client, progress=progress)
+    flow = Flow(request, client=client, progress=progress, decider=decider)
     return flow.run(), flow

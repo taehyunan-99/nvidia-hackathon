@@ -104,14 +104,25 @@ class NvidiaClient:
         return self._key
 
     # ------------------------------------------------------------ 공통
-    def _post(self, url: str, payload: dict[str, Any], kind: str, summary: dict[str, Any]) -> dict[str, Any]:
+    def _post(
+        self,
+        url: str,
+        payload: dict[str, Any],
+        kind: str,
+        summary: dict[str, Any],
+        *,
+        timeout: int | None = None,
+    ) -> dict[str, Any]:
         key = self.require_key()
         headers = {"Authorization": f"Bearer {key}", "Accept": "application/json"}
+        # 판단 호출은 구조 예측보다 훨씬 짧아야 한다. 기본값(10분)을 그대로
+        # 쓰면 모델이 멈췄을 때 시연이 그만큼 멈춘다.
+        limit = self.timeout if timeout is None else timeout
         attempt = 0
         while True:
             started = time.monotonic()
             try:
-                response = requests.post(url, headers=headers, json=payload, timeout=self.timeout)
+                response = requests.post(url, headers=headers, json=payload, timeout=limit)
             except requests.RequestException as exc:
                 elapsed = time.monotonic() - started
                 self._record(CallRecord(kind, url, None, elapsed, False, summary, str(exc)))
@@ -187,6 +198,7 @@ class NvidiaClient:
         tools: list[dict[str, Any]] | None = None,
         temperature: float = 0.2,
         max_tokens: int = 1024,
+        timeout: int | None = None,
     ) -> dict[str, Any]:
         payload: dict[str, Any] = {
             "model": model,
@@ -198,7 +210,9 @@ class NvidiaClient:
             payload["tools"] = tools
             payload["tool_choice"] = "auto"
         summary = {"model": model, "messages": len(messages), "tools": len(tools or [])}
-        return self._post(f"{LLM_BASE}/chat/completions", payload, "nemotron.chat", summary)
+        return self._post(
+            f"{LLM_BASE}/chat/completions", payload, "nemotron.chat", summary, timeout=timeout
+        )
 
     def list_models(self) -> list[str]:
         key = self.require_key()

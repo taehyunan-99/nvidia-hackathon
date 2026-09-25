@@ -37,6 +37,7 @@ python -m pytest logic/tests -q
 | `nvidia_client.py` | Boltz-2·Nemotron 호출. 요청 요약·응답·소요 시간을 `call_log.jsonl`에 남긴다 |
 | `contacts.py` | 좌표에서 접촉 잔기 직접 선택. 예측 구조용이며 기준은 실험 구조 쪽과 같다 |
 | `analysis.py` | 계산 결과를 Evidence 재료로 변환. 로직 A의 함수가 들어올 자리 |
+| `agent.py` | 분기를 Nemotron에게 묻는 판단부. 선택지 밖 답·지어낸 숫자를 거르고, 못 쓰면 규칙으로 돌아간다 |
 | `flow.py` | 다섯 단계와 분기 |
 | `run.py` | 실행부 진입점 (D4의 B쪽) |
 
@@ -69,6 +70,39 @@ python -m pytest logic/tests -q
 - trastuzumab·pertuzumab 실제 서열 입력 → 두 후보 모두 예측 생략, 접촉 잔기 39·56건.
   이 수는 `contacts.json`을 직접 읽어 대조한다(`test_contact_evidence_matches_precomputed_file`).
 - 입력 오류·자료 부족·호출 실패·구조 없는 응답·키 없음 분기 — 테스트 통과.
+
+### 판단부 (2026-09-26 실측)
+
+설계 문서는 "Nemotron이 상태에 따른 작업 선택과 결과 설명을 맡는다"이고
+"단계가 고정 파이프라인이 되지 않게 할 분기"를 따로 두고 있다. 그 자리를
+`agent.py`가 채운다. 두 분기를 모델이 고른다 — 검토할 구조를 어디서 얻을지
+(`structure_source`), 지금 검토 의견을 낼 수 있는지(`review_opinion`).
+
+모델에게 허용하는 것은 **주어진 목록에서 고르기와 이유 쓰기**뿐이다.
+접촉 잔기 수·신뢰도·서열 길이는 전부 코드가 계산해 사실로 넣어 준다.
+
+| 거르는 것 | 방법 |
+|---|---|
+| 목록에 없는 행동 | 버리고 규칙으로 |
+| 근거에 없는 숫자를 쓴 설명 | 고른 행동까지 통째로 버린다 |
+| 모델 호출 실패·형식 위반 | 규칙으로 가되 "규칙으로 갔다"를 화면 문구에 남긴다 |
+
+**쓸 수 있는 모델이 사실상 하나다.** 목록에 nemotron 계열 17개가 보이지만
+대부분 이 계정에서 404다.
+
+| 모델 | 결과 |
+|---|---|
+| `nvidia/nemotron-3-super-120b-a12b` | 성공, 6.2초 — 현재 기본값 |
+| `nvidia/nemotron-3.5-lightning-30b-a3b` | 성공, 60.6초, 사고 과정이 답변에 섞임 |
+| `nvidia/nemotron-nano-3-30b-a3b`, `llama-3.1-nemotron-70b/51b-instruct` | HTTP 404 |
+| `nvidia/nemotron-3-nano-30b-a3b` (설계 문서가 고른 것) | 목록에 없음 |
+
+실제 실행(후보 2건, 판단 4회): 전체 **57.1초**. 이 중 한 번은 모델이
+HTTP 503(Service temporarily overloaded)을 돌려줬고 재시도 3회가 모두
+실패해 규칙으로 넘어갔다. **판단 호출은 예측 호출만큼 안정적이지 않다.**
+같은 실행에서 모델은 두 후보 모두 `needs_confirmation`을 골랐다 —
+충돌·표면 노출이 미계산이라는 이유다. 규칙은 같은 자리에서
+`reviewable`을 골랐을 것이다. 즉 판단부는 장식이 아니라 결과를 바꾼다.
 
 ### 실제 NVIDIA 호출 (대역 client 아님)
 
