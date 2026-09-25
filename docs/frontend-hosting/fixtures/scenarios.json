@@ -1,0 +1,826 @@
+{
+  "schema_version": "0.1.0",
+  "data_mode": "mock",
+  "description": "합성 UI 개발 데이터. 실제 HER2·항체 서열·구조·계산·판정·모델 호출이 아니다. 숫자 측정값은 모두 null. 고정 시각은 모의 시계 기준이며 live 세션에 쓰지 않는다.",
+  "input": {
+    "schema_version": "0.1.0",
+    "example_id": null,
+    "public_data_confirmed": true,
+    "target": {"identifier":null,"fasta":">mock_target_not_her2\nACDE","analysis_range":null,"sources":[]},
+    "candidates": [
+      {
+        "candidate_id": "mock-candidate-a",
+        "name": "UI 모의 후보 1 · 실제 항체 아님",
+        "antibody_format": null,
+        "heavy_chain_fasta": ">mock_heavy_not_antibody\nACDE",
+        "light_chain_fasta": ">mock_light_not_antibody\nFGHI",
+        "heavy_analysis_range": null,
+        "light_analysis_range": null,
+        "sources": []
+      },
+      {
+        "candidate_id": "mock-candidate-b",
+        "name": "UI 모의 후보 2 · 실제 항체 아님",
+        "antibody_format": null,
+        "heavy_chain_fasta": ">mock_heavy_not_antibody\nACDE",
+        "light_chain_fasta": ">mock_light_not_antibody\nFGHI",
+        "heavy_analysis_range": null,
+        "light_analysis_range": null,
+        "sources": []
+      }
+    ],
+    "uploads": []
+  },
+  "scenarios": [
+    {
+      "name": "queued",
+      "description": "입력 접수 후 대기 화면. 실제 작업이 접수된 것은 아님.",
+      "session": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "session_id": "mock-session",
+        "status": "active",
+        "expires_at": "2026-09-25T00:30:00Z"
+      },
+      "run": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "run_id": "mock-run-queued",
+        "review_id": "mock-review",
+        "status": "queued",
+        "settings_version": "mock-settings-v1",
+        "candidates": [
+          {
+            "candidate_id": "mock-candidate-a",
+            "status": "queued",
+            "current_step": null,
+            "steps": [
+              {"step_id":"input_mapping","status":"pending","reason":null},
+              {"step_id":"evidence_review","status":"pending","reason":null},
+              {"step_id":"prediction","status":"pending","reason":null},
+              {"step_id":"structure_comparison","status":"pending","reason":null},
+              {"step_id":"reporting","status":"pending","reason":null}
+            ],
+            "reason": null
+          },
+          {
+            "candidate_id": "mock-candidate-b",
+            "status": "queued",
+            "current_step": null,
+            "steps": [
+              {"step_id":"input_mapping","status":"pending","reason":null},
+              {"step_id":"evidence_review","status":"pending","reason":null},
+              {"step_id":"prediction","status":"pending","reason":null},
+              {"step_id":"structure_comparison","status":"pending","reason":null},
+              {"step_id":"reporting","status":"pending","reason":null}
+            ],
+            "reason": null
+          }
+        ],
+        "created_at": "2026-09-25T00:00:00Z",
+        "started_at": null,
+        "finished_at": null,
+        "updated_at": "2026-09-25T00:00:00Z",
+        "result_available": false,
+        "error": null
+      },
+      "result": null,
+      "error": null
+    },
+    {
+      "name": "running",
+      "description": "복합체 예측 단계 진행 표시만 재현. 외부 API 호출 없음.",
+      "session": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "session_id": "mock-session",
+        "status": "active",
+        "expires_at": "2026-09-25T00:30:00Z"
+      },
+      "run": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "run_id": "mock-run-running",
+        "review_id": "mock-review",
+        "status": "running",
+        "settings_version": "mock-settings-v1",
+        "candidates": [
+          {
+            "candidate_id": "mock-candidate-a",
+            "status": "running",
+            "current_step": "prediction",
+            "steps": [
+              {"step_id":"input_mapping","status":"completed","reason":null},
+              {"step_id":"evidence_review","status":"completed","reason":null},
+              {"step_id":"prediction","status":"running","reason":null},
+              {"step_id":"structure_comparison","status":"pending","reason":null},
+              {"step_id":"reporting","status":"pending","reason":null}
+            ],
+            "reason": null
+          },
+          {
+            "candidate_id": "mock-candidate-b",
+            "status": "running",
+            "current_step": "prediction",
+            "steps": [
+              {"step_id":"input_mapping","status":"completed","reason":null},
+              {"step_id":"evidence_review","status":"completed","reason":null},
+              {"step_id":"prediction","status":"running","reason":null},
+              {"step_id":"structure_comparison","status":"pending","reason":null},
+              {"step_id":"reporting","status":"pending","reason":null}
+            ],
+            "reason": null
+          }
+        ],
+        "created_at": "2026-09-25T00:00:00Z",
+        "started_at": "2026-09-25T00:00:00Z",
+        "finished_at": null,
+        "updated_at": "2026-09-25T00:01:00Z",
+        "result_available": false,
+        "error": null
+      },
+      "result": null,
+      "error": null
+    },
+    {
+      "name": "completed",
+      "description": "정상 종료 UI 전용. 수치·구조·다운로드는 미생성이므로 live 완료 검증에 사용할 수 없음.",
+      "session": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "session_id": "mock-session",
+        "status": "active",
+        "expires_at": "2026-09-25T00:30:00Z"
+      },
+      "run": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "run_id": "mock-run-completed",
+        "review_id": "mock-review",
+        "status": "completed",
+        "settings_version": "mock-settings-v1",
+        "candidates": [
+          {
+            "candidate_id": "mock-candidate-a",
+            "status": "completed",
+            "current_step": null,
+            "steps": [
+              {"step_id":"input_mapping","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"},
+              {"step_id":"evidence_review","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"},
+              {"step_id":"prediction","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"},
+              {"step_id":"structure_comparison","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"},
+              {"step_id":"reporting","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"}
+            ],
+            "reason": null
+          },
+          {
+            "candidate_id": "mock-candidate-b",
+            "status": "completed",
+            "current_step": null,
+            "steps": [
+              {"step_id":"input_mapping","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"},
+              {"step_id":"evidence_review","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"},
+              {"step_id":"prediction","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"},
+              {"step_id":"structure_comparison","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"},
+              {"step_id":"reporting","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"}
+            ],
+            "reason": null
+          }
+        ],
+        "created_at": "2026-09-25T00:00:00Z",
+        "started_at": "2026-09-25T00:00:00Z",
+        "finished_at": "2026-09-25T00:01:00Z",
+        "updated_at": "2026-09-25T00:01:00Z",
+        "result_available": true,
+        "error": null
+      },
+      "result": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "run_id": "mock-run-completed",
+        "review_id": "mock-review",
+        "candidate_ids": ["mock-candidate-a","mock-candidate-b"],
+        "created_at": "2026-09-25T00:01:00Z",
+        "settings_version": "mock-settings-v1",
+        "structures": [],
+        "conditions": [
+          {
+            "condition_id": "mock-core-1",
+            "candidate_id": "mock-candidate-a",
+            "kind": "core",
+            "structure_ids": [],
+            "included_components": [],
+            "gaps": ["모의 응답에는 실제 구조·계산 결과가 없음"],
+            "sources": []
+          },
+          {
+            "condition_id": "mock-core-2",
+            "candidate_id": "mock-candidate-b",
+            "kind": "core",
+            "structure_ids": [],
+            "included_components": [],
+            "gaps": ["모의 응답에는 실제 구조·계산 결과가 없음"],
+            "sources": []
+          }
+        ],
+        "evidence": [
+          {
+            "evidence_id": "mock-evidence-1",
+            "candidate_id": "mock-candidate-a",
+            "condition_id": "mock-core-1",
+            "structure_id": null,
+            "topic": "contact",
+            "kind": "unknown",
+            "measurement_state": "not_run",
+            "value": null,
+            "unit": null,
+            "definition": null,
+            "reason": "실제 계산을 수행하지 않은 UI 전용 모의 데이터",
+            "residues": [],
+            "sources": []
+          },
+          {
+            "evidence_id": "mock-evidence-2",
+            "candidate_id": "mock-candidate-b",
+            "condition_id": "mock-core-2",
+            "structure_id": null,
+            "topic": "contact",
+            "kind": "unknown",
+            "measurement_state": "not_run",
+            "value": null,
+            "unit": null,
+            "definition": null,
+            "reason": "실제 계산을 수행하지 않은 UI 전용 모의 데이터",
+            "residues": [],
+            "sources": []
+          }
+        ],
+        "opinions": [
+          {
+            "opinion_id": "mock-opinion-1",
+            "candidate_id": "mock-candidate-a",
+            "condition_id": "mock-core-1",
+            "topic": "contact",
+            "decision": "not_assessed",
+            "evidence_ids": ["mock-evidence-1"],
+            "conflicting_evidence_ids": [],
+            "reason": "실제 후보 검토를 수행하지 않은 UI 모의 의견",
+            "limitations": ["과학적 판정·실제 분석 완료를 나타내지 않음"],
+            "follow_up_questions": ["실제 로직의 구조·근거·결과 계약을 연결해야 함"]
+          },
+          {
+            "opinion_id": "mock-opinion-2",
+            "candidate_id": "mock-candidate-b",
+            "condition_id": "mock-core-2",
+            "topic": "contact",
+            "decision": "not_assessed",
+            "evidence_ids": ["mock-evidence-2"],
+            "conflicting_evidence_ids": [],
+            "reason": "실제 후보 검토를 수행하지 않은 UI 모의 의견",
+            "limitations": ["과학적 판정·실제 분석 완료를 나타내지 않음"],
+            "follow_up_questions": ["실제 로직의 구조·근거·결과 계약을 연결해야 함"]
+          }
+        ],
+        "artifacts": [
+          {
+            "artifact_id": "mock-report-json",
+            "role": "report_json",
+            "format": "json",
+            "status": "mock",
+            "file_name": "mock-result.json",
+            "size_bytes": null,
+            "sha256": null,
+            "reason": "파일 미생성: 다운로드를 비활성화하는 UI 모의 항목"
+          },
+          {
+            "artifact_id": "mock-report-csv",
+            "role": "report_csv",
+            "format": "csv",
+            "status": "mock",
+            "file_name": "mock-result.csv",
+            "size_bytes": null,
+            "sha256": null,
+            "reason": "파일 미생성: 다운로드를 비활성화하는 UI 모의 항목"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "name": "scientific-hold",
+      "description": "completed 실행 안의 판단 보류와 예측 생략 UI를 함께 확인.",
+      "session": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "session_id": "mock-session",
+        "status": "active",
+        "expires_at": "2026-09-25T00:30:00Z"
+      },
+      "run": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "run_id": "mock-run-held",
+        "review_id": "mock-review",
+        "status": "completed",
+        "settings_version": "mock-settings-v1",
+        "candidates": [
+          {
+            "candidate_id": "mock-candidate-a",
+            "status": "completed",
+            "current_step": null,
+            "steps": [
+              {"step_id":"input_mapping","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"},
+              {"step_id":"evidence_review","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"},
+              {"step_id":"prediction","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"},
+              {"step_id":"structure_comparison","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"},
+              {"step_id":"reporting","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"}
+            ],
+            "reason": null
+          },
+          {
+            "candidate_id": "mock-candidate-b",
+            "status": "completed",
+            "current_step": null,
+            "steps": [
+              {"step_id":"input_mapping","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"},
+              {"step_id":"evidence_review","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"},
+              {"step_id":"prediction","status":"skipped","reason":"모의 시나리오: 현재 자료로 추가 예측을 하지 않는 분기"},
+              {"step_id":"structure_comparison","status":"held","reason":"모의 시나리오: 주변 구조 자료 부족에 따른 판단 보류"},
+              {"step_id":"reporting","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"}
+            ],
+            "reason": null
+          }
+        ],
+        "created_at": "2026-09-25T00:00:00Z",
+        "started_at": "2026-09-25T00:00:00Z",
+        "finished_at": "2026-09-25T00:01:00Z",
+        "updated_at": "2026-09-25T00:01:00Z",
+        "result_available": true,
+        "error": null
+      },
+      "result": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "run_id": "mock-run-held",
+        "review_id": "mock-review",
+        "candidate_ids": ["mock-candidate-a","mock-candidate-b"],
+        "created_at": "2026-09-25T00:01:00Z",
+        "settings_version": "mock-settings-v1",
+        "structures": [],
+        "conditions": [
+          {
+            "condition_id": "mock-core-1",
+            "candidate_id": "mock-candidate-a",
+            "kind": "core",
+            "structure_ids": [],
+            "included_components": [],
+            "gaps": ["모의 응답에는 실제 구조·계산 결과가 없음"],
+            "sources": []
+          },
+          {
+            "condition_id": "mock-core-2",
+            "candidate_id": "mock-candidate-b",
+            "kind": "context",
+            "structure_ids": [],
+            "included_components": [],
+            "gaps": ["모의 시나리오: 당쇄·주변 구조 좌표 미확인"],
+            "sources": []
+          }
+        ],
+        "evidence": [
+          {
+            "evidence_id": "mock-evidence-1",
+            "candidate_id": "mock-candidate-a",
+            "condition_id": "mock-core-1",
+            "structure_id": null,
+            "topic": "contact",
+            "kind": "unknown",
+            "measurement_state": "not_run",
+            "value": null,
+            "unit": null,
+            "definition": null,
+            "reason": "실제 계산을 수행하지 않은 UI 전용 모의 데이터",
+            "residues": [],
+            "sources": []
+          },
+          {
+            "evidence_id": "mock-evidence-2",
+            "candidate_id": "mock-candidate-b",
+            "condition_id": "mock-core-2",
+            "structure_id": null,
+            "topic": "accessibility",
+            "kind": "unknown",
+            "measurement_state": "unknown",
+            "value": null,
+            "unit": null,
+            "definition": null,
+            "reason": "모의 시나리오: 주변 구조 자료가 없어 판단할 수 없음",
+            "residues": [],
+            "sources": []
+          }
+        ],
+        "opinions": [
+          {
+            "opinion_id": "mock-opinion-1",
+            "candidate_id": "mock-candidate-a",
+            "condition_id": "mock-core-1",
+            "topic": "contact",
+            "decision": "not_assessed",
+            "evidence_ids": ["mock-evidence-1"],
+            "conflicting_evidence_ids": [],
+            "reason": "실제 후보 검토를 수행하지 않은 UI 모의 의견",
+            "limitations": ["과학적 판정·실제 분석 완료를 나타내지 않음"],
+            "follow_up_questions": ["실제 로직의 구조·근거·결과 계약을 연결해야 함"]
+          },
+          {
+            "opinion_id": "mock-opinion-2",
+            "candidate_id": "mock-candidate-b",
+            "condition_id": "mock-core-2",
+            "topic": "accessibility",
+            "decision": "hold",
+            "evidence_ids": ["mock-evidence-2"],
+            "conflicting_evidence_ids": [],
+            "reason": "모의 시나리오의 판단 보류이며 실제 후보 판정이 아님",
+            "limitations": ["과학적 판정·실제 분석 완료를 나타내지 않음"],
+            "follow_up_questions": ["실제 로직의 구조·근거·결과 계약을 연결해야 함"]
+          }
+        ],
+        "artifacts": [
+          {
+            "artifact_id": "mock-report-json",
+            "role": "report_json",
+            "format": "json",
+            "status": "mock",
+            "file_name": "mock-result.json",
+            "size_bytes": null,
+            "sha256": null,
+            "reason": "파일 미생성: 다운로드를 비활성화하는 UI 모의 항목"
+          },
+          {
+            "artifact_id": "mock-report-csv",
+            "role": "report_csv",
+            "format": "csv",
+            "status": "mock",
+            "file_name": "mock-result.csv",
+            "size_bytes": null,
+            "sha256": null,
+            "reason": "파일 미생성: 다운로드를 비활성화하는 UI 모의 항목"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "name": "partial",
+      "description": "한 후보의 결과 영역과 다른 후보의 실행 실패를 함께 표시.",
+      "session": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "session_id": "mock-session",
+        "status": "active",
+        "expires_at": "2026-09-25T00:30:00Z"
+      },
+      "run": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "run_id": "mock-run-partial",
+        "review_id": "mock-review",
+        "status": "partial",
+        "settings_version": "mock-settings-v1",
+        "candidates": [
+          {
+            "candidate_id": "mock-candidate-a",
+            "status": "completed",
+            "current_step": null,
+            "steps": [
+              {"step_id":"input_mapping","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"},
+              {"step_id":"evidence_review","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"},
+              {"step_id":"prediction","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"},
+              {"step_id":"structure_comparison","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"},
+              {"step_id":"reporting","status":"completed","reason":"UI 시나리오 상태 재현이며 실제 분석을 실행하지 않음"}
+            ],
+            "reason": null
+          },
+          {
+            "candidate_id": "mock-candidate-b",
+            "status": "failed",
+            "current_step": null,
+            "steps": [
+              {"step_id":"input_mapping","status":"pending","reason":null},
+              {"step_id":"evidence_review","status":"pending","reason":null},
+              {"step_id":"prediction","status":"failed","reason":"모의 외부 요청 timeout"},
+              {"step_id":"structure_comparison","status":"pending","reason":null},
+              {"step_id":"reporting","status":"pending","reason":null}
+            ],
+            "reason": null
+          }
+        ],
+        "created_at": "2026-09-25T00:00:00Z",
+        "started_at": "2026-09-25T00:00:00Z",
+        "finished_at": "2026-09-25T00:01:00Z",
+        "updated_at": "2026-09-25T00:01:00Z",
+        "result_available": true,
+        "error": {
+          "schema_version": "0.1.0",
+          "data_mode": "mock",
+          "code": "UPSTREAM_TIMEOUT",
+          "message": "모의 timeout: 실제 외부 호출 없음",
+          "run_id": "mock-run-partial",
+          "candidate_id": "mock-candidate-b",
+          "step_id": "prediction",
+          "field_errors": [],
+          "retry_action": "check_run"
+        }
+      },
+      "result": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "run_id": "mock-run-partial",
+        "review_id": "mock-review",
+        "candidate_ids": ["mock-candidate-a","mock-candidate-b"],
+        "created_at": "2026-09-25T00:01:00Z",
+        "settings_version": "mock-settings-v1",
+        "structures": [],
+        "conditions": [
+          {
+            "condition_id": "mock-core-1",
+            "candidate_id": "mock-candidate-a",
+            "kind": "core",
+            "structure_ids": [],
+            "included_components": [],
+            "gaps": ["모의 응답에는 실제 구조·계산 결과가 없음"],
+            "sources": []
+          },
+          {
+            "condition_id": "mock-core-2",
+            "candidate_id": "mock-candidate-b",
+            "kind": "core",
+            "structure_ids": [],
+            "included_components": [],
+            "gaps": ["모의 응답에는 실제 구조·계산 결과가 없음"],
+            "sources": []
+          }
+        ],
+        "evidence": [
+          {
+            "evidence_id": "mock-evidence-1",
+            "candidate_id": "mock-candidate-a",
+            "condition_id": "mock-core-1",
+            "structure_id": null,
+            "topic": "contact",
+            "kind": "unknown",
+            "measurement_state": "not_run",
+            "value": null,
+            "unit": null,
+            "definition": null,
+            "reason": "실제 계산을 수행하지 않은 UI 전용 모의 데이터",
+            "residues": [],
+            "sources": []
+          },
+          {
+            "evidence_id": "mock-evidence-2",
+            "candidate_id": "mock-candidate-b",
+            "condition_id": "mock-core-2",
+            "structure_id": null,
+            "topic": "contact",
+            "kind": "unknown",
+            "measurement_state": "failed",
+            "value": null,
+            "unit": null,
+            "definition": null,
+            "reason": "모의 예측 실패로 계산하지 못함",
+            "residues": [],
+            "sources": []
+          }
+        ],
+        "opinions": [
+          {
+            "opinion_id": "mock-opinion-1",
+            "candidate_id": "mock-candidate-a",
+            "condition_id": "mock-core-1",
+            "topic": "contact",
+            "decision": "not_assessed",
+            "evidence_ids": ["mock-evidence-1"],
+            "conflicting_evidence_ids": [],
+            "reason": "실제 후보 검토를 수행하지 않은 UI 모의 의견",
+            "limitations": ["과학적 판정·실제 분석 완료를 나타내지 않음"],
+            "follow_up_questions": ["실제 로직의 구조·근거·결과 계약을 연결해야 함"]
+          },
+          {
+            "opinion_id": "mock-opinion-2",
+            "candidate_id": "mock-candidate-b",
+            "condition_id": "mock-core-2",
+            "topic": "contact",
+            "decision": "not_assessed",
+            "evidence_ids": ["mock-evidence-2"],
+            "conflicting_evidence_ids": [],
+            "reason": "실제 후보 검토를 수행하지 않은 UI 모의 의견",
+            "limitations": ["과학적 판정·실제 분석 완료를 나타내지 않음"],
+            "follow_up_questions": ["실제 로직의 구조·근거·결과 계약을 연결해야 함"]
+          }
+        ],
+        "artifacts": [
+          {
+            "artifact_id": "mock-report-json",
+            "role": "report_json",
+            "format": "json",
+            "status": "mock",
+            "file_name": "mock-result.json",
+            "size_bytes": null,
+            "sha256": null,
+            "reason": "파일 미생성: 다운로드를 비활성화하는 UI 모의 항목"
+          },
+          {
+            "artifact_id": "mock-report-csv",
+            "role": "report_csv",
+            "format": "csv",
+            "status": "mock",
+            "file_name": "mock-result.csv",
+            "size_bytes": null,
+            "sha256": null,
+            "reason": "파일 미생성: 다운로드를 비활성화하는 UI 모의 항목"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "name": "failed",
+      "description": "유효 결과 없는 실패 표시.",
+      "session": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "session_id": "mock-session",
+        "status": "active",
+        "expires_at": "2026-09-25T00:30:00Z"
+      },
+      "run": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "run_id": "mock-run-failed",
+        "review_id": "mock-review",
+        "status": "failed",
+        "settings_version": "mock-settings-v1",
+        "candidates": [
+          {
+            "candidate_id": "mock-candidate-a",
+            "status": "failed",
+            "current_step": null,
+            "steps": [
+              {"step_id":"input_mapping","status":"failed","reason":"UI 모의 입력 대응 오류"},
+              {"step_id":"evidence_review","status":"pending","reason":null},
+              {"step_id":"prediction","status":"pending","reason":null},
+              {"step_id":"structure_comparison","status":"pending","reason":null},
+              {"step_id":"reporting","status":"pending","reason":null}
+            ],
+            "reason": null
+          },
+          {
+            "candidate_id": "mock-candidate-b",
+            "status": "failed",
+            "current_step": null,
+            "steps": [
+              {"step_id":"input_mapping","status":"failed","reason":"UI 모의 입력 대응 오류"},
+              {"step_id":"evidence_review","status":"pending","reason":null},
+              {"step_id":"prediction","status":"pending","reason":null},
+              {"step_id":"structure_comparison","status":"pending","reason":null},
+              {"step_id":"reporting","status":"pending","reason":null}
+            ],
+            "reason": null
+          }
+        ],
+        "created_at": "2026-09-25T00:00:00Z",
+        "started_at": "2026-09-25T00:00:00Z",
+        "finished_at": "2026-09-25T00:01:00Z",
+        "updated_at": "2026-09-25T00:01:00Z",
+        "result_available": false,
+        "error": {
+          "schema_version": "0.1.0",
+          "data_mode": "mock",
+          "code": "INPUT_MAPPING_FAILED",
+          "message": "모의 사슬 대응 오류",
+          "run_id": "mock-run-failed",
+          "candidate_id": "mock-candidate-a",
+          "step_id": "input_mapping",
+          "field_errors": [],
+          "retry_action": "fix_input"
+        }
+      },
+      "result": null,
+      "error": null
+    },
+    {
+      "name": "interrupted",
+      "description": "worker 소실과 실패를 구별. 마지막 단계는 완료로 바꾸지 않음.",
+      "session": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "session_id": "mock-session",
+        "status": "active",
+        "expires_at": "2026-09-25T00:30:00Z"
+      },
+      "run": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "run_id": "mock-run-interrupted",
+        "review_id": "mock-review",
+        "status": "interrupted",
+        "settings_version": "mock-settings-v1",
+        "candidates": [
+          {
+            "candidate_id": "mock-candidate-a",
+            "status": "interrupted",
+            "current_step": "prediction",
+            "steps": [
+              {"step_id":"input_mapping","status":"pending","reason":null},
+              {"step_id":"evidence_review","status":"pending","reason":null},
+              {"step_id":"prediction","status":"running","reason":null},
+              {"step_id":"structure_comparison","status":"pending","reason":null},
+              {"step_id":"reporting","status":"pending","reason":null}
+            ],
+            "reason": "모의 worker 중단: 마지막 실행 상태를 유지"
+          },
+          {
+            "candidate_id": "mock-candidate-b",
+            "status": "interrupted",
+            "current_step": "prediction",
+            "steps": [
+              {"step_id":"input_mapping","status":"pending","reason":null},
+              {"step_id":"evidence_review","status":"pending","reason":null},
+              {"step_id":"prediction","status":"running","reason":null},
+              {"step_id":"structure_comparison","status":"pending","reason":null},
+              {"step_id":"reporting","status":"pending","reason":null}
+            ],
+            "reason": "모의 worker 중단: 마지막 실행 상태를 유지"
+          }
+        ],
+        "created_at": "2026-09-25T00:00:00Z",
+        "started_at": "2026-09-25T00:00:00Z",
+        "finished_at": null,
+        "updated_at": "2026-09-25T00:01:00Z",
+        "result_available": false,
+        "error": {
+          "schema_version": "0.1.0",
+          "data_mode": "mock",
+          "code": "WORKER_INTERRUPTED",
+          "message": "모의 worker 중단: 기존 요청 상태 확인 필요",
+          "run_id": "mock-run-interrupted",
+          "candidate_id": null,
+          "step_id": "prediction",
+          "field_errors": [],
+          "retry_action": "check_run"
+        }
+      },
+      "result": null,
+      "error": null
+    },
+    {
+      "name": "session-expired",
+      "description": "만료 응답에는 이전 입력·실행·결과 본문을 포함하지 않음.",
+      "session": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "session_id": "mock-session",
+        "status": "expired",
+        "expires_at": "2026-09-25T00:30:00Z"
+      },
+      "run": null,
+      "result": null,
+      "error": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "code": "SESSION_EXPIRED",
+        "message": "임시 세션이 만료되었습니다.",
+        "run_id": null,
+        "candidate_id": null,
+        "step_id": null,
+        "field_errors": [],
+        "retry_action": "none"
+      }
+    },
+    {
+      "name": "input-invalid",
+      "description": "공통 input에서 사용자가 중쇄 값을 지웠을 때의 오류 응답만 재현. 공통 input 자체는 유효한 형식.",
+      "session": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "session_id": "mock-session",
+        "status": "active",
+        "expires_at": "2026-09-25T00:30:00Z"
+      },
+      "run": null,
+      "result": null,
+      "error": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "code": "INPUT_INVALID",
+        "message": "중쇄 서열을 입력해 주세요.",
+        "run_id": null,
+        "candidate_id": "mock-candidate-a",
+        "step_id": null,
+        "field_errors": [{"path":"/candidates/0/heavy_chain_fasta","message":"필수 값입니다."}],
+        "retry_action": "fix_input"
+      }
+    }
+  ]
+}

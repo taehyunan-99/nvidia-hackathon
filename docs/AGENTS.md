@@ -11,6 +11,7 @@
 - [ARCHITECTURE.md](ARCHITECTURE.md) — 구성요소·데이터·실행 흐름·Docker와 AWS 배치안
 - [ADR.md](ADR.md) — 기술 선택의 배경·대안·결정 상태
 - [plan.md](plan.md) — 로직 2명·서비스 1명의 제안 분담·선행 작업·인계·검증 계획
+- [frontend-hosting/AGENTS.md](frontend-hosting/AGENTS.md) — 프런트·호스팅 관점의 로직 조사·데이터 소비 요구·실행 조건·인터뷰
 - `hackathon/` — 규정·신청·교육·데모
 - [topics/her2/overview.md](topics/her2/overview.md) — 현재 프로젝트 목적·입력·산출물
 - [topics/her2/agent-design.md](topics/her2/agent-design.md) — 에이전트 판단 흐름
