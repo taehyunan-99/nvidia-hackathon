@@ -1,0 +1,136 @@
+{
+  "schema_version": "0.1.0",
+  "data_mode": "mock",
+  "description": "합성 UI 재생: queued. 단계별 기록이며 실제 분석이나 모델 호출이 아니다.",
+  "input": {
+    "schema_version": "0.1.0",
+    "example_id": null,
+    "public_data_confirmed": true,
+    "target": {
+      "identifier": null,
+      "fasta": ">mock_target_not_her2\nACDE",
+      "analysis_range": null,
+      "sources": []
+    },
+    "candidates": [
+      {
+        "candidate_id": "mock-candidate-a",
+        "name": "UI 모의 후보 1 · 실제 항체 아님",
+        "antibody_format": null,
+        "heavy_chain_fasta": ">mock_heavy_not_antibody\nACDE",
+        "light_chain_fasta": ">mock_light_not_antibody\nFGHI",
+        "heavy_analysis_range": null,
+        "light_analysis_range": null,
+        "sources": []
+      },
+      {
+        "candidate_id": "mock-candidate-b",
+        "name": "UI 모의 후보 2 · 실제 항체 아님",
+        "antibody_format": null,
+        "heavy_chain_fasta": ">mock_heavy_not_antibody\nACDE",
+        "light_chain_fasta": ">mock_light_not_antibody\nFGHI",
+        "heavy_analysis_range": null,
+        "light_analysis_range": null,
+        "sources": []
+      }
+    ],
+    "uploads": []
+  },
+  "scenarios": [
+    {
+      "name": "queued",
+      "description": "입력 접수 후 대기 화면. 실제 작업이 접수된 것은 아님.",
+      "session": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "session_id": "mock-session",
+        "status": "active",
+        "expires_at": "2026-09-25T00:30:00Z"
+      },
+      "run": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "run_id": "mock-run-queued",
+        "review_id": "mock-review",
+        "status": "queued",
+        "settings_version": "mock-settings-v1",
+        "candidates": [
+          {
+            "candidate_id": "mock-candidate-a",
+            "status": "queued",
+            "current_step": null,
+            "steps": [
+              {
+                "step_id": "input_mapping",
+                "status": "pending",
+                "reason": null
+              },
+              {
+                "step_id": "evidence_review",
+                "status": "pending",
+                "reason": null
+              },
+              {
+                "step_id": "prediction",
+                "status": "pending",
+                "reason": null
+              },
+              {
+                "step_id": "structure_comparison",
+                "status": "pending",
+                "reason": null
+              },
+              {
+                "step_id": "reporting",
+                "status": "pending",
+                "reason": null
+              }
+            ],
+            "reason": null
+          },
+          {
+            "candidate_id": "mock-candidate-b",
+            "status": "queued",
+            "current_step": null,
+            "steps": [
+              {
+                "step_id": "input_mapping",
+                "status": "pending",
+                "reason": null
+              },
+              {
+                "step_id": "evidence_review",
+                "status": "pending",
+                "reason": null
+              },
+              {
+                "step_id": "prediction",
+                "status": "pending",
+                "reason": null
+              },
+              {
+                "step_id": "structure_comparison",
+                "status": "pending",
+                "reason": null
+              },
+              {
+                "step_id": "reporting",
+                "status": "pending",
+                "reason": null
+              }
+            ],
+            "reason": null
+          }
+        ],
+        "created_at": "2026-09-25T00:00:00Z",
+        "started_at": null,
+        "finished_at": null,
+        "updated_at": "2026-09-25T00:00:00Z",
+        "result_available": false,
+        "error": null
+      },
+      "result": null,
+      "error": null
+    }
+  ]
+}

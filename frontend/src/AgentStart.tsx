@@ -1,4 +1,4 @@
-import { useState } from "react";
+import type { ReviewInput } from "./scenario-file";
 export function BioSymbol({ large = false }: { large?: boolean }) {
   return (
     <svg
@@ -43,32 +43,19 @@ export function BioSymbol({ large = false }: { large?: boolean }) {
     </svg>
   );
 }
-const examples = [
-  {
-    label: "후보 비교",
-    description: "두 후보의 근거와 검토 의견",
-    scenario: "completed",
-  },
-  {
-    label: "자료 부족",
-    description: "자료 누락과 판단 보류",
-    scenario: "scientific-hold",
-  },
-  {
-    label: "부분 결과",
-    description: "일부 분석 실패와 남은 근거",
-    scenario: "partial",
-  },
-];
 export function AgentStart({
+  input,
+  fileName,
+  error,
+  onFile,
   onStart,
-  onInput,
 }: {
-  onStart: (task: string, scenario: string) => void;
-  onInput: () => void;
+  input: ReviewInput | null;
+  fileName: string;
+  error: string;
+  onFile: (file: File) => void;
+  onStart: () => void;
 }) {
-  const [scenario, setScenario] = useState("completed");
-  const selected = examples.find((x) => x.scenario === scenario)!;
   return (
     <section className="agent-start">
       <div className="agent-heading">
@@ -79,44 +66,44 @@ export function AgentStart({
           <br />
           <span>근거를 함께 살펴봅니다.</span>
         </h1>
-        <p>예제로 시작하거나, 검토할 서열을 직접 입력하세요.</p>
+        <p>검토 시나리오 파일을 올리고 입력부터 결과까지 확인하세요.</p>
       </div>
-      <section className="analysis-launcher" aria-label="검토 자료 선택">
+      <section className="analysis-launcher" aria-label="검토 파일 업로드">
         <div className="launcher-heading">
           <div>
-            <span className="eyebrow">EXAMPLE WORKSPACE</span>
-            <h2>모의 예제로 시작하기</h2>
+            <span className="eyebrow">REVIEW INPUT</span>
+            <h2>시나리오 파일 업로드</h2>
           </div>
-          <span className="tag">합성 후보 2개</span>
+          <span className="tag">JSON · 모의 재생</span>
         </div>
-        <div className="example-options" aria-label="모의 검토 예제">
-          {examples.map((x) => (
-            <button
-              key={x.scenario}
-              aria-pressed={scenario === x.scenario}
-              onClick={() => setScenario(x.scenario)}
-            >
-              <strong>{x.label}</strong>
-              <span>{x.description}</span>
-            </button>
-          ))}
-        </div>
+        <label className="scenario-upload">
+          검토 시나리오 JSON
+          <input type="file" accept=".json,application/json" onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) onFile(file);
+          }} />
+        </label>
+        {error && <p role="alert" className="notice">{error}</p>}
+        {input && (
+          <div className="uploaded-input" aria-label="업로드한 입력 미리보기">
+            <strong>{fileName}</strong>
+            <p>표적: {input.target.identifier ?? input.target.fasta?.split("\n")[0] ?? "미제공"}</p>
+            <ul>{input.candidates.map((candidate) => <li key={candidate.candidate_id}>{candidate.name}</li>)}</ul>
+          </div>
+        )}
         <div className="launcher-action">
-          <span>서열·구조 연결 전의 화면 예제입니다.</span>
+          <span>파일은 이 브라우저에서만 읽습니다.</span>
           <button
             className="primary"
-            onClick={() => onStart(selected.label, scenario)}
+            disabled={!input}
+            onClick={onStart}
           >
-            모의 검토 시작 →
+            검토 흐름 시작 →
           </button>
         </div>
       </section>
-      <button className="direct-input-link" onClick={onInput}>
-        ＋ 내 자료로 준비하기 <span>서열 직접 입력</span>
-      </button>
       <p className="agent-disclosure">
-        실제 분석은 미연결입니다. 예제에는 실제 HER2·항체 서열과 구조가
-        없습니다.
+        기록된 상태를 단계별로 재생합니다. 실제 분석·모델 호출은 실행되지 않습니다.
       </p>
     </section>
   );

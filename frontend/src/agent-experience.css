@@ -85,6 +85,32 @@ header {
   font-size: var(--text-caption);
   margin-top: var(--space-4);
 }
+.scenario-upload {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border: 1px dashed var(--agent-border);
+  background: var(--agent-surface);
+  font-weight: 600;
+}
+.scenario-upload input {
+  width: 100%;
+  min-width: 0;
+  font-weight: 400;
+}
+.uploaded-input {
+  margin-top: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+  background: var(--agent-soft);
+  overflow-wrap: anywhere;
+}
+.uploaded-input p {
+  margin: var(--space-2) 0;
+}
+.uploaded-input ul {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-6);
+}
 .request-context {
   display: flex;
   align-items: center;

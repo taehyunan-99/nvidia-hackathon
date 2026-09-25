@@ -1,0 +1,70 @@
+{
+  "schema_version": "0.1.0",
+  "data_mode": "mock",
+  "description": "합성 UI 재생: input-invalid. 단계별 기록이며 실제 분석이나 모델 호출이 아니다.",
+  "input": {
+    "schema_version": "0.1.0",
+    "example_id": null,
+    "public_data_confirmed": true,
+    "target": {
+      "identifier": null,
+      "fasta": ">mock_target_not_her2\nACDE",
+      "analysis_range": null,
+      "sources": []
+    },
+    "candidates": [
+      {
+        "candidate_id": "mock-candidate-a",
+        "name": "UI 모의 후보 1 · 실제 항체 아님",
+        "antibody_format": null,
+        "heavy_chain_fasta": ">mock_heavy_not_antibody\nACDE",
+        "light_chain_fasta": ">mock_light_not_antibody\nFGHI",
+        "heavy_analysis_range": null,
+        "light_analysis_range": null,
+        "sources": []
+      },
+      {
+        "candidate_id": "mock-candidate-b",
+        "name": "UI 모의 후보 2 · 실제 항체 아님",
+        "antibody_format": null,
+        "heavy_chain_fasta": ">mock_heavy_not_antibody\nACDE",
+        "light_chain_fasta": ">mock_light_not_antibody\nFGHI",
+        "heavy_analysis_range": null,
+        "light_analysis_range": null,
+        "sources": []
+      }
+    ],
+    "uploads": []
+  },
+  "scenarios": [
+    {
+      "name": "input-invalid",
+      "description": "공통 input에서 사용자가 중쇄 값을 지웠을 때의 오류 응답만 재현. 공통 input 자체는 유효한 형식.",
+      "session": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "session_id": "mock-session",
+        "status": "active",
+        "expires_at": "2026-09-25T00:30:00Z"
+      },
+      "run": null,
+      "result": null,
+      "error": {
+        "schema_version": "0.1.0",
+        "data_mode": "mock",
+        "code": "INPUT_INVALID",
+        "message": "중쇄 서열을 입력해 주세요.",
+        "run_id": null,
+        "candidate_id": "mock-candidate-a",
+        "step_id": null,
+        "field_errors": [
+          {
+            "path": "/candidates/0/heavy_chain_fasta",
+            "message": "필수 값입니다."
+          }
+        ],
+        "retry_action": "fix_input"
+      }
+    }
+  ]
+}

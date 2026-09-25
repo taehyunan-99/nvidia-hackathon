@@ -1,7 +1,6 @@
 import { lazy, Suspense } from "react";
 const StructurePreview = lazy(() => import("./StructurePreview"));
-import fixtures from "../../docs/frontend-hosting/fixtures/scenarios.json";
-type Result = NonNullable<(typeof fixtures.scenarios)[number]["result"]>;
+import type { Result, ReviewInput } from "./scenario-file";
 const decisions: Record<string, string> = {
   hold: "판단 보류",
   not_assessed: "미검토",
@@ -22,12 +21,14 @@ const topics: Record<string, string> = {
 };
 export function ReviewOverview({
   result,
+  input,
   candidate,
   conditionKind,
   evidenceId,
   onSelect,
 }: {
   result: Result;
+  input: ReviewInput;
   candidate: string;
   conditionKind: string;
   evidenceId: string | null;
@@ -80,7 +81,7 @@ export function ReviewOverview({
           <thead>
             <tr>
               <th scope="col">확인 항목</th>
-              {fixtures.input.candidates.map((c, i) => (
+              {input.candidates.map((c) => (
                 <th scope="col" key={c.candidate_id}>
                   <button
                     aria-pressed={candidate === c.candidate_id}
@@ -88,7 +89,7 @@ export function ReviewOverview({
                       onSelect(c.candidate_id, conditionKind, null)
                     }
                   >
-                    모의 후보 {i + 1}
+                    {c.name}
                   </button>
                 </th>
               ))}
@@ -99,7 +100,7 @@ export function ReviewOverview({
               (row, index) => (
                 <tr key={row}>
                   <th scope="row">{row}</th>
-                  {fixtures.input.candidates.map((c) => {
+                  {input.candidates.map((c) => {
                     const cs = result.conditions.filter(
                       (x) =>
                         x.candidate_id === c.candidate_id &&
@@ -175,10 +176,7 @@ export function ReviewOverview({
           <h2>선택한 근거를 확인하세요</h2>
         </div>
         <span className="tag">
-          모의 후보{" "}
-          {fixtures.input.candidates.findIndex(
-            (c) => c.candidate_id === candidate,
-          ) + 1}
+          {input.candidates.find((c) => c.candidate_id === candidate)?.name ?? "후보 미선택"}
         </span>
       </div>
       <div className="evidence-choices" aria-label="검토 근거 선택">

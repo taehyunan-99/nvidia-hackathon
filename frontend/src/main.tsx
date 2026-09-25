@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AgentStart, About, Team } from "./AgentStart";
 import { ReviewOverview } from "./ReviewOverview";
+import { parseScenarioFile, type ScenarioFile } from "./scenario-file";
 import "./review-overview.css";
 import { createRoot } from "react-dom/client";
-import fixtures from "../../docs/frontend-hosting/fixtures/scenarios.json";
 import "./tokens.css";
 import "./style.css";
 import "./nvidia-theme.css";
@@ -67,43 +67,60 @@ function App() {
   const [section, setSection] = useState<"analysis" | "about" | "team">(
     "analysis",
   );
-  const [reviewQuestion, setReviewQuestion] = useState("");
-  const [page, setPage] = useState(
-      new URLSearchParams(location.search).get("view") === "compare" ? 2 : 0,
-    ),
-    [comparisonLayout, setComparisonLayout] = useState<"original" | "proposed">(
-      "proposed",
-    ),
-    [scenarioName, setScenarioName] = useState("completed"),
-    [candidate, setCandidate] = useState("mock-candidate-a"),
+  const [page, setPage] = useState(0),
+    [scenarioFile, setScenarioFile] = useState<ScenarioFile | null>(null),
+    [fileName, setFileName] = useState(""),
+    [fileError, setFileError] = useState(""),
+    [frameIndex, setFrameIndex] = useState(0),
+    [playing, setPlaying] = useState(false),
+    [candidate, setCandidate] = useState(""),
     [conditionKind, setConditionKind] = useState("core"),
-    [expanded, setExpanded] = useState<string | null>(null),
-    [inputOpen, setInputOpen] = useState(false),
-    [confirmed, setConfirmed] = useState(false),
-    [message, setMessage] = useState("");
-  const scenario = fixtures.scenarios.find((s) => s.name === scenarioName)!;
-  const result = scenario.result;
-  const expired = scenario.session.status === "expired";
-  const conditions =
-    result?.conditions.filter(
-      (c) => c.candidate_id === candidate && c.kind === conditionKind,
-    ) ?? [];
-  const evidence =
-    result?.evidence.filter((e) =>
-      conditions.some((c) => c.condition_id === e.condition_id),
-    ) ?? [];
+    [expanded, setExpanded] = useState<string | null>(null);
+  const scenario = scenarioFile?.scenarios[frameIndex];
+  const result = scenario?.result;
+  const expired = scenario?.session.status === "expired";
   function go(n: number) {
     setSection("analysis");
-    setPage(n);
-    setMessage("");
+    if (n === 0) setPlaying(false);
+    setPage(n >= 2 && (playing || !result || expired) ? 1 : n);
     setExpanded(null);
   }
-  function chooseScenario(name: string) {
-    setScenarioName(name);
+  async function loadFile(file: File) {
+    setFileError("");
+    setScenarioFile(null);
+    setPlaying(false);
+    if (file.size > 2_000_000) {
+      setFileError("2MB 이하의 시나리오 JSON을 선택해 주세요.");
+      return;
+    }
+    try {
+      const parsed = parseScenarioFile(JSON.parse(await file.text()));
+      setScenarioFile(parsed);
+      setFileName(file.name);
+      setFrameIndex(0);
+      setCandidate(parsed.input.candidates[0].candidate_id);
+      setConditionKind("core");
+      setPage(0);
+    } catch (error) {
+      setFileError(error instanceof Error ? error.message : "JSON 파일을 읽지 못했습니다.");
+    }
+  }
+  function advance() {
+    if (!scenarioFile || frameIndex >= scenarioFile.scenarios.length - 1) return;
+    setFrameIndex(frameIndex + 1);
     setExpanded(null);
     setConditionKind("core");
-    setCandidate("mock-candidate-a");
+    setPage(1);
   }
+  useEffect(() => {
+    if (!playing || !scenarioFile) return;
+    if (frameIndex >= scenarioFile.scenarios.length - 1) {
+      setPlaying(false);
+      return;
+    }
+    const timeout = window.setTimeout(advance, 1800);
+    return () => window.clearTimeout(timeout);
+  }, [playing, scenarioFile, frameIndex]);
   return (
     <>
       <a className="skip" href="#main">
@@ -153,6 +170,7 @@ function App() {
               <button
                 key={p}
                 onClick={() => go(i)}
+                disabled={i >= 2 && (playing || !result || expired)}
                 aria-current={page === i ? "page" : undefined}
               >
                 <span>0{i + 1}</span>
@@ -169,93 +187,24 @@ function App() {
           ) : (
             <>
               {page === 0 ? (
+                <AgentStart
+                  input={scenarioFile?.input ?? null}
+                  fileName={fileName}
+                  error={fileError}
+                  onFile={(file) => void loadFile(file)}
+                  onStart={() => {
+                    setFrameIndex(0);
+                    setPlaying(true);
+                    go(1);
+                  }}
+                />
+              ) : scenario && scenarioFile ? (
                 <>
-                  <AgentStart
-                    onInput={() => setInputOpen(!inputOpen)}
-                    onStart={(question, scenario) => {
-                      setReviewQuestion(question);
-                      chooseScenario(scenario);
-                      go(1);
-                    }}
-                  />
-                  {inputOpen && (
-                    <section className="panel input-panel">
-                      <div className="section-heading">
-                        <div>
-                          <div className="eyebrow">REVIEW INPUT</div>
-                          <h2>검토할 자료를 준비하세요</h2>
-                        </div>
-                        <span className="tag">입력 UI 미리보기</span>
-                      </div>
-                      <p>
-                        입력값은 전송·분석되지 않습니다. 예제 탐색에는 별도의
-                        합성 자료만 사용합니다.
-                      </p>
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          setMessage(
-                            "입력 형식을 확인했습니다. 실제 접수·분석 연결은 준비 중입니다.",
-                          );
-                        }}
-                      >
-                        <label>
-                          HER2 식별자 또는 FASTA
-                          <textarea
-                            required
-                            placeholder="공개 표적 식별자 또는 FASTA"
-                          />
-                        </label>
-                        <div className="two-col">
-                          {[1, 2].map((n) => (
-                            <fieldset key={n}>
-                              <legend>후보 {n}</legend>
-                              <label>
-                                후보 이름
-                                <input required />
-                              </label>
-                              <label>
-                                중쇄 FASTA
-                                <textarea required placeholder=">heavy_chain" />
-                              </label>
-                              <label>
-                                경쇄 FASTA
-                                <textarea required placeholder=">light_chain" />
-                              </label>
-                            </fieldset>
-                          ))}
-                        </div>
-                        <label className="check">
-                          <input
-                            type="checkbox"
-                            checked={confirmed}
-                            onChange={(e) => setConfirmed(e.target.checked)}
-                            required
-                          />
-                          공개 자료만 사용합니다.
-                        </label>
-                        <div className="actions">
-                          <button className="primary" type="submit">
-                            입력 확인
-                          </button>
-                          <span className="caption">
-                            파일 업로드·세 번째 후보 추가는 후속 구현
-                          </span>
-                        </div>
-                        <p role="status">{message}</p>
-                      </form>
-                    </section>
-                  )}
-                </>
-              ) : (
-                <>
-                  {reviewQuestion && (
-                    <div className="request-context">
-                      <span>선택한 검토</span>
-                      <p>{reviewQuestion}</p>
-                      <small>모의 예제 · 실제 분석 아님</small>
-                    </div>
-                  )}
+                  <div className="request-context">
+                    <span>업로드한 검토</span>
+                    <p>{fileName}</p>
+                    <small>모의 재생 · 실제 분석 아님</small>
+                  </div>
                   <div className="workspace-title">
                     <div>
                       <div className="eyebrow">HER2 REVIEW / 0{page + 1}</div>
@@ -274,22 +223,10 @@ function App() {
                             : "검토 의견과 미확인 사항을 함께 확인하세요."}
                       </p>
                     </div>
-                    <label className="scenario-picker">
-                      미리보기 상태
-                      <select
-                        value={scenarioName}
-                        onChange={(e) => chooseScenario(e.target.value)}
-                      >
-                        {fixtures.scenarios.map((s) => (
-                          <option key={s.name} value={s.name}>
-                            {labels[s.name]}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                    <span className="tag">기록 {frameIndex + 1} / {scenarioFile.scenarios.length}{playing ? " · 모의 재생 중" : ""}</span>
                   </div>
                   <div className="notice">
-                    <span className="tag">모의 데이터</span>{" "}
+                    <span className="tag">모의 재생 · {labels[scenario.name] ?? scenario.name}</span>{" "}
                     {scenario.description}
                   </div>
                   {expired ? (
@@ -302,7 +239,6 @@ function App() {
                       <button
                         className="primary"
                         onClick={() => {
-                          chooseScenario("completed");
                           go(0);
                         }}
                       >
@@ -317,10 +253,9 @@ function App() {
                           <button
                             onClick={() => {
                               go(0);
-                              setInputOpen(true);
                             }}
                           >
-                            입력 화면으로
+                            파일 입력으로
                           </button>
                         </div>
                       )}
@@ -333,10 +268,10 @@ function App() {
                             </span>
                           </div>
                           <div className="two-col">
-                            {scenario.run.candidates.map((c, i) => (
+                            {scenario.run.candidates.map((c) => (
                               <section className="panel" key={c.candidate_id}>
                                 <div className="section-heading">
-                                  <h3>모의 후보 {i + 1}</h3>
+                                  <h3>{scenarioFile.input.candidates.find((item) => item.candidate_id === c.candidate_id)?.name ?? c.candidate_id}</h3>
                                   <span className="caption">
                                     실제 항체 아님
                                   </span>
@@ -366,17 +301,12 @@ function App() {
                             </p>
                           )}
                           <div className="actions end">
-                            <span className="caption">
-                              상태 선택으로 시나리오를 탐색합니다. 실제 분석은
-                              실행되지 않습니다.
-                            </span>
-                            <button
-                              className="primary"
-                              disabled={!scenario.run.result_available}
-                              onClick={() => go(2)}
-                            >
-                              비교 결과 보기 ↗
-                            </button>
+                            <span className="caption">저장된 상태를 보여줍니다. 실제 분석은 실행되지 않습니다.</span>
+                            {frameIndex < scenarioFile.scenarios.length - 1 ? (
+                              <button className="primary" onClick={advance}>다음 기록 보기 →</button>
+                            ) : (
+                              <button className="primary" disabled={playing || !scenario.run.result_available} onClick={() => go(2)}>비교 결과 보기 ↗</button>
+                            )}
                           </div>
                         </>
                       )}
@@ -394,34 +324,9 @@ function App() {
                     </section>
                   ) : page === 2 ? (
                     <>
-                      <section
-                        className="layout-comparison"
-                        aria-label="화면 구성 비교"
-                      >
-                        <div>
-                          <strong>어떤 방식이 더 이해하기 쉬운가요?</strong>
-                          <p>
-                            같은 모의 자료로 기존 화면과 새 제안을 비교하세요.
-                          </p>
-                        </div>
-                        <div className="segmented">
-                          <button
-                            aria-pressed={comparisonLayout === "original"}
-                            onClick={() => setComparisonLayout("original")}
-                          >
-                            A · 기존: 구조 먼저
-                          </button>
-                          <button
-                            aria-pressed={comparisonLayout === "proposed"}
-                            onClick={() => setComparisonLayout("proposed")}
-                          >
-                            B · 제안: 쟁점 먼저
-                          </button>
-                        </div>
-                      </section>
                       <div className="comparison-toolbar">
                         <div className="segmented" aria-label="후보 선택">
-                          {fixtures.input.candidates.map((c, i) => (
+                          {scenarioFile.input.candidates.map((c) => (
                             <button
                               key={c.candidate_id}
                               aria-pressed={candidate === c.candidate_id}
@@ -430,7 +335,7 @@ function App() {
                                 setExpanded(null);
                               }}
                             >
-                              모의 후보 {i + 1}
+                              {c.name}
                             </button>
                           ))}
                         </div>
@@ -448,104 +353,18 @@ function App() {
                           </select>
                         </label>
                       </div>
-                      {comparisonLayout === "proposed" && (
-                        <ReviewOverview
-                          result={result}
-                          candidate={candidate}
-                          conditionKind={conditionKind}
-                          evidenceId={expanded}
-                          onSelect={(id, kind, evidenceId) => {
-                            setCandidate(id);
-                            setConditionKind(kind);
-                            setExpanded(evidenceId);
-                          }}
-                        />
-                      )}
-                      {comparisonLayout === "original" && (
-                        <div className="compare-grid">
-                          <section className="viewer">
-                            <div className="section-heading">
-                              <span className="eyebrow">STRUCTURE VIEW</span>
-                              <span className="tag">구조 미제공</span>
-                            </div>
-                            <div className="viewer-empty">
-                              <span className="outline-icon">◇</span>
-                              <h2>구조가 연결될 자리입니다</h2>
-                              <p>
-                                이 모의 자료에는 실제 좌표가 없습니다.
-                                <br />
-                                구조가 제공되면 선택한 근거의 위치를 함께
-                                확인합니다.
-                              </p>
-                            </div>
-                            <span className="caption">
-                              현재 3D 렌더링·잔기 강조는 제공하지 않습니다.
-                            </span>
-                          </section>
-                          <section className="panel evidence-panel">
-                            <div className="eyebrow">EVIDENCE</div>
-                            <h2>확인된 것과 남은 것</h2>
-                            <p className="caption">
-                              수치만으로 후보의 우열을 정하지 않습니다.
-                            </p>
-                            {conditions.length === 0 ? (
-                              <div className="empty">
-                                <h3>이 조건의 자료가 없습니다</h3>
-                                <p>
-                                  주변 구조가 없다는 뜻이 아닙니다. 자료 보완이
-                                  필요합니다.
-                                </p>
-                              </div>
-                            ) : (
-                              evidence.map((e) => (
-                                <div className="evidence" key={e.evidence_id}>
-                                  <button
-                                    className="evidence-toggle"
-                                    aria-expanded={expanded === e.evidence_id}
-                                    onClick={() =>
-                                      setExpanded(
-                                        expanded === e.evidence_id
-                                          ? null
-                                          : e.evidence_id,
-                                      )
-                                    }
-                                  >
-                                    <span>
-                                      접촉 근거{" "}
-                                      <small>{labels[e.kind] ?? e.kind}</small>
-                                    </span>
-                                    <span>
-                                      {labels[e.measurement_state] ??
-                                        e.measurement_state}{" "}
-                                      ＋
-                                    </span>
-                                  </button>
-                                  {expanded === e.evidence_id && (
-                                    <div className="evidence-detail">
-                                      <p>{e.reason}</p>
-                                      <p>측정값: {e.value ?? "미제공"}</p>
-                                      <p>
-                                        출처:{" "}
-                                        {e.sources.length
-                                          ? "제공된 출처"
-                                          : "미제공"}{" "}
-                                        · 대응 좌표: 미제공
-                                      </p>
-                                    </div>
-                                  )}
-                                </div>
-                              ))
-                            )}
-                            {conditions
-                              .flatMap((c) => c.gaps)
-                              .map((g, i) => (
-                                <p className="notice" key={i}>
-                                  {g}
-                                </p>
-                              ))}
-                          </section>
-                        </div>
-                      )}
+                      <ReviewOverview
+                        result={result}
+                        input={scenarioFile.input}
+                        candidate={candidate}
+                        conditionKind={conditionKind}
+                        evidenceId={expanded}
+                        onSelect={(id, kind, evidenceId) => {
+                          setCandidate(id);
+                          setConditionKind(kind);
+                          setExpanded(evidenceId);
+                        }}
+                      />
                       <div className="actions end">
                         <button className="primary" onClick={() => go(3)}>
                           검토 보고 보기 ↗
@@ -569,10 +388,10 @@ function App() {
                         </p>
                       </section>
                       <div className="two-col">
-                        {result.opinions.map((o, i) => (
+                        {result.opinions.map((o) => (
                           <article className="panel" key={o.opinion_id}>
                             <div className="section-heading">
-                              <h3>모의 후보 {i + 1}</h3>
+                              <h3>{scenarioFile.input.candidates.find((item) => item.candidate_id === o.candidate_id)?.name ?? o.candidate_id}</h3>
                               <span className="tag">
                                 {labels[o.decision] ?? o.decision}
                               </span>
@@ -615,7 +434,7 @@ function App() {
                     </>
                   )}
                 </>
-              )}
+              ) : null}
             </>
           )}
         </main>
