@@ -180,3 +180,34 @@ def test_every_decision_is_recorded_for_the_run(tmp_path):
     steps = [d.step for d in decider.decisions]
     assert steps == ["structure_source", "review_opinion"]
     assert all(d.decided_by == "model" for d in decider.decisions)
+
+
+def test_the_rule_agrees_with_the_model_instead_of_contradicting_it(tmp_path):
+    """모델이 죽어도 결론이 뒤집히지 않아야 한다.
+
+    실측 4회 중 1회에서 trastuzumab이 needs_confirmation 대신 reviewable로
+    나왔다. 모델이 503으로 죽어 규칙이 대신 골랐고, 그 규칙의 입장이
+    모델과 달랐기 때문이다. 같은 입력에 NVIDIA 서버 상태에 따라 다른
+    결론이 나오면 시연에서 재현이 안 된다.
+
+    지금 흐름에는 충돌·표면 노출이 늘 미계산으로 남는다. 규칙도 모델처럼
+    그 자리에서 확인이 필요하다고 봐야 한다.
+    """
+    client = ScriptedClient()  # 모델 사용 불가 = 규칙만으로 판단
+
+    output, _ = run_flow(
+        make_request(_matched_candidate(), tmp_path, target_fasta=_long("HERTWOSEQ", 300)),
+        client=client,
+        decider=Decider(client, model="test-model"),
+    )
+
+    opinion = _mine(output, "trastuzumab")[0]
+    assert opinion["decision"] == "needs_confirmation"
+    # 근거를 계산하긴 했다. 아무것도 못 한 것과는 다르다.
+    measured = [
+        e
+        for e in _mine(output, "trastuzumab", "evidence")
+        if e["measurement_state"] == "measured"
+    ]
+    assert measured, "근거를 하나도 계산하지 못했다면 다른 문제다"
+    assert opinion["limitations"], "무엇이 모자란지 남아 있어야 한다"

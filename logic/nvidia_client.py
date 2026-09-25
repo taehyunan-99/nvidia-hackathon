@@ -37,6 +37,13 @@ RETRY_STATUS = frozenset({429, 503})
 RETRY_WAITS = (5, 10, 20)
 MAX_RETRIES = len(RETRY_WAITS)
 
+# 판단 호출은 같은 간격을 쓰면 안 된다. 실측(2026-09-26)에서 Nemotron은
+# 예측과 다른 이유로 막힌다 — 한도가 아니라 HTTP 503 "Service temporarily
+# overloaded"이고, 잠깐 지나가는 혼잡이다. 위 간격(합 35초)을 그대로 쓰면
+# 판단 한 번에 35초가 붙어 후보 2건 실행이 57초에서 105초까지 늘어났다.
+# 짧게 여러 번 두드리는 편이 맞다. 합 7초다.
+CHAT_RETRY_WAITS = (1, 2, 4)
+
 
 def _retry_after(response: "requests.Response") -> float | None:
     """서버가 대기 시간을 알려주면 그쪽을 따른다. 실측에서는 없었다."""
@@ -112,6 +119,7 @@ class NvidiaClient:
         summary: dict[str, Any],
         *,
         timeout: int | None = None,
+        waits: tuple[int, ...] = RETRY_WAITS,
     ) -> dict[str, Any]:
         key = self.require_key()
         headers = {"Authorization": f"Bearer {key}", "Accept": "application/json"}
@@ -140,8 +148,8 @@ class NvidiaClient:
             self._record(
                 CallRecord(kind, url, response.status_code, elapsed, False, summary, body)
             )
-            if response.status_code in RETRY_STATUS and attempt < MAX_RETRIES:
-                wait = _retry_after(response) or RETRY_WAITS[attempt]
+            if response.status_code in RETRY_STATUS and attempt < len(waits):
+                wait = _retry_after(response) or waits[attempt]
                 time.sleep(wait)
                 attempt += 1
                 continue
@@ -211,7 +219,12 @@ class NvidiaClient:
             payload["tool_choice"] = "auto"
         summary = {"model": model, "messages": len(messages), "tools": len(tools or [])}
         return self._post(
-            f"{LLM_BASE}/chat/completions", payload, "nemotron.chat", summary, timeout=timeout
+            f"{LLM_BASE}/chat/completions",
+            payload,
+            "nemotron.chat",
+            summary,
+            timeout=timeout,
+            waits=CHAT_RETRY_WAITS,
         )
 
     def list_models(self) -> list[str]:

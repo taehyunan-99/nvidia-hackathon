@@ -116,3 +116,30 @@ def test_a_broken_retry_after_falls_back_instead_of_crashing(client, monkeypatch
     client._post("http://x", {}, "boltz2.predict", {})
 
     assert slept == [nvidia_client.RETRY_WAITS[0]]
+
+
+def test_the_judgement_call_does_not_wait_as_long_as_a_prediction(client, monkeypatch):
+    """실측에서 503 재시도 35초가 실행 시간을 57초에서 105초로 늘렸다.
+
+    판단 호출이 막히는 이유는 한도가 아니라 잠깐 지나가는 혼잡이다.
+    예측 호출용 간격을 그대로 쓰면 시연이 그만큼 멈춘다.
+    """
+    slept: list[float] = []
+    monkeypatch.setattr(nvidia_client.time, "sleep", slept.append)
+    _responses(client, monkeypatch, [FakeResponse(503)] * 3 + [FakeResponse(200)])
+
+    client.chat("test-model", [{"role": "user", "content": "x"}])
+
+    assert slept == list(nvidia_client.CHAT_RETRY_WAITS)
+    assert sum(slept) < sum(nvidia_client.RETRY_WAITS)
+
+
+def test_the_prediction_call_keeps_the_longer_waits(client, monkeypatch):
+    """Boltz-2 쪽은 실제 한도라서 짧게 두드려도 소용없다. 그대로 둔다."""
+    slept: list[float] = []
+    monkeypatch.setattr(nvidia_client.time, "sleep", slept.append)
+    _responses(client, monkeypatch, [FakeResponse(429), FakeResponse(200)])
+
+    client.predict_complex([{"id": "A", "molecule_type": "protein", "sequence": "AAA"}])
+
+    assert slept == [nvidia_client.RETRY_WAITS[0]]

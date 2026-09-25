@@ -621,7 +621,13 @@ class Flow:
                 Option("reviewable", "확보한 근거로 구조상 검토 의견을 낼 수 있다."),
                 Option("needs_confirmation", "근거가 모자라 사람의 확인이 필요하다."),
             ],
-            default="reviewable" if measured else "needs_confirmation",
+            # 규칙의 기본값을 모델의 입장에 맞춘다.
+            # 예전 규칙은 "측정된 근거가 하나라도 있으면 검토 가능"이었는데,
+            # 모델은 실측에서 늘 "충돌·표면 노출이 미계산이라 확인이 필요하다"를
+            # 골랐다. 둘이 엇갈리면 같은 입력에 NVIDIA 서버 상태에 따라 다른
+            # 결론이 나온다. 실제로 4회 실행 중 1회가 그랬다. 더 보수적인
+            # 쪽으로 맞춘다.
+            default="reviewable" if measured and not unmeasured else "needs_confirmation",
         )
 
         self.opinions.append(

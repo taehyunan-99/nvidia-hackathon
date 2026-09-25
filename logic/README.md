@@ -97,12 +97,20 @@ python -m pytest logic/tests -q
 | `nvidia/nemotron-nano-3-30b-a3b`, `llama-3.1-nemotron-70b/51b-instruct` | HTTP 404 |
 | `nvidia/nemotron-3-nano-30b-a3b` (설계 문서가 고른 것) | 목록에 없음 |
 
-실제 실행(후보 2건, 판단 4회): 전체 **57.1초**. 이 중 한 번은 모델이
-HTTP 503(Service temporarily overloaded)을 돌려줬고 재시도 3회가 모두
-실패해 규칙으로 넘어갔다. **판단 호출은 예측 호출만큼 안정적이지 않다.**
-같은 실행에서 모델은 두 후보 모두 `needs_confirmation`을 골랐다 —
-충돌·표면 노출이 미계산이라는 이유다. 규칙은 같은 자리에서
-`reviewable`을 골랐을 것이다. 즉 판단부는 장식이 아니라 결과를 바꾼다.
+**판단 호출은 예측 호출만큼 안정적이지 않다.** 순차 12회에서 2회가
+HTTP 503 "Service temporarily overloaded"로 실패했다. 성공한 호출은
+중간값 4.4초, 최소 2.7초다. Boltz-2가 막히는 이유(실제 한도)와 달라서
+재시도 간격을 분리했다 — 예측 5·10·20초, 판단 1·2·4초.
+
+실행 시간은 후보 2건 기준 **21.4 / 21.8 / 32.0초**다. 재시도 간격을
+분리하기 전에는 같은 입력이 57~105초였다.
+
+모델은 실행마다 두 후보 모두 `needs_confirmation`을 골랐다. 충돌·표면
+노출이 미계산이라는 이유다. 즉 판단부는 장식이 아니라 결과를 바꾼다.
+초기 실행 4회 중 1회에서는 모델이 503으로 죽어 규칙이 `reviewable`을
+골랐고, **같은 입력에 서버 상태에 따라 다른 결론이 나왔다.** 규칙의
+기본값을 모델 쪽(미계산 항목이 있으면 확인 필요)에 맞춰 없앴다
+(`test_the_rule_agrees_with_the_model_instead_of_contradicting_it`).
 
 ### 실제 NVIDIA 호출 (대역 client 아님)
 
