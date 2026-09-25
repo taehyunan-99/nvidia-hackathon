@@ -30,6 +30,12 @@ AGENTS.override.md
 .claude/projects/
 .claude/session-env/
 
+# Personal handoff receipts and runtime evidence
+/docs/HANDOFF.md
+/docs/HANDOFF.html
+/docs/HANDOFF.md.parallel.lock
+/docs/handoff-runs/
+
 # Python
 __pycache__/
 *.py[cod]

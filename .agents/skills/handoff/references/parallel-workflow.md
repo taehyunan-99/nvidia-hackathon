@@ -12,6 +12,9 @@ with the same user's filesystem access.
   `docs/HANDOFF.md`. The helper creates v8; all other v7 sections remain required.
 - Store immutable messages, checks and snapshots under
   `docs/handoff-runs/<run_id>/`. These are evidence, not another current task list.
+- The receipt, evidence, HTML report and adjacent lock remain local and Git-ignored.
+  Workers access the main checkout's artifacts through the assigned paths;
+  do not rely on commits to transfer these artifacts into worker worktrees.
 - The main alone changes the receipt. Workers use `emit` to write evidence and
   report its absolute path and SHA256. Never construct their own identity headers.
 - Main mutation commands require the latest `--revision`, `--controller` and
@@ -144,7 +147,7 @@ Avoid repeated status snapshots while workers do substantive work.
    stop method, internal source commit/merge authority, and rework limit. Reuse prior
    explicit authorization when it covers this concrete plan.
 4. `prepare --input plan.json` stores an unapproved PLANNED proposal. During
-   next, leave it unapproved: the outgoing source/receipt commit has not happened
+   next, leave it unapproved: the outgoing source commit has not happened
    yet. After start verifies the delivered parent, prepare again at its actual
    SHA, then `approve --evidence <user-message-reference> --internal-git` binds
    the concrete execution plan. Reuse earlier authorization if it covers those

@@ -16,6 +16,20 @@ durable project documents as design authority, repository state as factual
 evidence, `docs/plan.md` as the long-term project plan, and `docs/HANDOFF.md`
 as a compact cross-session receipt. The receipt never replaces the project plan.
 
+## Local storage
+
+Share this skill and its helpers through Git, but keep `docs/HANDOFF.md`,
+`docs/HANDOFF.html`, `docs/HANDOFF.md.parallel.lock`, and `docs/handoff-runs/`
+local and ignored. Never include these artifacts in commits or PRs. Team members
+use their own clones; keep one current receipt per project scope and checkout,
+with only one main session writing it. Ignoring files does not isolate concurrent
+tasks in the same checkout.
+
+Resume from the same local checkout. Git does not transfer the receipt or its
+evidence to another clone, machine, or worktree; do not assume they exist there
+or consume another person's receipt. Team-shared progress and decisions are
+managed separately from this personal checkpoint.
+
 ## Parallel means separate app sessions
 
 In this skill, orchestration means a main Codex desktop app session controlling
@@ -95,7 +109,7 @@ Accept these forms only:
 - `$handoff pause` — checkpoint unfinished `ACTIVE` or `BLOCKED` development
   work for a later new session.
 - `$handoff next [next-work context]` — before committing a completed work
-  unit, write a commit-ready receipt for the next actual development stage and
+  unit, write a local receipt for the next actual development stage and
   print only its model and reasoning recommendation.
 - `$handoff done` — before committing a completed work unit with no known next
   stage, write and validate a final `COMPLETE` receipt with its result summary.
@@ -110,8 +124,8 @@ new receipt or a copyable prompt. Do not start a receipt whose work status is
 `COMPLETE`.
 
 For unfinished work, `pause` or `next` ends only after validating the receipt.
-`next` and `done` must run before the outgoing work unit is committed; include
-their `HANDOFF.md` in that final commit and PR. `next` records a real next
+`next` and `done` must run before the outgoing work unit is committed; keep
+their `HANDOFF.md` local and excluded from that commit and PR. `next` records a real next
 development stage, while `done` records that no next stage is currently known.
 The user selects the recommended model and reasoning when creating the new
 session, then runs `$handoff start` after `next`.
@@ -261,8 +275,8 @@ stop and name the missing evidence.
 Record the supplied next-work context as the first actual development stage,
 using all normal receipt, routing, checklist, and validation requirements. Do
 not put commit, PR, merge, push, or branch creation in that stage. After
-validation, apply the required `Complete` title update and tell the user to
-commit the newly created `HANDOFF.md` before creating the next session. If a
+validation, apply the required `Complete` title update and tell the user the
+receipt is saved locally for the next session in the same checkout. If a
 scoped receipt already exists, reject `init` without changing files and use
 `start`, `pause`, or `next` instead.
 
@@ -279,7 +293,7 @@ current work is complete, its `작업 결과 요약` was saved by `$handoff star
 before its final commit. Preserve that five-line summary in the new
 `HANDOFF.md`; do not infer, rewrite, or omit it. If the summary is missing,
 stop and name the gap. Write the receipt on the outgoing branch, validate it,
-and tell the user to include that file in the current work unit's final commit;
+and keep it locally for the next session in the same checkout;
 do not create the commit, PR, merge, or branch. The receipt must name the next
 code or product task, never a delivery action.
 After a successful next, apply the required `Complete` title update defined above. Use the completed work-unit outcome as `Goal`; omit it rather than inventing one.
@@ -294,7 +308,7 @@ use exactly `No remaining stages.` under `Execution plan`, omit `Next-stage
 routing`, and set the top-level `First action` to exactly `No remaining work.`.
 Do not create a new stage, model recommendation, or new-session setup. After a
 successful `done`, apply the required `Complete` title update and tell the user
-to include `HANDOFF.md` in the current work unit's final commit. A later
+that `HANDOFF.md` is saved locally and excluded from commits. A later
 `$handoff next [next-work context]` treats this completed receipt as its
 outgoing work, preserves its summary and completion evidence, and replaces it
 with a normal unfinished receipt. `$handoff start` then resumes that new receipt
@@ -638,13 +652,13 @@ macOS/Linux: python3 <skill-dir>/scripts/validate_handoff.py --project-root <pro
 
 After a successful unfinished `init`, `pause`, or `next`, print only `Recommended
 new-session setup`: preferred model, reasoning, Use Ultra, escalation condition, and next checkpoint from
-`Next-stage routing`. For `next`, state that `HANDOFF.md` must
-be included in the current work unit's final commit before the PR. For `init`, state that the newly created `HANDOFF.md` must be committed before the new session. State that
+`Next-stage routing`. State that `HANDOFF.md` is saved locally and the new
+session must use the same checkout. State that
 the user should select the recommended model and reasoning before creating the
 new session, then run `$handoff start`. Do not print a copyable prompt.
 After a successful `done`, show the saved `작업 결과 요약`, state that validation
-passed, and state that `HANDOFF.md` must be included in the current work unit's
-final commit. Do not print a model recommendation or new-session setup.
+passed, and state that `HANDOFF.md` is saved locally and excluded from commits.
+Do not print a model recommendation or new-session setup.
 If validation fails, preserve both documents, name the exact gap, and do not
 claim a successful handoff.
 ## Start the handoff
@@ -667,9 +681,11 @@ After receipt verification succeeds, apply the required `Working` title update d
   Apply the host effort mapping above. The recommendation
   does not expand scope or authority, and changing it during `RESUME` does not
   rewrite an older receipt merely to change its format.
-- If the receiving branch contains the committed `HANDOFF.md` but has a
-  different HEAD because the outgoing work was committed, reviewed, merged, or
-  branched, treat that as an expected delivery transition. Verify the current product state, then begin the recorded development stage;
+- If the same checkout retains the local `HANDOFF.md` but has a different HEAD
+  because the outgoing work was committed, reviewed, merged, or branched,
+  verify that transition against Git history, current files, and recorded
+  evidence. Only after confirming the recorded scope and completion evidence
+  still hold, treat it as an expected delivery transition and begin the recorded stage;
   never recreate commit, PR, merge, or branch work. Any other factual conflict
   makes the receipt `STALE`; report it without changing `docs/plan.md`.
 - If a product or design decision changed or conflicts, stop implementation
