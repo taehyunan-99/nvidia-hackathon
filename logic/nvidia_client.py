@@ -28,6 +28,26 @@ BIO_BASE = "https://health.api.nvidia.com/v1/biology"
 
 DEFAULT_TIMEOUT = 600
 
+# 실측(2026-09-26): Boltz-2는 한도를 넘기면 Retry-After 없이 429를 즉시(0.2초)
+# 돌려준다. 동시 20건에서 10건이 막혔고, **순차 호출에서도** 6건 중 2건이
+# 막혔다. 시연 중 충분히 밟을 수 있다는 뜻이다.
+# 같은 실측에서 9~15초 뒤 재시도는 성공했다. 아래 간격은 그 관측에서 나온
+# 값이며 공식 문서에 근거한 값이 아니다. [확인 필요: 공식 한도 수치]
+RETRY_STATUS = frozenset({429, 503})
+RETRY_WAITS = (5, 10, 20)
+MAX_RETRIES = len(RETRY_WAITS)
+
+
+def _retry_after(response: "requests.Response") -> float | None:
+    """서버가 대기 시간을 알려주면 그쪽을 따른다. 실측에서는 없었다."""
+    raw = response.headers.get("Retry-After")
+    if not raw:
+        return None
+    try:
+        return max(0.0, float(raw))
+    except ValueError:
+        return None
+
 
 class MissingCredentials(RuntimeError):
     """NVIDIA_API_KEY가 없다. 호출을 시도하지 않는다."""
@@ -87,26 +107,38 @@ class NvidiaClient:
     def _post(self, url: str, payload: dict[str, Any], kind: str, summary: dict[str, Any]) -> dict[str, Any]:
         key = self.require_key()
         headers = {"Authorization": f"Bearer {key}", "Accept": "application/json"}
-        started = time.monotonic()
-        try:
-            response = requests.post(url, headers=headers, json=payload, timeout=self.timeout)
-        except requests.RequestException as exc:
+        attempt = 0
+        while True:
+            started = time.monotonic()
+            try:
+                response = requests.post(url, headers=headers, json=payload, timeout=self.timeout)
+            except requests.RequestException as exc:
+                elapsed = time.monotonic() - started
+                self._record(CallRecord(kind, url, None, elapsed, False, summary, str(exc)))
+                raise CallFailed(
+                    f"{kind} 호출이 전송 단계에서 실패했다: {exc}", elapsed_s=elapsed
+                ) from exc
             elapsed = time.monotonic() - started
-            self._record(CallRecord(kind, url, None, elapsed, False, summary, str(exc)))
-            raise CallFailed(f"{kind} 호출이 전송 단계에서 실패했다: {exc}", elapsed_s=elapsed) from exc
-        elapsed = time.monotonic() - started
-        if response.status_code != 200:
+            if response.status_code == 200:
+                self._record(CallRecord(kind, url, 200, elapsed, True, summary))
+                return response.json()
+
             body = response.text[:500]
+            # 429도 실패로 그대로 기록한다. 재시도로 성공했다고 해서 한도를
+            # 밟은 사실을 지우면, 나중에 시연이 왜 느렸는지 알 수 없다.
             self._record(
                 CallRecord(kind, url, response.status_code, elapsed, False, summary, body)
             )
+            if response.status_code in RETRY_STATUS and attempt < MAX_RETRIES:
+                wait = _retry_after(response) or RETRY_WAITS[attempt]
+                time.sleep(wait)
+                attempt += 1
+                continue
             raise CallFailed(
                 f"{kind} 호출이 HTTP {response.status_code}로 실패했다: {body}",
                 status=response.status_code,
                 elapsed_s=elapsed,
             )
-        self._record(CallRecord(kind, url, 200, elapsed, True, summary))
-        return response.json()
 
     def _record(self, record: CallRecord) -> None:
         self.records.append(record)
