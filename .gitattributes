@@ -10,3 +10,4 @@
 *.png binary
 *.jpg binary
 *.pptx binary
+docs/topics/her2/assets/a02/generated/*.csv text eol=lf

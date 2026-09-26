@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "tests_run": 18,
+  "tests": [
+    "test_alignment_rejects_insufficient_or_degenerate_points",
+    "test_contact_boundary_and_unique_residues",
+    "test_empty_partner_is_unknown_not_zero",
+    "test_known_rotation_translation_and_matrix_direction",
+    "test_measured_no_contact_and_known_overlap",
+    "test_overlapping_spheres_analytic_spherical_caps",
+    "test_single_and_separated_spheres_analytic_sasa",
+    "test_unsupported_nonfinite_duplicate_atoms_are_rejected",
+    "test_alignment_matches_correspondence_and_preserves_distances",
+    "test_contact_sets_match_independent_neighbor_search_and_existing_consumer",
+    "test_fragments_and_no_fabricated_safety_conclusion",
+    "test_mapping_corruption_rejected",
+    "test_missing_ranges_and_author_insertion_codes_preserved",
+    "test_missing_residue_cannot_be_exported_as_measured",
+    "test_partial_residue_atoms_are_reported_without_fabrication",
+    "test_reproducible_rebuild_and_input_preservation",
+    "test_source_hash_rejects_changed_input",
+    "test_surface_delta_consistency_and_finite_resolution_record"
+  ],
+  "failures": [],
+  "errors": [],
+  "basis": "Analytic geometry, original mapping, independent neighbor search, consumer set and schema checks, offline rebuild"
+}
