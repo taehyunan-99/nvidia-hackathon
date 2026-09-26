@@ -81,6 +81,34 @@ def test_fallback_reason_is_none_for_terminal_session(tmp_path):
     assert nat_agent._fallback_reason(session, "검토를 끝냈다.") is None
 
 
+def test_run_candidate_turns_an_agent_crash_into_a_rule_finish_reason(tmp_path):
+    """에이전트 실행이 예외로 터지면 run_candidate가 사유 문자열로 바꿔 돌려준다.
+
+    위의 `test_nat_failure_falls_back_to_rule_with_reason`은 run_candidate를
+    스텁으로 갈아끼우므로 이 try/except를 지나지 않는다. 안전망의 핵심(에이전트가
+    어떻게 실패해도 후보가 결과 없이 끝나지 않는다)이 여기 달려 있어 직접 확인한다.
+    없는 설정 파일을 줘서 load_workflow가 터지게 한다 — 모델을 부르지 않는다.
+    """
+    pytest.importorskip("nat")
+    from logic.agent_session import CandidateSession
+    from logic.flow import Flow
+
+    cand = candidate("cand-t", "trastuzumab",
+                     entity_sequence(TRASTUZUMAB, "heavy"), entity_sequence(TRASTUZUMAB, "light"))
+    flow = Flow(make_request([cand, _filler()], tmp_path), client=ScriptedClient())
+    session = CandidateSession(cand)
+
+    why = nat_agent.run_candidate(flow, session, config_path=tmp_path / "없는-설정.yml")
+
+    assert why is not None, "예외가 났으면 규칙 마무리 사유를 돌려줘야 한다"
+    assert why.startswith("에이전트 실행 오류:")
+    assert session.terminal is None, "터진 세션은 종료 상태가 아니어야 규칙이 이어받는다"
+
+    # 그 사유로 규칙이 마무리하면 계약을 지키는 결과가 나온다.
+    flow._continue_by_rule(session, why)
+    assert flow.states["cand-t"].status in {"completed", "partial", "failed"}
+
+
 def test_workflow_config_loads_with_registered_tools():
     pytest.importorskip("nat")
     from nat.runtime.loader import load_config
