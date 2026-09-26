@@ -136,6 +136,31 @@ def _run_sync(coro) -> Any:
     return box.get("value")
 
 
+def _last_refusal_note(session: CandidateSession) -> str | None:
+    for call in reversed(session.calls):
+        if call.get("accepted") is False:
+            return call.get("note")
+    return None
+
+
+def _fallback_reason(session: CandidateSession, final: str | None) -> str | None:
+    """세션과 에이전트의 최종 답변으로 규칙 마무리 사유를 만든다.
+
+    끝난 세션(종료 도구가 받아들여졌다)이면 None — run_candidate가 그대로 성공 처리한다.
+    아니면 짧은 일반 사유를 앞에 두고, 마지막 거부가 있었으면 그 내용을 뒤에 붙인다.
+    (`_explain`이 80자에서 자르므로 일반 사유가 먼저 있어야 잘려도 뜻이 남는다.)
+    """
+    if session.terminal:
+        return None
+    if "could not produce a final answer" in (final or ""):
+        return "에이전트 반복 상한"
+    reason = "에이전트가 종료 도구 없이 끝났다"
+    note = _last_refusal_note(session)
+    if note:
+        reason = f"{reason} — 마지막 거부: {note}"
+    return reason
+
+
 def run_candidate(flow, session: CandidateSession, *, config_path: Path = CONFIG_PATH) -> str | None:
     """후보 하나를 NAT 에이전트로 돌린다. 끝내지 못했으면 규칙 마무리 사유를 돌려준다."""
     load_env()  # NAT의 nim LLM이 os.environ의 NVIDIA_API_KEY를 읽는다.
@@ -154,8 +179,4 @@ def run_candidate(flow, session: CandidateSession, *, config_path: Path = CONFIG
         final = _run_sync(_go())
     except Exception as exc:
         return f"에이전트 실행 오류: {type(exc).__name__}: {exc}"[:200]
-    if session.terminal:
-        return None
-    if "could not produce a final answer" in (final or ""):
-        return "에이전트 반복 상한"
-    return "에이전트가 종료 도구 없이 끝났다"
+    return _fallback_reason(session, final)

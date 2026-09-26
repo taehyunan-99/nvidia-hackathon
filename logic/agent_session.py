@@ -78,10 +78,12 @@ class CandidateTools:
         allowed = allowed_tools(self.s)
         if name in allowed:
             return None
-        self.s.calls.append({"tool": name, "accepted": False})
         if not allowed:
-            return f"거부: 이 후보의 검토는 이미 끝났다({self.s.terminal}). 더 부를 도구가 없다."
-        return f"거부: {name}은(는) 지금 쓸 수 없다. 지금 가능한 도구: {', '.join(sorted(allowed))}."
+            note = f"거부: 이 후보의 검토는 이미 끝났다({self.s.terminal}). 더 부를 도구가 없다."
+        else:
+            note = f"거부: {name}은(는) 지금 쓸 수 없다. 지금 가능한 도구: {', '.join(sorted(allowed))}."
+        self.s.calls.append({"tool": name, "accepted": False, "note": note})
+        return note
 
     def _accept(self, name: str) -> None:
         self.s.calls.append({"tool": name, "accepted": True})
@@ -94,13 +96,15 @@ class CandidateTools:
 
     def _check_reason(self, name: str, reason: str, facts: list[str]) -> str | None:
         if not reason.strip():
-            self.s.calls.append({"tool": name, "accepted": False})
-            return "거부: reason이 비어 있다. 고른 이유를 두 문장 이내로 쓴다."
+            note = "거부: reason이 비어 있다. 고른 이유를 두 문장 이내로 쓴다."
+            self.s.calls.append({"tool": name, "accepted": False, "note": note})
+            return note
         invented = invented_numbers(reason, facts)
         if invented:
-            self.s.calls.append({"tool": name, "accepted": False})
-            return (f"거부: reason에 확인된 사실에 없는 숫자가 있다: {', '.join(invented)}. "
+            note = (f"거부: reason에 확인된 사실에 없는 숫자가 있다: {', '.join(invented)}. "
                     "사실에 있는 값만 쓰거나 숫자를 빼고 다시 쓴다.")
+            self.s.calls.append({"tool": name, "accepted": False, "note": note})
+            return note
         return None
 
     # ---------------------------------------------------------- 도구
@@ -176,8 +180,9 @@ class CandidateTools:
         if (r := self._gate("submit_opinion")):
             return r
         if decision not in OPINIONS:
-            self.s.calls.append({"tool": "submit_opinion", "accepted": False})
-            return f"거부: decision은 {' 또는 '.join(OPINIONS)} 중 하나여야 한다. 받은 값: {decision!r}."
+            note = f"거부: decision은 {' 또는 '.join(OPINIONS)} 중 하나여야 한다. 받은 값: {decision!r}."
+            self.s.calls.append({"tool": "submit_opinion", "accepted": False, "note": note})
+            return note
         facts, _, _ = self.flow._opinion_facts(self.s.cid)
         if (r := self._check_reason("submit_opinion", reason, facts)):
             return r

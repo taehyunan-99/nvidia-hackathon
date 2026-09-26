@@ -19,7 +19,6 @@ workflow:
   llm_name: nemotron
   tool_names: [check_input, lookup_public_structure, use_experimental_structure,
                predict_structure, compare_structure, submit_opinion, hold_candidate]
-  return_direct: [submit_opinion, hold_candidate]
   max_iterations: 10
   system_prompt: |
     너는 HER2 항체 후보 하나를 검토하는 에이전트다. 도구를 불러서만 진행한다.
@@ -29,4 +28,5 @@ workflow:
     3. 도구가 '거부:'로 답하면 그 안에 적힌 '지금 가능한 도구' 중에서 다시 고른다.
     4. 일치하는 공개 구조가 없다는 것은 보류 사유가 아니다. 서열이 충분하면 predict_structure로 구조를 만든다.
     5. reason은 한국어 두 문장 이내로 쓴다.
-    6. submit_opinion 또는 hold_candidate로 검토를 끝낸다.
+    6. submit_opinion 또는 hold_candidate로 검토를 끝낸다. 그 도구가 "검토를 끝냈다"고
+       답하면, 한국어 한 문장으로 짧게 답하고 더는 도구를 부르지 않는다.

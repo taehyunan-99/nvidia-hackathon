@@ -55,6 +55,31 @@ def test_missing_nat_falls_back_to_rule(tmp_path, monkeypatch):
     assert "NAT를 불러오지 못했다" in opinion["reason"]
 
 
+def test_fallback_reason_includes_last_refusal_note(tmp_path):
+    from logic.agent_session import CandidateSession
+
+    session = CandidateSession(candidate("cand-t", "trastuzumab",
+                                          entity_sequence(TRASTUZUMAB, "heavy"),
+                                          entity_sequence(TRASTUZUMAB, "light")))
+    session.calls.append({"tool": "check_input", "accepted": True})
+    session.calls.append({"tool": "submit_opinion", "accepted": False,
+                           "note": "거부: decision은 reviewable 또는 needs_confirmation 중 하나여야 한다."})
+    reason = nat_agent._fallback_reason(session, "다 됐다")
+    assert reason is not None
+    assert "마지막 거부" in reason
+    assert reason.startswith("에이전트가 종료 도구 없이 끝났다")
+
+
+def test_fallback_reason_is_none_for_terminal_session(tmp_path):
+    from logic.agent_session import CandidateSession
+
+    session = CandidateSession(candidate("cand-t", "trastuzumab",
+                                          entity_sequence(TRASTUZUMAB, "heavy"),
+                                          entity_sequence(TRASTUZUMAB, "light")))
+    session.terminal = "completed"
+    assert nat_agent._fallback_reason(session, "검토를 끝냈다.") is None
+
+
 def test_workflow_config_loads_with_registered_tools():
     pytest.importorskip("nat")
     from nat.runtime.loader import load_config

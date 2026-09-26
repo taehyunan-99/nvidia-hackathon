@@ -53,7 +53,10 @@ def test_predict_before_check_is_refused_without_calling_boltz(tmp_path):
     assert "check_input" in out  # 지금 가능한 도구를 알려 준다
     assert client.predictions == 0
     assert session.input_checked is False
-    assert session.calls[-1] == {"tool": "predict_structure", "accepted": False}
+    last = session.calls[-1]
+    assert last["tool"] == "predict_structure"
+    assert last["accepted"] is False
+    assert last["note"].startswith("거부:")
 
 
 def test_experimental_path_end_to_end(tmp_path):
