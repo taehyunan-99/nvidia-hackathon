@@ -122,6 +122,27 @@ A 유지 또는 B 전환 결정은 하지 않는다 — 사용자 확인 사항�
 
 사용자 결정(2026-09-26): A 유지, 숫자 검사 오탐과 Boltz-2 실패를 고친 뒤 재측정.
 
+### 재측정 결과 (2026-09-26, 6a·6b 수정 후)
+
+`UV_LINK_MODE=copy uv run python -u -m logic.measure_agent --repeat 3` 1회 재실행. 6a(`invented_numbers`가 값을 비교하고 이미 보여준 사실을 누적하며 식별자 숫자를 무시)와 6b(variant 표적을 실제 1N8Z HER2 서열로, 변이 후보를 pertuzumab 중쇄 1자리 치환으로 교체)가 반영된 뒤의 실행이다. 첫 실행 원본은 `work/measure-agent-run1.jsonl`로 옮겨졌고, 이번 실행은 `work/measure-agent.jsonl`(gitignore 대상)에 새로 20줄 기록됐다. 콘솔 로그 원문: `.superpowers/sdd/nat-agent-loop-plan/measure-run2.log`.
+
+| 시나리오 | 규칙 모드 시간 | 에이전트 시간(3회) | 평균 거부 | 상한 도달 | 규칙 마무리 | 최종 상태·의견 |
+|---|---|---|---|---|---|---|
+| trastuzumab (기존 구조) | 13.1s | 25.8s / 12.9s / 15.1s | 0.00 (0, 0, 0건) | 0/3 | 1/3 | 규칙: completed/needs_confirmation · 에이전트: completed/reviewable ×2, completed/needs_confirmation ×1 |
+| pertuzumab (기존 구조) | 6.5s | 31.1s / 31.3s / 16.4s | 0.00 (0, 0, 0건) | 0/3 | 1/3 | 규칙: completed/needs_confirmation · 에이전트: completed/reviewable ×2, completed/needs_confirmation ×1 |
+| variant (실제 1N8Z 표적, pertuzumab 1자리 변이) | 32.5s | 26.2s / 42.7s / 21.3s | 0.00 (0, 0, 0건) | 0/3 | 2/3 | 규칙: completed/reviewable · 에이전트: completed/needs_confirmation ×3 |
+| invalid (잘못된 문자 입력) | 0.0s | 16.4s / 8.0s / 10.3s | 0.33 (0, 1, 0건) | 0/3 | 0/3 | 규칙: failed/hold · 에이전트: failed/hold ×3 |
+| short (50자 미만 서열) | 14.5s | 11.1s / 52.7s / 18.9s | 0.00 (0, 0, 0건) | 0/3 | 0/3 | 규칙: partial/hold · 에이전트: partial/hold ×3 |
+
+전체 nat 실행 15회(시나리오 5 × 3회) 기준 총 거부 1건, 반복 상한 도달 0건. 남은 거부 원인은 한 가지뿐이다 — invalid 시나리오 2회차에서 "거부: 이 후보의 검토는 이미 끝났다(failed). 더 부를 도구가 없다"(종료 후 도구 호출 시도, 1건). 6a가 고친 "확인된 사실에 없는 숫자" 사유의 거부는 이번 15회 중 0건이었다 — 첫 측정에서 13건이던 것과 대조된다.
+
+참고(기준 판정에는 포함하지 않음): 이번 실행에서 `predict_structure` 자체는 3회 모두 한 번에 통과했지만, cand-v·cand-t·cand-p·filler 쪽에서 "LLM returned an empty response(no content, no tool calls)" 예외가 7회 발생했다. 이 예외가 나면 NAT 실행이 실패하고 규칙 마무리로 대체된다(`rule_finish=true`인 행들이 그 결과다) — 이는 거부(관문 검사 실패)가 아니라 Nemotron API 응답 자체가 비어 온 것으로, 이번 표의 "평균 거부"·기준 1·2 계산에는 포함하지 않았다.
+
+1. 후보당 평균 거부 1회 초과 → **비해당** (15회 실행 평균 0.067건 = 1건/15회)
+2. 반복 상한 도달이 15회 실행 중 1회 이상 → **비해당** (0/15, `hit_limit`이 모든 행에서 false)
+3. 거부 때문에 `predict_structure`가 불필요하게 늦어져 시나리오 소요 시간이 규칙 모드 대비 2배 초과 → **비해당** — variant 시나리오의 nat 3회 모두 `predict_structure` 거부가 0건이었다(거부로 재호출된 적이 없음). 평균 소요 시간도 규칙 모드 32.5s 대비 에이전트 평균 30.07s(=(26.2+42.7+21.3)/3, 약 0.93배)로 오히려 더 느리지 않았다. 시나리오 간 시간 편차(예: short 3회차 52.7s)는 거부가 아니라 Nemotron 호출 자체의 지연(도구별 모델 호출 오버헤드)에서 온 것으로 보인다.
+
+
 ## 8. 로드맵
 
 | 단계 | 내용 | 완료 확인 |
