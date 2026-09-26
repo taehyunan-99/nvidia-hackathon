@@ -70,6 +70,8 @@ class CandidateTools:
     def __init__(self, flow, session: CandidateSession):
         self.flow = flow
         self.s = session
+        if not session.terminal:
+            self.flow.states[self.s.cid].status = "running"
 
     # ---------------------------------------------------------- 관문
     def _gate(self, name: str) -> str | None:

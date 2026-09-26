@@ -36,6 +36,11 @@ def _variant():
     return candidate("cand-v", "variant", _long("QVQLVESGG"), _long("DIQMTQSPS"))
 
 
+def test_constructing_tools_marks_candidate_running(tmp_path):
+    _, flow, session, _ = _setup(tmp_path, _trastuzumab())
+    assert flow.states[session.cid].status == "running"
+
+
 def test_first_only_check_input_is_allowed(tmp_path):
     _, _, session, _ = _setup(tmp_path, _trastuzumab())
     assert allowed_tools(session) == {"check_input"}
