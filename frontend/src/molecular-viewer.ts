@@ -31,6 +31,7 @@ export async function loadMolecule(
   pdb: string,
   mode: string,
   residues: { chain: string; seq: number }[],
+  chainIds?: string[],
 ) {
   const data = await plugin.builders.data.rawData({ data: cif, label: pdb });
   const trajectory = await plugin.builders.structure.parseTrajectory(
@@ -38,11 +39,14 @@ export async function loadMolecule(
     "mmcif",
   );
   const model = await plugin.builders.structure.createModel(trajectory);
-  const structure = await plugin.builders.structure.createStructure(model, {
-    name: "assembly",
-    params: { id: "1" },
-  });
-  const chains = pdb === "1N8Z" ? ["C", "B", "A"] : ["A", "D", "C"];
+  // 예측 구조에는 assembly 정의가 없어 모델을 그대로 사용한다.
+  const structure = chainIds
+    ? await plugin.builders.structure.createStructure(model, { name: "model", params: {} })
+    : await plugin.builders.structure.createStructure(model, {
+        name: "assembly",
+        params: { id: "1" },
+      });
+  const chains = chainIds ?? (pdb === "1N8Z" ? ["C", "B", "A"] : ["A", "D", "C"]);
   const colors = [0x259c91, 0xe99032, 0x7d6bd0];
   const chainQuery = (chain: string) =>
     Q.struct.generator.atomGroups({

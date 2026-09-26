@@ -19,6 +19,9 @@ const topics: Record<string, string> = {
   accessibility: "접근성",
   clash: "충돌",
   confidence: "구조 신뢰도",
+  interface_contact_residues: "접촉 잔기",
+  atom_clash: "원자 간 충돌",
+  surface_exposure: "표면 노출",
 };
 export function ReviewOverview({
   result,
@@ -39,6 +42,7 @@ export function ReviewOverview({
     evidence: string | null,
   ) => void;
 }) {
+  const live = result.data_mode === "live";
   const conditions = result.conditions.filter(
     (c) => c.candidate_id === candidate && c.kind === conditionKind,
   );
@@ -120,7 +124,7 @@ export function ReviewOverview({
           <p>
             {result.structures.length ? "후보 구조 기록의 좌표 파일은 이 화면에 연결되지 않았습니다. " : "후보 구조 좌표가 제공되지 않았습니다. "}
             {hasMeasuredEvidence ? "기록된 측정 근거는 오른쪽에서 확인해 주세요. " : "실제 근거 측정도 없습니다. "}
-            아래 3D는 공개 실험 구조 예제로, 업로드한 후보의 분석 결과가 아닙니다.
+            왼쪽 3D는 공개 실험 구조 예제이며 {live ? "이번 실행의 근거와 직접 연결되지 않습니다." : "업로드한 후보의 분석 결과가 아닙니다."}
           </p>
         </div>
         <div className="review-insight-facts">
@@ -135,7 +139,7 @@ export function ReviewOverview({
             <span className="eyebrow">01 / EXPLORE</span>
             <h2>구조를 보며 근거 확인하기</h2>
           </div>
-          <span className="tag">공개 구조 예제 · 모의 결과와 별개</span>
+          <span className="tag">공개 구조 예제 · {live ? "실제 실행 결과" : "모의 결과"}와 별개</span>
         </div>
         {selectionControls}
       <div
@@ -242,7 +246,7 @@ export function ReviewOverview({
         <summary>두 후보의 자료 준비 상태 비교</summary>
         <div className="matrix-scroll">
           <table className="review-matrix">
-            <caption>선택한 검토 조건에 기록된 모의 자료의 상태입니다.</caption>
+            <caption>선택한 검토 조건에 기록된 {live ? "실제 실행" : "모의 자료"}의 상태입니다.</caption>
             <thead>
               <tr>
                 <th scope="col">확인 항목</th>
@@ -260,7 +264,9 @@ export function ReviewOverview({
                     const value = index === 0
                       ? candidateConditions.length ? "기록 있음" : "미제공"
                       : index === 1
-                        ? "좌표 미제공"
+                        ? (result.structures as unknown as { candidate_id: string }[]).some((structure) => structure.candidate_id === item.candidate_id)
+                          ? "구조 기록 있음 · 좌표 확인 필요"
+                          : "좌표 미제공"
                         : index === 2
                           ? candidateEvidence.length ? [...new Set(candidateEvidence.map((entry) => states[entry.measurement_state] ?? entry.measurement_state))].join(" · ") : "근거 없음"
                           : candidateOpinions.length ? [...new Set(candidateOpinions.map((entry) => decisions[entry.decision] ?? entry.decision))].join(" · ") : "의견 없음";

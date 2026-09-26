@@ -49,12 +49,18 @@ export function AgentStart({
   error,
   onFile,
   onStart,
+  onRunLive,
+  liveBusy,
+  liveError,
 }: {
   input: ReviewInput | null;
   fileName: string;
   error: string;
   onFile: (file: File) => void;
   onStart: () => void;
+  onRunLive: (preset: string) => void;
+  liveBusy: string;
+  liveError: string;
 }) {
   return (
     <section className="agent-start">
@@ -66,8 +72,44 @@ export function AgentStart({
           <br />
           <span>근거를 함께 살펴봅니다.</span>
         </h1>
-        <p>검토 시나리오 파일을 올리고 입력부터 결과까지 확인하세요.</p>
+        <p>실제 분석을 실행하거나, 검토 시나리오 파일을 올려 확인하세요.</p>
       </div>
+      <section className="analysis-launcher" aria-label="실제 분석 실행">
+        <div className="launcher-heading">
+          <div>
+            <span className="eyebrow">LIVE RUN</span>
+            <h2>실제 분석 실행</h2>
+          </div>
+          <span className="tag">NVIDIA · 실제 호출</span>
+        </div>
+        <p>
+          공개 구조(1N8Z·1S78)에서 꺼낸 실제 서열로 분석합니다. 모의 재생이 아닙니다.
+        </p>
+        <div className="launcher-action">
+          <span>
+            {liveBusy
+              ? "실행 중입니다. 예측 경로는 10초 이상 걸립니다."
+              : "예측 경로는 NVIDIA API 키가 있어야 합니다."}
+          </span>
+          <span className="live-buttons">
+            <button
+              className="primary"
+              disabled={Boolean(liveBusy)}
+              onClick={() => onRunLive("experimental")}
+            >
+              {liveBusy === "experimental" ? "분석 중…" : "공개 구조 경로"}
+            </button>
+            <button
+              className="primary"
+              disabled={Boolean(liveBusy)}
+              onClick={() => onRunLive("prediction")}
+            >
+              {liveBusy === "prediction" ? "예측 중…" : "Boltz-2 예측 경로"}
+            </button>
+          </span>
+        </div>
+        {liveError && <p role="alert" className="notice">{liveError}</p>}
+      </section>
       <section className="analysis-launcher" aria-label="검토 파일 업로드">
         <div className="launcher-heading">
           <div>
@@ -103,7 +145,8 @@ export function AgentStart({
         </div>
       </section>
       <p className="agent-disclosure">
-        기록된 상태를 단계별로 재생합니다. 실제 분석·모델 호출은 실행되지 않습니다.
+        업로드한 시나리오는 기록된 상태를 재생할 뿐 분석·모델 호출을 실행하지 않습니다.
+        실제 호출은 위의 “실제 분석 실행”에서 합니다.
       </p>
     </section>
   );
@@ -170,8 +213,9 @@ export function About({ onStart }: { onStart: () => void }) {
         </div>
         <p>
           후보의 결합 부위·구조 조건·미확인 근거를 비교하는 것이 목표입니다.
-          구조 신뢰도를 실제 결합력이나 치료 효과로 해석하지 않습니다. 현재는
-          모의 화면이며 실제 분석 도구 연결은 준비 중입니다.
+          구조 신뢰도를 실제 결합력이나 치료 효과로 해석하지 않습니다.
+          NVIDIA Boltz-2 호출과 공개 구조 분석은 실제로 실행되며, 충돌·표면
+          노출 지표는 아직 계산하지 않습니다.
         </p>
       </section>
     </div>
