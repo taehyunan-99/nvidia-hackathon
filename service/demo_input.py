@@ -116,7 +116,15 @@ def _review_input(candidates: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def public_reference_demo() -> dict[str, Any]:
+    """사이트 기본 테스트 입력. 공개 구조에서 재생성하고 결과는 포함하지 않는다."""
+    data = experimental_demo()
+    data["example_id"] = "her2-public-reference-v1"
+    return data
+
+
 PRESETS = {
+    "public-reference": public_reference_demo,
     "experimental": experimental_demo,
     "prediction": prediction_demo,
 }

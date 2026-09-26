@@ -36,7 +36,12 @@ def live_service(tmp_path: Path, monkeypatch):
 def test_public_structure_run_persists_progress_result_and_private_files(live_service):
     client, root = live_service
     assert client.get("/api/config").json() == {"schema_version": "0.1.0", "data_mode": "live"}
-    review_id = review(client)
+    client.post("/api/session")
+    data = json.loads(Path("docs/frontend-hosting/fixtures/public-reference-input.json").read_text())
+    accepted = client.post("/api/reviews", data={"metadata": json.dumps(data)})
+    assert accepted.status_code == 201, accepted.text
+    review_id = accepted.json()["review_id"]
+    assert client.get(f"/api/reviews/{review_id}").json()["example_id"] == "her2-public-reference-v1"
     response = client.post(f"/api/reviews/{review_id}/runs", json={"request_key": "live-public"})
     assert response.status_code == 202
     run_id = response.json()["run_id"]

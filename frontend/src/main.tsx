@@ -193,7 +193,6 @@ function App() {
   const [page, setPage] = useState(0),
     [scenarioFile, setScenarioFile] = useState<ScenarioFile | null>(null),
     [fileName, setFileName] = useState(""),
-    [fileError, setFileError] = useState(""),
     [liveBusy, setLiveBusy] = useState(""),
     [liveError, setLiveError] = useState(""),
     [mockBusy, setMockBusy] = useState(false),
@@ -216,22 +215,6 @@ function App() {
     setPage(n >= 2 && (playing || !result || expired) ? 1 : n);
     setExpanded(null);
   }
-  async function loadFile(file: File) {
-    localStorage.removeItem(SAVED_RUN_KEY);
-    setSavedRunId(null);
-    setFileError("");
-    setScenarioFile(null);
-    setPlaying(false);
-    if (file.size > 2_000_000) {
-      setFileError("2MB 이하의 시나리오 JSON을 선택해 주세요.");
-      return;
-    }
-    try {
-      apply(parseScenarioFile(JSON.parse(await file.text())), file.name);
-    } catch (error) {
-      setFileError(error instanceof Error ? error.message : "JSON 파일을 읽지 못했습니다.");
-    }
-  }
   function apply(parsed: ScenarioFile, label: string) {
     setScenarioFile(parsed);
     setFileName(label);
@@ -244,7 +227,6 @@ function App() {
     localStorage.removeItem(SAVED_RUN_KEY);
     setSavedRunId(null);
     setLiveError("");
-    setFileError("");
     setScenarioFile(null);
     setPlaying(false);
     setLiveBusy(preset);
@@ -413,10 +395,6 @@ function App() {
             <>
               {page === 0 ? (
                 <AgentStart
-                  input={persistedRun ? null : scenarioFile?.input ?? null}
-                  fileName={fileName}
-                  error={fileError}
-                  onFile={(file) => void loadFile(file)}
                   onRunLive={(preset) => void runLive(preset)}
                   onRunMock={(input, files) => void runSaved(input, files)}
                   savedMode={savedMode}
@@ -424,11 +402,6 @@ function App() {
                   mockError={mockError}
                   liveBusy={liveBusy}
                   liveError={liveError}
-                  onStart={() => {
-                    setFrameIndex(0);
-                    setPlaying(true);
-                    go(1);
-                  }}
                 />
               ) : scenario && scenarioFile ? (
                 <>
