@@ -62,8 +62,17 @@ def _one(name: str, mode: str) -> dict:
     trace = flow.agent_traces.get(cid, [])
     opinion = next((o for o in output["result"]["opinions"] if o["candidate_id"] == cid), {})
     notes = [c["note"] for c in trace if not c.get("accepted") and c.get("note")]
+    reason = opinion.get("reason") or ""
     return {
+        # 기록 파일은 이어붙이므로, 어느 실행의 줄인지 나중에 구분할 수 있게 시각을 남긴다.
+        "at": datetime.datetime.now().isoformat(timespec="seconds"),
         "scenario": name, "mode": mode, "seconds": elapsed,
+        # 규칙 마무리 사유를 그대로 남긴다. 이것이 없으면 API 한도(429)로 실패한
+        # 실행과 모델 빈 응답으로 실패한 실행이 기록상 똑같이 보인다(둘 다
+        # calls=0, rule_finish=True). 2026-09-26에 그 구분이 안 돼 무효 자료
+        # 세 벌을 만들었다 — 원인 판정이 stderr 로그에만 있었다.
+        "reason": reason,
+        "rate_limited": ("429" in reason) or ("Too Many Requests" in reason),
         "calls": len(trace), "refused": sum(1 for c in trace if not c["accepted"]),
         "rule_finish": "판단: 규칙" in (opinion.get("reason") or ""),
         "hit_limit": "반복 상한" in (opinion.get("reason") or ""),
@@ -77,12 +86,25 @@ def main() -> None:
     load_env()
     ap = argparse.ArgumentParser()
     ap.add_argument("--repeat", type=int, default=3)
+    # 시나리오를 골라 돌린다. Boltz-2를 부르는 것은 variant 하나뿐이므로
+    # (나머지는 공개 구조와 일치하거나 입력 단계에서 끝난다), 빈 응답률처럼
+    # 모델 쪽만 보는 측정은 variant를 빼서 유료 예측 호출 없이 할 수 있다.
+    ap.add_argument("--scenario", default="", help=f"쉼표로 구분. 기본은 전부: {','.join(SCENARIOS)}")
+    ap.add_argument("--no-rule", action="store_true", help="규칙 모드 대조 실행을 건너뛴다(모델 호출 절약)")
+    ap.add_argument("--out", default="measure-agent.jsonl", help="work/ 아래 기록 파일 이름")
+    # 실측(2026-09-26): 연속으로 돌리면 1회 성공 뒤 곧바로 429가 이어졌다.
+    # 실행 사이를 띄우면 한도에 걸리지 않고 표본을 모을 수 있다.
+    ap.add_argument("--sleep", type=float, default=0.0, help="실행 사이 대기 초. 429를 피하려면 30 이상을 권한다")
     args = ap.parse_args()
-    out = Path(__file__).resolve().parent.parent / "work" / "measure-agent.jsonl"
+    names = [n.strip() for n in args.scenario.split(",") if n.strip()] or list(SCENARIOS)
+    unknown = [n for n in names if n not in SCENARIOS]
+    if unknown:
+        ap.error(f"모르는 시나리오: {', '.join(unknown)}. 가능한 값: {', '.join(SCENARIOS)}")
+    out = Path(__file__).resolve().parent.parent / "work" / args.out
     out.parent.mkdir(exist_ok=True)
     with out.open("a", encoding="utf-8") as f:
-        for name in SCENARIOS:
-            plan = [("rule", None)] + [("nat", i) for i in range(args.repeat)]
+        for name in names:
+            plan = ([] if args.no_rule else [("rule", None)]) + [("nat", i) for i in range(args.repeat)]
             for mode, _ in plan:
                 ts = datetime.datetime.now().strftime("%H:%M:%S")
                 print(f"▶ {ts} {name} {mode}", flush=True)
@@ -95,6 +117,18 @@ def main() -> None:
                 if r["notes"]:
                     line += " | " + " / ".join(r["notes"])
                 print(line, flush=True)
+                # 한도에 걸리면 남은 실행은 전부 같은 이유로 실패한다. 계속
+                # 돌리면 무효 자료만 쌓이고, 그 줄들이 빈 응답처럼 보인다.
+                # 여기서 멈추고 측정이 무효임을 분명히 알린다.
+                if args.sleep and not r["rate_limited"]:
+                    print(f"  … {args.sleep:g}초 대기(한도 회피)", flush=True)
+                    time.sleep(args.sleep)
+                if r["rate_limited"]:
+                    print(f"\n✗ 측정 중단: API 한도(429)에 걸렸다. 이 실행의 기록은 무효다.\n"
+                          f"  사유: {r['reason']}\n"
+                          f"  한도가 풀린 뒤 다시 돌린다. 무효 줄은 {out.name}에서 지우거나 파일을 옮긴다.",
+                          flush=True)
+                    raise SystemExit(2)
     print("기록:", out, flush=True)
 
 
