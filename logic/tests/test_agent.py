@@ -204,8 +204,32 @@ def test_parse_choice_refuses_an_empty_reason():
 
 def test_invented_numbers_treats_the_same_value_written_differently_as_known():
     """접촉 잔기 수는 `contact_measurement`가 float로 저장해 사실 문장이
-    "39.0residue"가 된다(logic/analysis.py). 모델은 "39"라고 쓴다. 같은 값이면
-    표기가 달라도 통과해야 한다."""
-    assert invented_numbers("접촉 잔기 39개", ["x: 39.0residue (...)"]) == []
+    "39.0"이 된다(logic/analysis.py). 모델은 "39"라고 쓴다. 같은 값이면
+    표기가 달라도 통과해야 한다. (`Flow._opinion_facts`는 숫자와 단위
+    사이를 공백으로 뗀 "39.0 residue"를 쓴다 — 붙이면 아래 식별자 판정에
+    걸린다.)"""
+    assert invented_numbers("접촉 잔기 39개", ["x: 39.0 residue (...)"]) == []
     # 사실에 없는 값은 여전히 잡는다.
-    assert invented_numbers("접촉 잔기 42개", ["x: 39.0residue (...)"]) == ["42"]
+    assert invented_numbers("접촉 잔기 42개", ["x: 39.0 residue (...)"]) == ["42"]
+
+
+def test_invented_numbers_does_not_treat_identifier_digits_as_numeric_claims():
+    """"Boltz-2"·"HER2"·"1N8Z"처럼 영문자에 붙은 숫자는 이름의 일부이지
+    수치 주장이 아니다. 실측(work/measure-agent.jsonl variant, "2")에서
+    predict_structure 도구 설명의 "Boltz-2"와 시스템 프롬프트·표적명의
+    "HER2"가 원인이었을 가능성이 높다(logic/nat_agent.py, logic/nat_workflow.yml).
+    양쪽(설명·사실)에 같은 판정을 적용하므로, 사실에 "2"가 전혀 없어도
+    거부하지 않는다."""
+    assert invented_numbers("일치하는 구조가 없어 Boltz-2로 예측한다.", ["표적 서열 길이 300자"]) == []
+    assert invented_numbers("HER2 표적에 대해 검토한다.", ["표적 서열 길이 300자"]) == []
+    assert invented_numbers("1N8Z 구조를 그대로 쓴다.", ["표적 서열 길이 300자"]) == []
+    # 식별자가 아닌, 진짜 값 주장은 여전히 잡는다.
+    assert invented_numbers("접촉 잔기 42개로 충분하다.", ["x: 39.0 residue (...)"]) == ["42"]
+
+
+def test_invented_numbers_treats_a_number_glued_to_a_unit_as_an_identifier_too():
+    """이 판정의 트레이드오프를 분명히 남겨 둔다: 숫자 바로 뒤에 영문 단위를
+    붙이면("42residue") 식별자 판정과 구분할 수 없어 값 주장으로 보지 않는다.
+    그래서 `Flow._opinion_facts`는 숫자와 단위 사이에 공백을 둔다("42 residue")
+    — 이 테스트는 공백이 없을 때 "42"가 걸러진다는 것만 확인한다."""
+    assert invented_numbers("42residue라고 썼다.", []) == []

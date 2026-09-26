@@ -699,10 +699,17 @@ class Flow:
         mine = [e for e in self.evidence if e["candidate_id"] == cid]
         measured = [e for e in mine if e["measurement_state"] == "measured"]
         unmeasured = [e for e in mine if e["measurement_state"] != "measured"]
+        def _measured_fact(e: dict[str, Any]) -> str:
+            value = _format_fact_value(e["value"])
+            unit = e["unit"]
+            # 숫자 바로 뒤에 영문 단위를 붙이면("39residue") 식별자로 오인돼
+            # invented_numbers가 값 주장으로 보지 않는다. 공백으로 떼어 둔다.
+            suffix = f" {unit}" if unit else ""
+            return f"{e['topic']}: {value}{suffix} ({e['definition']})"
+
         facts = [
             f"계산해 확보한 근거 {len(measured)}건, 아직 계산하지 않은 항목 {len(unmeasured)}건.",
-            *(f"{e['topic']}: {_format_fact_value(e['value'])}{e['unit'] or ''} ({e['definition']})"
-              for e in measured if e["definition"]),
+            *(_measured_fact(e) for e in measured if e["definition"]),
             *(f"{e['topic']}: 미계산 — {e['reason']}" for e in unmeasured if e["reason"]),
         ]
         return facts, measured, unmeasured

@@ -143,16 +143,19 @@ def test_short_sequences_only_allow_hold(tmp_path):
 
 def test_opinion_fact_sentence_shows_integer_not_39_point_0(tmp_path):
     """접촉 잔기 수는 계약을 지키려고 float로 저장된다(analysis.contact_measurement).
-    모델이 읽는 문장은 "39.0residue"가 아니라 "39residue"여야, 모델이 자연스럽게
-    쓰는 "39"와 표기가 같아진다. value 필드 자체(계약)는 바꾸지 않는다."""
+    모델이 읽는 문장은 "39.0residue"가 아니라 "39 residue"여야, 모델이 자연스럽게
+    쓰는 "39"와 표기가 같아진다(숫자와 단위 사이는 공백으로 뗀다 — 붙이면
+    "39residue"가 되어 invented_numbers의 식별자 판정에 걸려 값 주장으로 안
+    보인다). value 필드 자체(계약)는 바꾸지 않는다."""
     _, flow, session, tools = _setup(tmp_path, _trastuzumab())
     tools.check_input(); tools.lookup_public_structure()
     tools.use_experimental_structure("일치한다.")
     out = tools.compare_structure()
-    assert "39residue" in out
+    assert "39 residue" in out
     assert "39.0residue" not in out
+    assert "39.0 residue" not in out
     facts, measured, _ = flow._opinion_facts(session.cid)
-    assert any("39residue" in f for f in facts)
+    assert any("39 residue" in f for f in facts)
     # 계약이 요구하는 숫자 값(Evidence.value)은 여전히 float 39.0이다.
     contact = next(e for e in measured if e["topic"] == "interface_contact_residues")
     assert contact["value"] == 39.0

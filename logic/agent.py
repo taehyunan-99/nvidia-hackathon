@@ -46,6 +46,37 @@ DECISION_TIMEOUT = 60
 # 숫자로 읽히는 토막. 설명이 사실에 없는 값을 만들어내는지 볼 때 쓴다.
 _NUMBER = re.compile(r"\d+(?:\.\d+)?")
 
+
+def _is_identifier_digit(text: str, start: int, end: int) -> bool:
+    """이 숫자 토막이 수치 주장이 아니라 식별자의 일부로 보이는가.
+
+    "1N8Z"(PDB ID), "HER2"(표적 이름), "Boltz-2"(모델 이름)처럼 영문자
+    바로 옆에 붙은 숫자는 값이 아니라 이름의 일부다. 앞이 영문자거나,
+    앞이 "-"이고 그 앞이 다시 영문자면("Boltz-2") 식별자로 본다. 뒤가
+    영문자인 경우도("1N8Z"의 "1", "8") 마찬가지다. 한글·공백·문장부호
+    옆의 숫자("39개", "접촉 잔기 39")는 그대로 값 주장으로 본다.
+    """
+    before = text[start - 1] if start > 0 else ""
+    after = text[end] if end < len(text) else ""
+    if after.isascii() and after.isalpha():
+        return True
+    if before.isascii() and before.isalpha():
+        return True
+    if before == "-" and start - 2 >= 0:
+        before2 = text[start - 2]
+        if before2.isascii() and before2.isalpha():
+            return True
+    return False
+
+
+def _numeric_claims(text: str) -> list[str]:
+    """텍스트에서 식별자에 붙은 숫자를 뺀, 값 주장으로 볼 숫자 토막만 돌려준다."""
+    return [
+        m.group()
+        for m in _NUMBER.finditer(text)
+        if not _is_identifier_digit(text, m.start(), m.end())
+    ]
+
 SYSTEM_PROMPT = (
     "너는 항체 후보 검토 실행의 판단부다. 아래 '확인된 사실'만 근거로 "
     "'선택지' 중 정확히 하나를 고른다.\n"
@@ -99,12 +130,18 @@ def invented_numbers(reason: str, facts: list[str]) -> list[str]:
     난다(`analysis.contact_measurement`가 `value=float(len(residues))`로
     저장해 문장이 "39.0residue"가 되는 경우가 실제로 있었다). 느슨한
     검사이지만 없는 수치를 그대로 보고서에 싣는 것보다 낫다.
+
+    식별자 안의 숫자는 애초에 값 주장으로 보지 않는다("Boltz-2로 예측한다",
+    "HER2 표적", "1N8Z 구조"의 2·2·1·8은 수치가 아니라 이름의 일부다).
+    양쪽(설명·사실)에 같은 `_numeric_claims`를 써서 식별자 숫자를 똑같이
+    뺀 뒤 대조한다 — 실측(variant, "2")에서 predict_structure 도구 설명의
+    "Boltz-2"와 시스템 프롬프트·표적명의 "HER2"가 원인일 가능성이 높았다.
     """
     known = set()
     for fact in facts:
-        for token in _NUMBER.findall(fact):
+        for token in _numeric_claims(fact):
             known.add(float(token))
-    return [n for n in _NUMBER.findall(reason) if float(n) not in known]
+    return [n for n in _numeric_claims(reason) if float(n) not in known]
 
 
 def parse_choice(text: str, allowed: set[str]) -> tuple[str, str] | None:
