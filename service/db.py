@@ -24,9 +24,9 @@ def migrate(dsn: str) -> None:
 
 def require_schema(dsn: str) -> None:
     with connect(dsn) as conn:
-        row = conn.execute("SELECT version FROM schema_migrations WHERE version = 2").fetchone()
+        row = conn.execute("SELECT version FROM schema_migrations WHERE version = 3").fetchone()
         if not row:
-            raise RuntimeError("서비스 DB migration 002를 먼저 실행하세요.")
+            raise RuntimeError("서비스 DB migration 003을 먼저 실행하세요.")
 
 
 if __name__ == "__main__":

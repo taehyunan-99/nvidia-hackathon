@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import json
 import os
+import hashlib
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from psycopg.types.json import Jsonb
 
 import pytest
 from fastapi.testclient import TestClient
@@ -80,6 +82,52 @@ def test_run_is_idempotent_private_and_survives_app_recreation(client, tmp_path)
     assert stranger.get(f"/api/runs/{first.json()['run_id']}").status_code == 404
     assert stranger.get(f"/api/runs/{first.json()['run_id']}/result").status_code == 404
     assert stranger.get("/api/artifacts/unknown").status_code == 404
+
+
+def test_saved_input_is_private_and_matches_the_run(client, tmp_path):
+    review_id = review(client)
+    response = client.get(f"/api/reviews/{review_id}")
+    assert response.status_code == 200
+    assert response.json()["candidates"] == experimental_demo()["candidates"]
+    assert response.headers["cache-control"] == "no-store"
+    stranger = TestClient(create_app(DSN, tmp_path))
+    stranger.post("/api/session")
+    assert stranger.get(f"/api/reviews/{review_id}").status_code == 404
+
+
+def test_ready_artifact_requires_owner_safe_path_and_matching_hash(client, tmp_path):
+    review_id = review(client)
+    run_id = client.post(f"/api/reviews/{review_id}/runs", json={"request_key": "artifact"}).json()["run_id"]
+    content = b"{\"ok\":true}\n"
+    relative = f"artifacts/{run_id}/report.json"
+    path = tmp_path / relative
+    path.parent.mkdir(parents=True)
+    path.write_bytes(content)
+    artifact = {"artifact_id": "report-1", "role": "report_json", "format": "json", "status": "ready", "file_name": "report.json", "size_bytes": len(content), "sha256": hashlib.sha256(content).hexdigest(), "reason": None}
+    with connect(DSN) as conn:
+        conn.execute("UPDATE runs SET result_json = %s WHERE id = %s", (Jsonb({"artifacts": [artifact]}), run_id))
+        conn.execute("INSERT INTO artifact_files(artifact_id, run_id, relative_path) VALUES (%s, %s, %s)", (artifact["artifact_id"], run_id, relative))
+    url = "/api/artifacts/report-1"
+    response = client.get(url)
+    assert response.status_code == 200 and response.content == content
+    assert response.headers["cache-control"] == "no-store"
+    stranger = TestClient(create_app(DSN, tmp_path))
+    stranger.post("/api/session")
+    assert stranger.get(url).status_code == 404
+    path.write_bytes(b"tampered")
+    assert client.get(url).status_code == 404
+    path.write_bytes(content)
+    with connect(DSN) as conn:
+        conn.execute("UPDATE artifact_files SET relative_path = %s WHERE artifact_id = %s", ("../outside.json", artifact["artifact_id"]))
+    assert client.get(url).status_code == 404
+    with connect(DSN) as conn:
+        conn.execute("UPDATE artifact_files SET relative_path = %s WHERE artifact_id = %s", (relative, artifact["artifact_id"]))
+        artifact["status"] = "mock"
+        artifact["size_bytes"] = None
+        artifact["sha256"] = None
+        artifact["reason"] = "모의 파일"
+        conn.execute("UPDATE runs SET result_json = %s WHERE id = %s", (Jsonb({"artifacts": [artifact]}), run_id))
+    assert client.get(url).status_code == 404
 
 
 def test_bad_manifest_and_sequence_leave_no_review(client):

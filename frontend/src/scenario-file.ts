@@ -1,6 +1,13 @@
 export type ScenarioFile = typeof import("../../docs/frontend-hosting/fixtures/scenarios.json");
 export type Scenario = ScenarioFile["scenarios"][number];
-export type ReviewInput = ScenarioFile["input"];
+export type ReviewInput = {
+  schema_version: string;
+  example_id: string | null;
+  public_data_confirmed: boolean;
+  target: { identifier: string | null; fasta: string | null; analysis_range: { start: number; end: number } | null; sources: { title: string; url: string; record_id: string | null }[] };
+  candidates: { candidate_id: string; name: string; antibody_format: string | null; heavy_chain_fasta: string; light_chain_fasta: string; heavy_analysis_range: { start: number; end: number } | null; light_analysis_range: { start: number; end: number } | null; sources: { title: string; url: string; record_id: string | null }[] }[];
+  uploads: { upload_key: string; file_name: string; format: "pdb" | "mmcif"; candidate_id: string; role: "complex" | "context"; source: { title: string; url: string; record_id: string | null } }[];
+};
 export type Result = NonNullable<Scenario["result"]>;
 
 function record(value: unknown): value is Record<string, unknown> {
