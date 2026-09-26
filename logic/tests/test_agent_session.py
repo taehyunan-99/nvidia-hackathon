@@ -11,7 +11,7 @@ from logic.tests.test_flow_decisions import ScriptedClient
 
 
 # make_request의 표적 서열 기본값은 None이다. 예측 경로에는 50자 이상이 필요하다.
-TARGET = _long("HERTWOSEQ", 300)
+TARGET = _long("HERTWASEQ", 300)
 
 
 # 계약이 후보 2건 이상을 요구한다(test_flow_resume.py와 같은 이유). 세션은

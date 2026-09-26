@@ -40,6 +40,15 @@ STEP_IDS = (
 # 넘기지 않기 위한 하한이며 과학적 기준이 아니다(Q05에서 확정).
 MIN_CHAIN_LENGTH = 50
 
+# 입력 검사가 받는 문자: 표준 20종 + IUPAC 모호·비표준 코드(X B Z U O).
+# 서열로는 틀리지 않았으므로 입력 오류로 떨어뜨리지 않는다.
+IUPAC_PROTEIN = set("ACDEFGHIKLMNPQRSTVWYXBZUO")
+# Boltz-2가 받는 문자: 표준 20종 + X. 출처는 422 응답 본문 "Valid characters
+# are: A, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, X, Y"
+# (2026-09-26, work/task-6b-diag/call_log.jsonl). 여기서 벗어난 서열은
+# 유료 호출 전에 예측을 보류한다.
+BOLTZ2_PROTEIN = set("ACDEFGHIKLMNPQRSTVWXY")
+
 ProgressCallback = Callable[[dict[str, Any]], None]
 
 
@@ -248,6 +257,10 @@ class Flow:
         target = self.request["input"]["target"]
         if not (target.get("identifier") or target.get("fasta")):
             problems.append("표적 HER2의 식별자와 서열이 모두 없다.")
+        if target.get("fasta"):
+            invalid = sorted(set(structures.sequence_body(target["fasta"])) - IUPAC_PROTEIN)
+            if invalid:
+                problems.append(f"표적 서열에 아미노산이 아닌 문자가 있다: {''.join(invalid)}.")
         for label, key, range_key in (
             ("중쇄", "heavy_chain_fasta", "heavy_analysis_range"),
             ("경쇄", "light_chain_fasta", "light_analysis_range"),
@@ -258,7 +271,7 @@ class Flow:
                 continue
             # 검사는 걸러내기 전 본문으로 한다. 숫자·기호가 조용히 사라지면
             # 잘못된 입력이 예측 호출까지 넘어간다.
-            invalid = sorted(set(body) - set("ACDEFGHIKLMNPQRSTVWYXBZUO"))
+            invalid = sorted(set(body) - IUPAC_PROTEIN)
             seq = structures.normalize_sequence(candidate[key])
             if invalid:
                 problems.append(f"{label} 서열에 아미노산이 아닌 문자가 있다: {''.join(invalid)}.")
@@ -468,6 +481,12 @@ class Flow:
         for label, seq in (("중쇄", heavy), ("경쇄", light)):
             if len(seq) < MIN_CHAIN_LENGTH:
                 missing.append(f"{label} 서열이 {MIN_CHAIN_LENGTH}자 미만이다.")
+        for label, seq in (("표적", target_seq), ("중쇄", heavy), ("경쇄", light)):
+            rejected = sorted(set(seq) - BOLTZ2_PROTEIN)
+            if rejected:
+                missing.append(
+                    f"{label} 서열에 Boltz-2가 받지 않는 문자({''.join(rejected)})가 있어 예측을 보내지 않았다."
+                )
         if missing:
             reason = " ".join(missing) + " 자료 보완 후 다시 실행해야 한다."
             self._emit(cid, "evidence_review", "held", reason)

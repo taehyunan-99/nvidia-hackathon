@@ -9,7 +9,7 @@ from logic.tests.test_flow import TRASTUZUMAB, _long, candidate, entity_sequence
 from logic.tests.test_flow_decisions import ScriptedClient
 
 # make_request의 표적 서열 기본값은 None이다. 예측 경로에는 50자 이상이 필요하다.
-TARGET = _long("HERTWOSEQ", 300)
+TARGET = _long("HERTWASEQ", 300)
 
 # 계약이 후보 2건 이상을 요구한다(test_flow_decisions.py와 같은 이유). 세션은
 # 그 중 하나만 감싸므로 나머지 한 건은 입력 검사에서 바로 걸리는 채움용이다.
