@@ -3,13 +3,11 @@ import { DefaultPluginSpec } from "molstar/lib/mol-plugin/spec";
 import { MolScriptBuilder as Q } from "molstar/lib/mol-script/language/builder";
 import { Structure } from "molstar/lib/mol-model/structure";
 import { Color } from "molstar/lib/mol-util/color";
-import { Vec4 } from "molstar/lib/mol-math/linear-algebra";
 export type ViewOptions = {
   view: "overview" | "contacts" | "context";
   opacity: number;
   hideAntibody: boolean;
   context: boolean;
-  labels: boolean;
 };
 export async function createMolecularViewer(
   canvas: HTMLCanvasElement,
@@ -33,7 +31,6 @@ export async function loadMolecule(
   pdb: string,
   mode: string,
   residues: { chain: string; seq: number }[],
-  host: HTMLDivElement,
   chainIds?: string[],
 ) {
   const data = await plugin.builders.data.rawData({ data: cif, label: pdb });
@@ -42,17 +39,13 @@ export async function loadMolecule(
     "mmcif",
   );
   const model = await plugin.builders.structure.createModel(trajectory);
-  // 공개 실험 구조는 assembly 1이 생물학적 단위라 그걸 쓴다. 예측 구조에는
-  // _pdbx_struct_assembly 자체가 없어서(Boltz-2 응답에서 확인) assembly를
-  // 요구하면 만들 수 없다. 그때는 모델을 그대로 쓴다. 예측 구조는 받은
-  // 사슬이 곧 전부라 대칭 전개로 채울 것이 없다.
+  // 예측 구조에는 assembly 정의가 없어 모델을 그대로 사용한다.
   const structure = chainIds
     ? await plugin.builders.structure.createStructure(model, { name: "model", params: {} })
     : await plugin.builders.structure.createStructure(model, {
         name: "assembly",
         params: { id: "1" },
       });
-  // 사슬 순서는 표적·중쇄·경쇄다. 아래 색이 그 순서에 맞춰져 있다.
   const chains = chainIds ?? (pdb === "1N8Z" ? ["C", "B", "A"] : ["A", "D", "C"]);
   const colors = [0x259c91, 0xe99032, 0x7d6bd0];
   const chainQuery = (chain: string) =>
@@ -172,37 +165,7 @@ export async function loadMolecule(
     opacity: 1,
     hideAntibody: false,
     context: false,
-    labels: false,
   };
-  const labels = components.map((c, i) => {
-    const element = document.createElement("span");
-    element.className = "molecule-label";
-    element.textContent = ["HER2", "항체 중쇄", "항체 경쇄"][i];
-    element.style.borderColor = "#" + colors[i].toString(16);
-    host.append(element);
-    return { element, center: c!.obj!.data.boundary.sphere.center };
-  });
-  const labelSubscription = plugin.canvas3d!.didDraw.subscribe(() => {
-    const camera = plugin.canvas3d!.camera;
-    const vp = camera.viewport;
-    labels.forEach(({ element, center }, i) => {
-      const point = camera.project(Vec4(), center);
-      const x = ((point[0] - vp.x) / vp.width) * host.clientWidth;
-      const y = (1 - (point[1] - vp.y) / vp.height) * host.clientHeight;
-      element.hidden =
-        !options.labels ||
-        options.view !== "overview" ||
-        (i > 0 && options.hideAntibody) ||
-        point[2] < 0 ||
-        point[2] > 1 ||
-        x < 0 ||
-        x > host.clientWidth ||
-        y < 0 ||
-        y > host.clientHeight;
-      element.style.left = `${Math.max(48, Math.min(host.clientWidth - 48, x))}px`;
-      element.style.top = `${Math.max(18, Math.min(host.clientHeight - 18, y + (i === 2 ? 24 : -20)))}px`;
-    });
-  });
   let queue = Promise.resolve();
   const update = (next: ViewOptions, focus = false) => {
     queue = queue.then(async () => {
@@ -262,9 +225,5 @@ export async function loadMolecule(
     update,
     count: residues.length,
     hasContext: !!contextRep,
-    dispose: () => {
-      labelSubscription.unsubscribe();
-      labels.forEach((l) => l.element.remove());
-    },
   };
 }

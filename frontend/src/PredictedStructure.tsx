@@ -54,7 +54,6 @@ export default function PredictedStructure({
   useEffect(() => {
     let cancelled = false;
     let plugin: PluginContext | undefined;
-    let loaded: { dispose(): void } | undefined;
     const abort = new AbortController();
     const element = document.createElement("canvas");
     const container = host.current!;
@@ -97,16 +96,15 @@ export default function PredictedStructure({
                 chain: r.label_asym_id as string,
                 seq: r.label_seq_id as number,
               }));
-        loaded = await module.loadMolecule(
+        const loaded = await module.loadMolecule(
           plugin,
           text,
           view.structureId,
           "cartoon",
           residues,
-          container,
           view.chains,
         );
-        if (cancelled) return loaded.dispose();
+        if (cancelled) return;
         setCount(residues.length);
         setStatus("ready");
       } catch (e) {
@@ -118,7 +116,6 @@ export default function PredictedStructure({
     return () => {
       cancelled = true;
       abort.abort();
-      loaded?.dispose();
       if (plugin) {
         plugin.dispose();
         element.remove();

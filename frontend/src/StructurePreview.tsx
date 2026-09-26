@@ -11,7 +11,6 @@ const defaults: ViewOptions = {
   opacity: 1,
   hideAntibody: false,
   context: false,
-  labels: false,
 };
 export default function StructurePreview() {
   const host = useRef<HTMLDivElement>(null),
@@ -22,6 +21,7 @@ export default function StructurePreview() {
     [retry, setRetry] = useState(0);
   const [options, setOptions] = useState<ViewOptions>(defaults),
     optionsRef = useRef(options);
+  const [showNames, setShowNames] = useState(false);
   const [status, setStatus] = useState("loading"),
     [count, setCount] = useState(0),
     [hasContext, setHasContext] = useState(false),
@@ -54,6 +54,14 @@ export default function StructurePreview() {
     } catch {
       setMessage("표시 변경에 실패했습니다. 다시 불러와 주세요.");
     }
+  }
+  function keepSettingsVisible() {
+    window.requestAnimationFrame(() => {
+      const popup = document.getElementById("structure-settings");
+      if (!popup?.matches(":popover-open")) return;
+      const overflow = popup.getBoundingClientRect().bottom - window.innerHeight + 16;
+      if (overflow > 0) window.scrollBy({ top: overflow, behavior: "auto" });
+    });
   }
   useEffect(() => {
     let cancelled = false,
@@ -110,12 +118,8 @@ export default function StructurePreview() {
           pdb,
           mode,
           entry.residues,
-          container,
         );
-        if (cancelled) {
-          loaded.dispose();
-          return;
-        }
+        if (cancelled) return;
         actions.current = loaded;
         await loaded.update(defaults, true);
         if (cancelled) return;
@@ -134,7 +138,6 @@ export default function StructurePreview() {
       abort.abort();
       actions.current = null;
       activePlugin.current = null;
-      loaded?.dispose();
       if (plugin) {
         plugin.dispose();
         element.remove();
@@ -157,59 +160,88 @@ export default function StructurePreview() {
           <span className="caption">분석 결과와 별개</span>
         </div>
       </div>
-      <div className="structure-candidates" aria-label="공개 항체 선택">
-        {[
-          ["1N8Z", "Herceptin"],
-          ["1S78", "Pertuzumab"],
-        ].map(([id, name]) => (
-          <button key={id} aria-pressed={pdb === id} onClick={() => setPdb(id)}>
-            {name}
-            <small>{id}</small>
-          </button>
-        ))}
-      </div>
-      <div className="structure-views" aria-label="3D 보기 선택">
-        <button
-          disabled={!ready}
-          aria-pressed={options.view === "overview"}
-          onClick={() => void change({ view: "overview" }, true)}
-        >
-          전체 보기
-        </button>
-        <button
-          disabled={!ready}
-          aria-pressed={options.view === "contacts"}
-          onClick={() => void change({ view: "contacts" }, true)}
-        >
-          접촉 부위 보기
-        </button>
-      </div>
-      <div className="context-action">
-        <label>
-          <input
-            type="checkbox"
-            disabled={!ready || !hasContext}
-            checked={options.context}
-            onChange={(e) =>
-              void change(
-                {
-                  context: e.target.checked,
-                  view: e.target.checked ? "context" : "overview",
-                },
-                true,
-              )
-            }
-          />{" "}
-          확보된 당·기타 성분 보기
-        </label>
-        {options.context && (
+      <div className="structure-toolbar" aria-label="3D 구조 조작">
+        <div className="structure-control-group">
+          <strong>공개 구조 예제</strong>
+          <div className="structure-candidates" role="group" aria-label="공개 항체 선택">
+            {[
+              ["1N8Z", "Herceptin"],
+              ["1S78", "Pertuzumab"],
+            ].map(([id, name]) => (
+              <button key={id} aria-pressed={pdb === id} onClick={() => setPdb(id)}>
+                {name}
+                <small>{id}</small>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="structure-control-group">
+          <strong>관찰 위치</strong>
+          <div className="structure-views" role="group" aria-label="3D 보기 선택">
+            <button disabled={!ready} aria-pressed={options.view === "overview"} onClick={() => void change({ view: "overview" }, true)}>
+              전체 보기
+            </button>
+            <button disabled={!ready} aria-pressed={options.view === "contacts"} onClick={() => void change({ view: "contacts" }, true)}>
+              접촉 부위 보기
+            </button>
+          </div>
+        </div>
+        <div className="structure-control-group">
+          <strong>표현 방식</strong>
+          <div className="structure-representations" role="group" aria-label="구조 표현">
+            {(["mixed", "cartoon", "surface"] as const).map((value) => (
+              <button key={value} aria-pressed={mode === value} onClick={() => setMode(value)}>
+                {value === "mixed" ? "혼합" : value === "cartoon" ? "리본" : "표면"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="structure-control-group">
+          <strong>구조 성분</strong>
           <button
-            disabled={!ready}
-            onClick={() => void change({ view: "context" }, true)}
+            className="structure-context-toggle"
+            disabled={!ready || !hasContext}
+            aria-pressed={options.context}
+            onClick={() => void change({ context: !options.context, view: options.context ? "overview" : "context" }, true)}
           >
-            성분 위치 다시 보기 ↗
+            {options.context ? "당·기타 성분 표시 중" : "당·기타 성분 보기"}
           </button>
-        )}
+        </div>
+        <div className="structure-controls">
+          <button className="viewer-button structure-settings-trigger" popoverTarget="structure-settings" popoverTargetAction="toggle" onClick={keepSettingsVisible}>
+            표시 세부 조정
+          </button>
+          <div className="structure-camera-controls">
+            <button className="rotation-toggle" disabled={!ready || options.view !== "overview"} aria-pressed={spinning} onClick={() => rotate(!spinning)}>
+              {options.view !== "overview" ? "회전 정지" : spinning ? "회전 정지" : "회전 재개"}
+            </button>
+            <button className="viewer-button" disabled={!ready} onClick={() => void change({ view: options.view }, true)}>
+              시점 초기화
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="structure-settings" className="structure-settings-popover" popover="auto" role="dialog" aria-modal="false" aria-label="표시 세부 조정">
+        <div className="structure-settings-heading">
+          <strong>표시 세부 조정</strong>
+        </div>
+        <div className="structure-adjustments">
+          {options.context && (
+            <button className="viewer-button" disabled={!ready} onClick={() => void change({ view: "context" }, true)}>
+              성분 위치 다시 보기 ↗
+            </button>
+          )}
+          <label>
+            <input type="checkbox" disabled={!ready} checked={options.hideAntibody} onChange={(e) => void change({ hideAntibody: e.target.checked })} /> 항체 숨기기
+          </label>
+          <label>
+            <input type="checkbox" checked={showNames} onChange={(e) => setShowNames(e.target.checked)} /> 구조 이름을 범례로 보기
+          </label>
+          <label className="opacity-control">
+            HER2 표면 불투명도 <output>{Math.round(options.opacity * 100)}%</output>
+            <input aria-label="HER2 표면 불투명도" type="range" min=".1" max="1" step=".05" disabled={!ready || mode === "cartoon" || options.view !== "overview"} value={options.opacity} onChange={(e) => void change({ opacity: Number(e.target.value) })} />
+          </label>
+        </div>
       </div>
       <div
         ref={host}
@@ -235,10 +267,10 @@ export default function StructurePreview() {
               : "전체 구조"}
         </span>
       </div>
-      <div className="structure-legend">
-        <span>● HER2</span>
-        <span>● 항체 중쇄</span>
-        <span>● 항체 경쇄</span>
+      <div className={`structure-legend ${showNames ? "structure-legend-expanded" : ""}`} aria-label="구조 색상 범례">
+        <span>● {showNames ? "HER2 세포외 영역" : "HER2"}</span>
+        <span>● {showNames ? "항체 Fab 중쇄" : "항체 중쇄"}{showNames && options.hideAntibody ? " · 숨김" : ""}</span>
+        <span>● {showNames ? "항체 Fab 경쇄" : "항체 경쇄"}{showNames && options.hideAntibody ? " · 숨김" : ""}</span>
         {options.context && <span>● 당·기타 성분</span>}
       </div>
       <p className="view-explanation" aria-live="polite">
@@ -249,77 +281,8 @@ export default function StructurePreview() {
             : "HER2 표면과 항체 리본으로 전체 배치를 확인하세요."}
         {options.hideAntibody ? " 항체는 숨겨져 있습니다." : ""}
       </p>
-      <div className="structure-controls">
-        <button
-          className="rotation-toggle"
-          disabled={!ready || options.view !== "overview"}
-          aria-pressed={spinning}
-          onClick={() => rotate(!spinning)}
-        >
-          {options.view !== "overview"
-            ? "집중 보기 · 회전 정지"
-            : spinning
-              ? "자동 회전 중 · 일시정지"
-              : "자동 회전 재개"}
-        </button>
-        <button
-          className="viewer-button"
-          disabled={!ready}
-          onClick={() => void change({ view: options.view }, true)}
-        >
-          시점 초기화
-        </button>
-      </div>
-      <div className="structure-adjustments">
-        <label>
-          <input
-            type="checkbox"
-            disabled={!ready}
-            checked={options.hideAntibody}
-            onChange={(e) => void change({ hideAntibody: e.target.checked })}
-          />{" "}
-          항체 숨기기
-        </label>
-        <label>
-          <input
-            type="checkbox"
-            disabled={!ready}
-            checked={options.labels}
-            onChange={(e) => void change({ labels: e.target.checked })}
-          />{" "}
-          구조 이름 표시
-        </label>
-        <label className="opacity-control">
-          HER2 표면 불투명도{" "}
-          <output>{Math.round(options.opacity * 100)}%</output>
-          <input
-            aria-label="HER2 표면 불투명도"
-            type="range"
-            min=".1"
-            max="1"
-            step=".05"
-            disabled={
-              !ready || mode === "cartoon" || options.view !== "overview"
-            }
-            value={options.opacity}
-            onChange={(e) => void change({ opacity: Number(e.target.value) })}
-          />
-        </label>
-      </div>
       <section className="structure-source" aria-label="표현·출처·표시 범위">
         <h4>표현·출처·표시 범위</h4>
-        <label className="representation-control">
-          표현{" "}
-          <select
-            aria-label="구조 표현"
-            value={mode}
-            onChange={(e) => setMode(e.target.value)}
-          >
-            <option value="mixed">혼합</option>
-            <option value="cartoon">리본</option>
-            <option value="surface">표면</option>
-          </select>
-        </label>
         <p>
           <a
             href={`https://www.rcsb.org/structure/${pdb}`}
@@ -337,7 +300,7 @@ export default function StructurePreview() {
           전체 IgG·세포막·완전한 당쇄를 표현하지 않습니다.
         </p>
         <p>
-          후보 전환 시 전체 보기로 초기화합니다. 구조 간 정렬 비교는 아직
+          검토 후보·조건을 바꿔도 이 공개 구조 보기는 유지됩니다. 구조 간 정렬 비교는 아직
           제공하지 않습니다.
         </p>
       </section>
