@@ -1,0 +1,661 @@
+{
+  "format": "a03-1",
+  "readout": "Fixed observed protein atoms only; reduction = core - context",
+  "unit": "angstrom^2",
+  "parameters": {
+    "points": [
+      960,
+      1920
+    ],
+    "probe_radius_angstrom": 1.4,
+    "atomic_radii_angstrom": {
+      "C": 1.7,
+      "N": 1.55,
+      "O": 1.52,
+      "S": 1.8
+    }
+  },
+  "entries": [
+    {
+      "pdb_id": "1N8Z",
+      "candidate_id": "reference-trastuzumab-fab",
+      "structure_id": "1n8z-assembly-1",
+      "conditions": {
+        "core": "a03-1n8z-core",
+        "context": "a03-1n8z-context"
+      },
+      "protein_atom_count": 7778,
+      "core_protein_fingerprint": "207cf45232b0a55bdd84a268179a9a48b6eae20ffc7a974b1b7c48a8529554c3",
+      "context_protein_fingerprint": "207cf45232b0a55bdd84a268179a9a48b6eae20ffc7a974b1b7c48a8529554c3",
+      "glycan_residue_count": 2,
+      "glycan_atom_count": 28,
+      "coverage": [
+        {
+          "role": "target",
+          "range": {
+            "start": 23,
+            "end": 629
+          },
+          "selected_residues": 607,
+          "observed_residues": 581,
+          "missing_residues": 26,
+          "missing_sequence_ranges": [
+            [
+              124,
+              132
+            ],
+            [
+              325,
+              327
+            ],
+            [
+              383,
+              386
+            ],
+            [
+              603,
+              612
+            ]
+          ]
+        },
+        {
+          "role": "heavy",
+          "range": {
+            "start": 1,
+            "end": 220
+          },
+          "selected_residues": 220,
+          "observed_residues": 220,
+          "missing_residues": 0,
+          "missing_sequence_ranges": []
+        },
+        {
+          "role": "light",
+          "range": {
+            "start": 1,
+            "end": 214
+          },
+          "selected_residues": 214,
+          "observed_residues": 214,
+          "missing_residues": 0,
+          "missing_sequence_ranges": []
+        }
+      ],
+      "missing_atom_annotations": [
+        {
+          "residue": {
+            "model_number": 1,
+            "label_asym_id": "A",
+            "auth_asym_id": "A",
+            "label_seq_id": 190,
+            "auth_seq_id": 190,
+            "insertion_code": null,
+            "sequence_position": 190,
+            "has_coordinates": true,
+            "operator_id": "1"
+          },
+          "atom_name": "CG",
+          "component": "LYS",
+          "annotation": {
+            "id": "1",
+            "PDB_model_num": "1",
+            "polymer_flag": "Y",
+            "occupancy_flag": "1",
+            "auth_asym_id": "A",
+            "auth_comp_id": "LYS",
+            "auth_seq_id": "190",
+            "PDB_ins_code": "?",
+            "auth_atom_id": "CG",
+            "label_alt_id": "?",
+            "label_asym_id": "A",
+            "label_comp_id": "LYS",
+            "label_seq_id": "190",
+            "label_atom_id": "CG"
+          }
+        },
+        {
+          "residue": {
+            "model_number": 1,
+            "label_asym_id": "A",
+            "auth_asym_id": "A",
+            "label_seq_id": 190,
+            "auth_seq_id": 190,
+            "insertion_code": null,
+            "sequence_position": 190,
+            "has_coordinates": true,
+            "operator_id": "1"
+          },
+          "atom_name": "CD",
+          "component": "LYS",
+          "annotation": {
+            "id": "2",
+            "PDB_model_num": "1",
+            "polymer_flag": "Y",
+            "occupancy_flag": "1",
+            "auth_asym_id": "A",
+            "auth_comp_id": "LYS",
+            "auth_seq_id": "190",
+            "PDB_ins_code": "?",
+            "auth_atom_id": "CD",
+            "label_alt_id": "?",
+            "label_asym_id": "A",
+            "label_comp_id": "LYS",
+            "label_seq_id": "190",
+            "label_atom_id": "CD"
+          }
+        },
+        {
+          "residue": {
+            "model_number": 1,
+            "label_asym_id": "A",
+            "auth_asym_id": "A",
+            "label_seq_id": 190,
+            "auth_seq_id": 190,
+            "insertion_code": null,
+            "sequence_position": 190,
+            "has_coordinates": true,
+            "operator_id": "1"
+          },
+          "atom_name": "CE",
+          "component": "LYS",
+          "annotation": {
+            "id": "3",
+            "PDB_model_num": "1",
+            "polymer_flag": "Y",
+            "occupancy_flag": "1",
+            "auth_asym_id": "A",
+            "auth_comp_id": "LYS",
+            "auth_seq_id": "190",
+            "PDB_ins_code": "?",
+            "auth_atom_id": "CE",
+            "label_alt_id": "?",
+            "label_asym_id": "A",
+            "label_comp_id": "LYS",
+            "label_seq_id": "190",
+            "label_atom_id": "CE"
+          }
+        },
+        {
+          "residue": {
+            "model_number": 1,
+            "label_asym_id": "A",
+            "auth_asym_id": "A",
+            "label_seq_id": 190,
+            "auth_seq_id": 190,
+            "insertion_code": null,
+            "sequence_position": 190,
+            "has_coordinates": true,
+            "operator_id": "1"
+          },
+          "atom_name": "NZ",
+          "component": "LYS",
+          "annotation": {
+            "id": "4",
+            "PDB_model_num": "1",
+            "polymer_flag": "Y",
+            "occupancy_flag": "1",
+            "auth_asym_id": "A",
+            "auth_comp_id": "LYS",
+            "auth_seq_id": "190",
+            "PDB_ins_code": "?",
+            "auth_atom_id": "NZ",
+            "label_alt_id": "?",
+            "label_asym_id": "A",
+            "label_comp_id": "LYS",
+            "label_seq_id": "190",
+            "label_atom_id": "NZ"
+          }
+        },
+        {
+          "residue": {
+            "model_number": 1,
+            "label_asym_id": "B",
+            "auth_asym_id": "B",
+            "label_seq_id": 30,
+            "auth_seq_id": 30,
+            "insertion_code": null,
+            "sequence_position": 30,
+            "has_coordinates": true,
+            "operator_id": "1"
+          },
+          "atom_name": "CG",
+          "component": "LYS",
+          "annotation": {
+            "id": "5",
+            "PDB_model_num": "1",
+            "polymer_flag": "Y",
+            "occupancy_flag": "1",
+            "auth_asym_id": "B",
+            "auth_comp_id": "LYS",
+            "auth_seq_id": "30",
+            "PDB_ins_code": "?",
+            "auth_atom_id": "CG",
+            "label_alt_id": "?",
+            "label_asym_id": "B",
+            "label_comp_id": "LYS",
+            "label_seq_id": "30",
+            "label_atom_id": "CG"
+          }
+        },
+        {
+          "residue": {
+            "model_number": 1,
+            "label_asym_id": "B",
+            "auth_asym_id": "B",
+            "label_seq_id": 30,
+            "auth_seq_id": 30,
+            "insertion_code": null,
+            "sequence_position": 30,
+            "has_coordinates": true,
+            "operator_id": "1"
+          },
+          "atom_name": "CD",
+          "component": "LYS",
+          "annotation": {
+            "id": "6",
+            "PDB_model_num": "1",
+            "polymer_flag": "Y",
+            "occupancy_flag": "1",
+            "auth_asym_id": "B",
+            "auth_comp_id": "LYS",
+            "auth_seq_id": "30",
+            "PDB_ins_code": "?",
+            "auth_atom_id": "CD",
+            "label_alt_id": "?",
+            "label_asym_id": "B",
+            "label_comp_id": "LYS",
+            "label_seq_id": "30",
+            "label_atom_id": "CD"
+          }
+        },
+        {
+          "residue": {
+            "model_number": 1,
+            "label_asym_id": "B",
+            "auth_asym_id": "B",
+            "label_seq_id": 30,
+            "auth_seq_id": 30,
+            "insertion_code": null,
+            "sequence_position": 30,
+            "has_coordinates": true,
+            "operator_id": "1"
+          },
+          "atom_name": "CE",
+          "component": "LYS",
+          "annotation": {
+            "id": "7",
+            "PDB_model_num": "1",
+            "polymer_flag": "Y",
+            "occupancy_flag": "1",
+            "auth_asym_id": "B",
+            "auth_comp_id": "LYS",
+            "auth_seq_id": "30",
+            "PDB_ins_code": "?",
+            "auth_atom_id": "CE",
+            "label_alt_id": "?",
+            "label_asym_id": "B",
+            "label_comp_id": "LYS",
+            "label_seq_id": "30",
+            "label_atom_id": "CE"
+          }
+        },
+        {
+          "residue": {
+            "model_number": 1,
+            "label_asym_id": "B",
+            "auth_asym_id": "B",
+            "label_seq_id": 30,
+            "auth_seq_id": 30,
+            "insertion_code": null,
+            "sequence_position": 30,
+            "has_coordinates": true,
+            "operator_id": "1"
+          },
+          "atom_name": "NZ",
+          "component": "LYS",
+          "annotation": {
+            "id": "8",
+            "PDB_model_num": "1",
+            "polymer_flag": "Y",
+            "occupancy_flag": "1",
+            "auth_asym_id": "B",
+            "auth_comp_id": "LYS",
+            "auth_seq_id": "30",
+            "PDB_ins_code": "?",
+            "auth_atom_id": "NZ",
+            "label_alt_id": "?",
+            "label_asym_id": "B",
+            "label_comp_id": "LYS",
+            "label_seq_id": "30",
+            "label_atom_id": "NZ"
+          }
+        },
+        {
+          "residue": {
+            "model_number": 1,
+            "label_asym_id": "B",
+            "auth_asym_id": "B",
+            "label_seq_id": 217,
+            "auth_seq_id": 217,
+            "insertion_code": null,
+            "sequence_position": 217,
+            "has_coordinates": true,
+            "operator_id": "1"
+          },
+          "atom_name": "CG",
+          "component": "LYS",
+          "annotation": {
+            "id": "9",
+            "PDB_model_num": "1",
+            "polymer_flag": "Y",
+            "occupancy_flag": "1",
+            "auth_asym_id": "B",
+            "auth_comp_id": "LYS",
+            "auth_seq_id": "217",
+            "PDB_ins_code": "?",
+            "auth_atom_id": "CG",
+            "label_alt_id": "?",
+            "label_asym_id": "B",
+            "label_comp_id": "LYS",
+            "label_seq_id": "217",
+            "label_atom_id": "CG"
+          }
+        },
+        {
+          "residue": {
+            "model_number": 1,
+            "label_asym_id": "B",
+            "auth_asym_id": "B",
+            "label_seq_id": 217,
+            "auth_seq_id": 217,
+            "insertion_code": null,
+            "sequence_position": 217,
+            "has_coordinates": true,
+            "operator_id": "1"
+          },
+          "atom_name": "CD",
+          "component": "LYS",
+          "annotation": {
+            "id": "10",
+            "PDB_model_num": "1",
+            "polymer_flag": "Y",
+            "occupancy_flag": "1",
+            "auth_asym_id": "B",
+            "auth_comp_id": "LYS",
+            "auth_seq_id": "217",
+            "PDB_ins_code": "?",
+            "auth_atom_id": "CD",
+            "label_alt_id": "?",
+            "label_asym_id": "B",
+            "label_comp_id": "LYS",
+            "label_seq_id": "217",
+            "label_atom_id": "CD"
+          }
+        },
+        {
+          "residue": {
+            "model_number": 1,
+            "label_asym_id": "B",
+            "auth_asym_id": "B",
+            "label_seq_id": 217,
+            "auth_seq_id": 217,
+            "insertion_code": null,
+            "sequence_position": 217,
+            "has_coordinates": true,
+            "operator_id": "1"
+          },
+          "atom_name": "CE",
+          "component": "LYS",
+          "annotation": {
+            "id": "11",
+            "PDB_model_num": "1",
+            "polymer_flag": "Y",
+            "occupancy_flag": "1",
+            "auth_asym_id": "B",
+            "auth_comp_id": "LYS",
+            "auth_seq_id": "217",
+            "PDB_ins_code": "?",
+            "auth_atom_id": "CE",
+            "label_alt_id": "?",
+            "label_asym_id": "B",
+            "label_comp_id": "LYS",
+            "label_seq_id": "217",
+            "label_atom_id": "CE"
+          }
+        },
+        {
+          "residue": {
+            "model_number": 1,
+            "label_asym_id": "B",
+            "auth_asym_id": "B",
+            "label_seq_id": 217,
+            "auth_seq_id": 217,
+            "insertion_code": null,
+            "sequence_position": 217,
+            "has_coordinates": true,
+            "operator_id": "1"
+          },
+          "atom_name": "NZ",
+          "component": "LYS",
+          "annotation": {
+            "id": "12",
+            "PDB_model_num": "1",
+            "polymer_flag": "Y",
+            "occupancy_flag": "1",
+            "auth_asym_id": "B",
+            "auth_comp_id": "LYS",
+            "auth_seq_id": "217",
+            "PDB_ins_code": "?",
+            "auth_atom_id": "NZ",
+            "label_alt_id": "?",
+            "label_asym_id": "B",
+            "label_comp_id": "LYS",
+            "label_seq_id": "217",
+            "label_atom_id": "NZ"
+          }
+        }
+      ],
+      "sasa": [
+        {
+          "points": 960,
+          "state": "measured",
+          "core_protein_sasa": 47482.87683177106,
+          "context_protein_sasa": 47242.15198183947,
+          "reduction": 240.7248499315863,
+          "by_role": {
+            "target": {
+              "core": 28845.020080364557,
+              "context": 28604.29523043297,
+              "reduction": 240.7248499315863
+            },
+            "heavy": {
+              "core": 9305.116817169184,
+              "context": 9305.116817169184,
+              "reduction": 0.0
+            },
+            "light": {
+              "core": 9332.73993423732,
+              "context": 9332.73993423732,
+              "reduction": 0.0
+            }
+          }
+        },
+        {
+          "points": 1920,
+          "state": "measured",
+          "core_protein_sasa": 47493.707020185866,
+          "context_protein_sasa": 47252.744180866306,
+          "reduction": 240.96283931956356,
+          "by_role": {
+            "target": {
+              "core": 28855.441487361273,
+              "context": 28614.47864804171,
+              "reduction": 240.96283931956356
+            },
+            "heavy": {
+              "core": 9296.665051976088,
+              "context": 9296.665051976088,
+              "reduction": 0.0
+            },
+            "light": {
+              "core": 9341.600480848509,
+              "context": 9341.600480848509,
+              "reduction": 0.0
+            }
+          }
+        }
+      ],
+      "reduction_resolution_difference_angstrom2": 0.237989387977251,
+      "gaps": [
+        "target: 26 residues lack coordinates at input positions [[124, 132], [325, 327], [383, 386], [603, 612]]",
+        "12 explicitly unobserved atoms in selected residues (chain, input position): [('A', 190), ('B', 30), ('B', 217)]",
+        "Observed atoms only; complete side chains and missing regions are not reconstructed.",
+        "Whole-range accessibility and absence of clashes cannot be concluded.",
+        "Observed NAG fragments only; unobserved glycans and missing atoms are not reconstructed.",
+        "No glycan coordinates means unknown context, not glycan absence or zero shielding.",
+        "Protein-only SASA in fixed coordinates; no glycan surface is added to the readout.",
+        "Water, ions, hydrogen/deuterium, membrane and assembly 2 are excluded.",
+        "No efficacy, affinity, complete accessibility or validated clash classification."
+      ]
+    },
+    {
+      "pdb_id": "1S78",
+      "candidate_id": "reference-pertuzumab-fab",
+      "structure_id": "1s78-assembly-1",
+      "conditions": {
+        "core": "a03-1s78-core",
+        "context": "a03-1s78-context"
+      },
+      "protein_atom_count": 7599,
+      "core_protein_fingerprint": "d5792657a2a610ced2d3b508d0b9879979eb19ade032c22dcc078d2b6bc875b9",
+      "context_protein_fingerprint": "d5792657a2a610ced2d3b508d0b9879979eb19ade032c22dcc078d2b6bc875b9",
+      "glycan_residue_count": 5,
+      "glycan_atom_count": 70,
+      "coverage": [
+        {
+          "role": "target",
+          "range": {
+            "start": 23,
+            "end": 629
+          },
+          "selected_residues": 607,
+          "observed_residues": 555,
+          "missing_residues": 52,
+          "missing_sequence_ranges": [
+            [
+              124,
+              132
+            ],
+            [
+              587,
+              629
+            ]
+          ]
+        },
+        {
+          "role": "heavy",
+          "range": {
+            "start": 1,
+            "end": 226
+          },
+          "selected_residues": 226,
+          "observed_residues": 222,
+          "missing_residues": 4,
+          "missing_sequence_ranges": [
+            [
+              223,
+              226
+            ]
+          ]
+        },
+        {
+          "role": "light",
+          "range": {
+            "start": 1,
+            "end": 214
+          },
+          "selected_residues": 214,
+          "observed_residues": 214,
+          "missing_residues": 0,
+          "missing_sequence_ranges": []
+        }
+      ],
+      "missing_atom_annotations": [],
+      "sasa": [
+        {
+          "points": 960,
+          "state": "measured",
+          "core_protein_sasa": 46188.26756769667,
+          "context_protein_sasa": 45761.93614751898,
+          "reduction": 426.33142017768677,
+          "by_role": {
+            "target": {
+              "core": 26415.108523035782,
+              "context": 25988.777102858094,
+              "reduction": 426.33142017768677
+            },
+            "heavy": {
+              "core": 9441.354984122087,
+              "context": 9441.354984122087,
+              "reduction": 0.0
+            },
+            "light": {
+              "core": 10331.804060538803,
+              "context": 10331.804060538803,
+              "reduction": 0.0
+            }
+          }
+        },
+        {
+          "points": 1920,
+          "state": "measured",
+          "core_protein_sasa": 46196.887268034065,
+          "context_protein_sasa": 45767.41784970838,
+          "reduction": 429.46941832568206,
+          "by_role": {
+            "target": {
+              "core": 26409.60351546488,
+              "context": 25980.134097139202,
+              "reduction": 429.46941832568206
+            },
+            "heavy": {
+              "core": 9448.711654911489,
+              "context": 9448.711654911489,
+              "reduction": 0.0
+            },
+            "light": {
+              "core": 10338.572097657689,
+              "context": 10338.572097657689,
+              "reduction": 0.0
+            }
+          }
+        }
+      ],
+      "reduction_resolution_difference_angstrom2": 3.1379981479952903,
+      "gaps": [
+        "target: 52 residues lack coordinates at input positions [[124, 132], [587, 629]]",
+        "heavy: 4 residues lack coordinates at input positions [[223, 226]]",
+        "Observed atoms only; complete side chains and missing regions are not reconstructed.",
+        "Whole-range accessibility and absence of clashes cannot be concluded.",
+        "Observed NAG fragments only; unobserved glycans and missing atoms are not reconstructed.",
+        "No glycan coordinates means unknown context, not glycan absence or zero shielding.",
+        "Protein-only SASA in fixed coordinates; no glycan surface is added to the readout.",
+        "Water, ions, hydrogen/deuterium, membrane and assembly 2 are excluded.",
+        "No efficacy, affinity, complete accessibility or validated clash classification."
+      ]
+    }
+  ],
+  "limits": [
+    "Observed NAG fragments only; unobserved glycans and missing atoms are not reconstructed.",
+    "No glycan coordinates means unknown context, not glycan absence or zero shielding.",
+    "Protein-only SASA in fixed coordinates; no glycan surface is added to the readout.",
+    "Water, ions, hydrogen/deuterium, membrane and assembly 2 are excluded.",
+    "No efficacy, affinity, complete accessibility or validated clash classification."
+  ],
+  "runtime": {
+    "python": "3.12.10",
+    "biopython": "1.88",
+    "numpy": "2.5.3",
+    "jsonschema": "4.25.1"
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "inputs_and_implementation": [
+    {
+      "path": "docs/topics/her2/assets/a03/compare.py",
+      "sha256": "0096c1275e7b7b99397501f1ecafa4ff41c76e40160d4c374390d6631ab97aa6"
+    },
+    {
+      "path": "docs/topics/her2/assets/a02/analyze.py",
+      "sha256": "26606d3983884d2c790425acc861031ad30e45d438b54d94632c2f2b4ad4af2f"
+    },
+    {
+      "path": "docs/topics/her2/assets/a02/metrics.py",
+      "sha256": "9cff7d6b56e66483883d71966042a8b2971184ac968c98bd669f54b268c02ab9"
+    },
+    {
+      "path": "docs/topics/her2/assets/a01/build_inputs.py",
+      "sha256": "11b2d9d24406641a919b91f1fbae0ac57f36095b845a0200ad60e0e9faa8219a"
+    },
+    {
+      "path": "docs/topics/her2/assets/a02/generated/summary.json",
+      "sha256": "19c0ca1021aa3bd0196fa5d833ea2b48f29f7435421a7515ebb6484eac80f485"
+    },
+    {
+      "path": "docs/topics/her2/assets/a02/generated/service-fragments.json",
+      "sha256": "e521d9fd70648e738f6e09a777e146cc26e3fcd392695b9497ae84b95a7fb48a"
+    },
+    {
+      "path": "docs/topics/her2/assets/a01/source-lock.json",
+      "sha256": "bf28df0de43d05fc939251c1005f082be5ed2e3c6971c76f6f1826d31882d7ba"
+    },
+    {
+      "path": "docs/frontend-hosting/contracts/service.schema.json",
+      "sha256": "3850a7bfabb4d04b3dd7ec3a6ba1e4e2797ca49b9b8dddfd1dc70a5ad901c673"
+    },
+    {
+      "path": "docs/topics/her2/assets/a01/generated/review-input.json",
+      "sha256": "0e349e9ce0f3d71fc5866cfe77e5436260b4e8393e2d0cd49e49b4cf60c6bb50"
+    },
+    {
+      "path": "docs/topics/her2/assets/a01/generated/structures.json",
+      "sha256": "a80707d1ddc6baa8eebab1cb2599aac1ac69f6b353ef2b6f403c2382a5d2db54"
+    },
+    {
+      "path": "docs/topics/her2/assets/a01/generated/artifacts.json",
+      "sha256": "a37a9005337bdc53ac38e3e2ac702b15c5ed6bdff369cc142fe25ab12da32676"
+    }
+  ],
+  "source_files": [
+    {
+      "path": "docs/topics/her2/assets/a01/sources/1N8Z.cif",
+      "url": "https://files.rcsb.org/download/1N8Z.cif",
+      "sha256": "9f22f02b6e514de56dab8a48bc31a16302a51397779e64c398ad3a7f05cb19a2",
+      "bytes": 845613
+    },
+    {
+      "path": "docs/topics/her2/assets/a01/sources/1S78.cif",
+      "url": "https://files.rcsb.org/download/1S78.cif",
+      "sha256": "468b0fa0d3368c1d8971d26e896a7ed8b938437dfa5eb55132ef24ef0033d9f0",
+      "bytes": 1619308
+    },
+    {
+      "path": "docs/topics/her2/assets/a01/sources/1N8Z-assembly1.cif",
+      "url": "https://files.rcsb.org/download/1N8Z-assembly1.cif",
+      "sha256": "c1acde91132892d4dfbc64a203c55fa14276e199150752ad65dc9ae49a85ce6a",
+      "bytes": 865993
+    },
+    {
+      "path": "docs/topics/her2/assets/a01/sources/1S78-assembly1.cif",
+      "url": "https://files.rcsb.org/download/1S78-assembly1.cif",
+      "sha256": "933bc8fd987ab26d3ddac45386e36b6860814fb22268016f11347fcaee55f602",
+      "bytes": 844907
+    },
+    {
+      "path": "docs/topics/her2/assets/a01/sources/1S78-assembly2.cif",
+      "url": "https://files.rcsb.org/download/1S78-assembly2.cif",
+      "sha256": "6c7c34b56f5d017d99536e394d277922ec324292cf3f90264d5042d3a1b3e580",
+      "bytes": 860588
+    },
+    {
+      "path": "docs/topics/her2/assets/a01/sources/P04626.fasta",
+      "url": "https://rest.uniprot.org/uniprotkb/P04626.fasta",
+      "sha256": "544da5f05e6961a6a51f6fb7540d48b61f57cdfe5c8cfe4da455bb3118574cdb",
+      "bytes": 1382
+    }
+  ],
+  "output_files": [
+    {
+      "path": "1n8z-protein-sasa.csv",
+      "sha256": "b429f52b3c44748048d2250a7016f8a806d73a25c2bebff68c95872d3f42d436"
+    },
+    {
+      "path": "1s78-protein-sasa.csv",
+      "sha256": "9bf4eb687b680df90240af8f6730b1937f958429284f297b1f13116346dbaf50"
+    },
+    {
+      "path": "glycan-inventory.json",
+      "sha256": "318efccfbd3d94b34a156aa21b4a02f0519716731a4a200162761e92fbfca337"
+    },
+    {
+      "path": "service-fragments.json",
+      "sha256": "6716a9ef581e01282a905e59755316c0384a5ab0291d4ab8bf72e279ab897913"
+    },
+    {
+      "path": "summary.json",
+      "sha256": "64271211e77026dff9597bebe6164ebee1ab41f0d639951ed7e409927703db3b"
+    }
+  ],
+  "elapsed_seconds": 249.11
+}
