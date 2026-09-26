@@ -15,18 +15,34 @@ from pathlib import Path
 
 from .env import load_env
 from .flow import run_flow
-from .tests.test_flow import PERTUZUMAB, TRASTUZUMAB, _long, candidate, entity_sequence, make_request
+from .tests.test_flow import PERTUZUMAB, TRASTUZUMAB, candidate, entity_sequence, make_request
 from .tests.test_flow_decisions import _filler
 
-# 예측 경로에 쓰는 합성 표적 서열. 테스트와 같은 값이며 실제 HER2 서열이 아니다.
-TARGET = _long("HERTWOSEQ", 300)
+# 예측 경로에 쓰는 표적 서열. 실제 HER2 표적(1N8Z의 target 사슬)이다.
+#
+# Task 6b 진단(2026-09-26, work/task-6b-diag/call_log.jsonl): 이전에는 합성
+# 서열 `_long("HERTWOSEQ", 300)`을 썼는데, 그 반복 안에 든 문자 "O"가
+# Boltz-2 API에서 HTTP 422 "Invalid protein sequence. Contains invalid
+# characters: O"로 거부됐다. `_check_input`의 허용 문자 집합(ACDEFGHIKLMNPQRSTVWYXBZUO)은
+# 이 O를 통과시키므로 로컬 입력 검사로는 걸러지지 않았다 — variant 시나리오가
+# 규칙·에이전트 3회 모두 failed/not_assessed로 끝난 원인이다. service.demo_input의
+# prediction_demo()가 쓰는 실제 서열로 바꿔 이 문제를 없앤다.
+TARGET = entity_sequence(TRASTUZUMAB, "target")
+
+
+def _variant_heavy() -> str:
+    """Pertuzumab 중쇄에서 한 자리만 바꾼 가상 변이체. service.demo_input.prediction_demo()와 같은 방식."""
+    heavy = entity_sequence(PERTUZUMAB, "heavy")
+    position = 30
+    return heavy[:position] + ("A" if heavy[position] != "A" else "G") + heavy[position + 1 :]
+
 
 SCENARIOS = {
     "trastuzumab": lambda: candidate("cand-t", "trastuzumab",
                                      entity_sequence(TRASTUZUMAB, "heavy"), entity_sequence(TRASTUZUMAB, "light")),
     "pertuzumab": lambda: candidate("cand-p", "pertuzumab",
                                     entity_sequence(PERTUZUMAB, "heavy"), entity_sequence(PERTUZUMAB, "light")),
-    "variant": lambda: candidate("cand-v", "variant", _long("QVQLVESGG"), _long("DIQMTQSPS")),
+    "variant": lambda: candidate("cand-v", "variant", _variant_heavy(), entity_sequence(PERTUZUMAB, "light")),
     "invalid": lambda: candidate("cand-x", "invalid", "QVQL123", "DIQM!!"),
     "short": lambda: candidate("cand-s", "short", "QVQLVESGG", "DIQMTQSPS"),
 }
