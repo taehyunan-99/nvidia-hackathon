@@ -1,0 +1,930 @@
+[
+ {
+  "pdb": "1N8Z",
+  "target_kind": "HER2",
+  "cutoff_angstrom": 4.5,
+  "target_chains": [
+   "C"
+  ],
+  "antibody_chains": [
+   "A",
+   "B"
+  ],
+  "copy_count": 1,
+  "copies": [
+   {
+    "target_chain": "C",
+    "antibody_chains": [
+     "A",
+     "B"
+    ],
+    "total_residues": 39,
+    "target_side_count": 19,
+    "antibody_side_count": 20,
+    "target_side_resnum": [
+     557,
+     558,
+     560,
+     561,
+     569,
+     570,
+     571,
+     572,
+     573,
+     579,
+     591,
+     593,
+     596,
+     598,
+     600,
+     602,
+     603,
+     604,
+     605
+    ],
+    "antibody_side": [
+     "A:28",
+     "A:30",
+     "A:31",
+     "A:32",
+     "A:50",
+     "A:53",
+     "A:91",
+     "A:92",
+     "A:93",
+     "A:94",
+     "B:33",
+     "B:50",
+     "B:52",
+     "B:57",
+     "B:58",
+     "B:59",
+     "B:99",
+     "B:103",
+     "B:104",
+     "B:105"
+    ]
+   }
+  ]
+ },
+ {
+  "pdb": "1S78",
+  "target_kind": "HER2",
+  "cutoff_angstrom": 4.5,
+  "target_chains": [
+   "A",
+   "B"
+  ],
+  "antibody_chains": [
+   "C",
+   "D",
+   "E",
+   "F"
+  ],
+  "copy_count": 2,
+  "copies": [
+   {
+    "target_chain": "A",
+    "antibody_chains": [
+     "C",
+     "D"
+    ],
+    "total_residues": 56,
+    "target_side_count": 26,
+    "antibody_side_count": 30,
+    "target_side_resnum": [
+     128,
+     156,
+     236,
+     245,
+     246,
+     248,
+     252,
+     254,
+     255,
+     256,
+     257,
+     268,
+     285,
+     286,
+     287,
+     288,
+     290,
+     292,
+     294,
+     295,
+     296,
+     297,
+     311,
+     313,
+     314,
+     315
+    ],
+    "antibody_side": [
+     "C:49",
+     "C:50",
+     "C:53",
+     "C:55",
+     "C:94",
+     "D:28",
+     "D:30",
+     "D:31",
+     "D:32",
+     "D:33",
+     "D:52",
+     "D:53",
+     "D:54",
+     "D:55",
+     "D:56",
+     "D:58",
+     "D:59",
+     "D:60",
+     "D:62",
+     "D:72",
+     "D:74",
+     "D:75",
+     "D:76",
+     "D:98",
+     "D:100",
+     "D:101",
+     "D:102",
+     "D:103",
+     "D:105",
+     "D:107"
+    ]
+   },
+   {
+    "target_chain": "B",
+    "antibody_chains": [
+     "E",
+     "F"
+    ],
+    "total_residues": 58,
+    "target_side_count": 27,
+    "antibody_side_count": 31,
+    "target_side_resnum": [
+     128,
+     156,
+     236,
+     245,
+     246,
+     248,
+     252,
+     254,
+     255,
+     256,
+     257,
+     268,
+     270,
+     285,
+     286,
+     287,
+     288,
+     290,
+     292,
+     294,
+     295,
+     296,
+     297,
+     311,
+     313,
+     314,
+     315
+    ],
+    "antibody_side": [
+     "E:49",
+     "E:50",
+     "E:53",
+     "E:55",
+     "E:94",
+     "F:28",
+     "F:30",
+     "F:31",
+     "F:32",
+     "F:33",
+     "F:52",
+     "F:53",
+     "F:54",
+     "F:55",
+     "F:56",
+     "F:58",
+     "F:59",
+     "F:60",
+     "F:62",
+     "F:65",
+     "F:72",
+     "F:74",
+     "F:75",
+     "F:76",
+     "F:98",
+     "F:100",
+     "F:101",
+     "F:102",
+     "F:103",
+     "F:105",
+     "F:107"
+    ]
+   }
+  ]
+ },
+ {
+  "pdb": "3BE1",
+  "target_kind": "HER2",
+  "cutoff_angstrom": 4.5,
+  "target_chains": [
+   "A"
+  ],
+  "antibody_chains": [
+   "B",
+   "C"
+  ],
+  "copy_count": 1,
+  "copies": [
+   {
+    "target_chain": "A",
+    "antibody_chains": [
+     "B",
+     "C"
+    ],
+    "total_residues": 33,
+    "target_side_count": 17,
+    "antibody_side_count": 16,
+    "target_side_resnum": [
+     557,
+     558,
+     560,
+     561,
+     569,
+     570,
+     571,
+     572,
+     573,
+     579,
+     593,
+     600,
+     601,
+     602,
+     603,
+     604,
+     605
+    ],
+    "antibody_side": [
+     "B:36",
+     "B:53",
+     "B:55",
+     "B:60",
+     "B:62",
+     "B:102",
+     "B:105",
+     "B:106",
+     "B:108",
+     "C:36",
+     "C:54",
+     "C:57",
+     "C:95",
+     "C:96",
+     "C:97",
+     "C:98"
+    ]
+   }
+  ]
+ },
+ {
+  "pdb": "3WSQ",
+  "target_kind": "HER2",
+  "cutoff_angstrom": 4.5,
+  "target_chains": [
+   "A"
+  ],
+  "antibody_chains": [
+   "B",
+   "C"
+  ],
+  "copy_count": 1,
+  "copies": [
+   {
+    "target_chain": "A",
+    "antibody_chains": [
+     "B",
+     "C"
+    ],
+    "total_residues": 26,
+    "target_side_count": 10,
+    "antibody_side_count": 16,
+    "target_side_resnum": [
+     332,
+     356,
+     357,
+     359,
+     360,
+     361,
+     362,
+     363,
+     364,
+     395
+    ],
+    "antibody_side": [
+     "B:54",
+     "B:92",
+     "B:93",
+     "B:94",
+     "B:95",
+     "C:30",
+     "C:31",
+     "C:32",
+     "C:50",
+     "C:52",
+     "C:54",
+     "C:59",
+     "C:99",
+     "C:101",
+     "C:102",
+     "C:103"
+    ]
+   }
+  ]
+ },
+ {
+  "pdb": "5O4G",
+  "target_kind": "HER2",
+  "cutoff_angstrom": 4.5,
+  "target_chains": [
+   "A"
+  ],
+  "antibody_chains": [
+   "B",
+   "C"
+  ],
+  "copy_count": 1,
+  "copies": [
+   {
+    "target_chain": "A",
+    "antibody_chains": [
+     "B",
+     "C"
+    ],
+    "total_residues": 36,
+    "target_side_count": 20,
+    "antibody_side_count": 16,
+    "target_side_resnum": [
+     140,
+     141,
+     143,
+     144,
+     145,
+     146,
+     162,
+     163,
+     164,
+     166,
+     167,
+     168,
+     169,
+     170,
+     171,
+     172,
+     173,
+     179,
+     180,
+     181
+    ],
+    "antibody_side": [
+     "B:32",
+     "C:50",
+     "C:51",
+     "C:52",
+     "C:53",
+     "C:70",
+     "C:72",
+     "C:73",
+     "C:74",
+     "C:75",
+     "C:77",
+     "C:94",
+     "C:121",
+     "C:122",
+     "C:123",
+     "C:124"
+    ]
+   }
+  ]
+ },
+ {
+  "pdb": "6ATT",
+  "target_kind": "HER2",
+  "cutoff_angstrom": 4.5,
+  "target_chains": [
+   "A"
+  ],
+  "antibody_chains": [
+   "B",
+   "C"
+  ],
+  "copy_count": 1,
+  "copies": [
+   {
+    "target_chain": "A",
+    "antibody_chains": [
+     "B",
+     "C"
+    ],
+    "total_residues": 32,
+    "target_side_count": 15,
+    "antibody_side_count": 17,
+    "target_side_resnum": [
+     178,
+     196,
+     197,
+     198,
+     199,
+     200,
+     201,
+     202,
+     208,
+     209,
+     210,
+     211,
+     213,
+     215,
+     216
+    ],
+    "antibody_side": [
+     "B:56",
+     "B:57",
+     "B:59",
+     "B:103",
+     "B:104",
+     "B:105",
+     "B:106",
+     "C:31",
+     "C:32",
+     "C:33",
+     "C:34",
+     "C:38",
+     "C:97",
+     "C:98",
+     "C:99",
+     "C:100",
+     "C:102"
+    ]
+   }
+  ]
+ },
+ {
+  "pdb": "6BGT",
+  "target_kind": "HER2",
+  "cutoff_angstrom": 4.5,
+  "target_chains": [
+   "A"
+  ],
+  "antibody_chains": [
+   "B",
+   "C"
+  ],
+  "copy_count": 1,
+  "copies": [
+   {
+    "target_chain": "A",
+    "antibody_chains": [
+     "B",
+     "C"
+    ],
+    "total_residues": 50,
+    "target_side_count": 20,
+    "antibody_side_count": 30,
+    "target_side_resnum": [
+     579,
+     580,
+     582,
+     583,
+     591,
+     592,
+     593,
+     594,
+     595,
+     601,
+     610,
+     611,
+     613,
+     615,
+     618,
+     622,
+     624,
+     625,
+     626,
+     627
+    ],
+    "antibody_side": [
+     "B:30",
+     "B:31",
+     "B:32",
+     "B:49",
+     "B:50",
+     "B:53",
+     "B:55",
+     "B:56",
+     "B:91",
+     "B:92",
+     "B:93",
+     "B:94",
+     "C:2",
+     "C:26",
+     "C:27",
+     "C:28",
+     "C:33",
+     "C:50",
+     "C:52",
+     "C:57",
+     "C:58",
+     "C:59",
+     "C:98",
+     "C:99",
+     "C:100",
+     "C:101",
+     "C:102",
+     "C:103",
+     "C:104",
+     "C:105"
+    ]
+   }
+  ]
+ },
+ {
+  "pdb": "9L1S",
+  "target_kind": "HER2",
+  "cutoff_angstrom": 4.5,
+  "target_chains": [
+   "A"
+  ],
+  "antibody_chains": [
+   "B",
+   "C"
+  ],
+  "copy_count": 1,
+  "copies": [
+   {
+    "target_chain": "A",
+    "antibody_chains": [
+     "B",
+     "C"
+    ],
+    "total_residues": 53,
+    "target_side_count": 25,
+    "antibody_side_count": 28,
+    "target_side_resnum": [
+     235,
+     236,
+     244,
+     245,
+     246,
+     247,
+     248,
+     252,
+     254,
+     255,
+     256,
+     257,
+     268,
+     285,
+     286,
+     287,
+     288,
+     294,
+     295,
+     296,
+     297,
+     311,
+     313,
+     314,
+     315
+    ],
+    "antibody_side": [
+     "B:49",
+     "B:50",
+     "B:53",
+     "B:55",
+     "B:94",
+     "C:28",
+     "C:30",
+     "C:31",
+     "C:32",
+     "C:33",
+     "C:52",
+     "C:53",
+     "C:54",
+     "C:55",
+     "C:56",
+     "C:58",
+     "C:59",
+     "C:60",
+     "C:62",
+     "C:65",
+     "C:72",
+     "C:74",
+     "C:98",
+     "C:100",
+     "C:101",
+     "C:102",
+     "C:103",
+     "C:105"
+    ]
+   }
+  ]
+ },
+ {
+  "pdb": "9T3R",
+  "target_kind": "HER2",
+  "cutoff_angstrom": 4.5,
+  "target_chains": [
+   "C"
+  ],
+  "antibody_chains": [
+   "A",
+   "B"
+  ],
+  "copy_count": 1,
+  "copies": [
+   {
+    "target_chain": "C",
+    "antibody_chains": [
+     "A",
+     "B"
+    ],
+    "total_residues": 41,
+    "target_side_count": 15,
+    "antibody_side_count": 26,
+    "target_side_resnum": [
+     244,
+     245,
+     246,
+     248,
+     250,
+     251,
+     252,
+     254,
+     255,
+     256,
+     257,
+     258,
+     259,
+     285,
+     286
+    ],
+    "antibody_side": [
+     "A:26",
+     "A:30",
+     "A:31",
+     "A:32",
+     "A:33",
+     "A:34",
+     "A:52",
+     "A:53",
+     "A:54",
+     "A:93",
+     "A:95",
+     "A:97",
+     "A:98",
+     "B:35",
+     "B:47",
+     "B:50",
+     "B:57",
+     "B:58",
+     "B:59",
+     "B:99",
+     "B:102",
+     "B:103",
+     "B:104",
+     "B:105",
+     "B:106",
+     "B:107"
+    ]
+   }
+  ]
+ },
+ {
+  "pdb": "9T3S",
+  "target_kind": "HER2",
+  "cutoff_angstrom": 4.5,
+  "target_chains": [
+   "C"
+  ],
+  "antibody_chains": [
+   "A",
+   "B"
+  ],
+  "copy_count": 1,
+  "copies": [
+   {
+    "target_chain": "C",
+    "antibody_chains": [
+     "A",
+     "B"
+    ],
+    "total_residues": 39,
+    "target_side_count": 14,
+    "antibody_side_count": 25,
+    "target_side_resnum": [
+     244,
+     245,
+     246,
+     248,
+     250,
+     251,
+     252,
+     254,
+     255,
+     256,
+     257,
+     258,
+     259,
+     286
+    ],
+    "antibody_side": [
+     "A:35",
+     "A:47",
+     "A:50",
+     "A:52",
+     "A:57",
+     "A:59",
+     "A:99",
+     "A:102",
+     "A:103",
+     "A:104",
+     "A:105",
+     "A:106",
+     "A:107",
+     "B:26",
+     "B:30",
+     "B:31",
+     "B:32",
+     "B:33",
+     "B:34",
+     "B:52",
+     "B:53",
+     "B:54",
+     "B:93",
+     "B:95",
+     "B:97"
+    ]
+   }
+  ]
+ },
+ {
+  "pdb": "4P59",
+  "target_kind": "HER3",
+  "cutoff_angstrom": 4.5,
+  "target_chains": [
+   "A"
+  ],
+  "antibody_chains": [
+   "B",
+   "C"
+  ],
+  "copy_count": 1,
+  "copies": [
+   {
+    "target_chain": "A",
+    "antibody_chains": [
+     "B",
+     "C"
+    ],
+    "total_residues": 55,
+    "target_side_count": 25,
+    "antibody_side_count": 30,
+    "target_side_resnum": [
+     247,
+     248,
+     249,
+     250,
+     251,
+     252,
+     254,
+     255,
+     257,
+     258,
+     296,
+     552,
+     563,
+     564,
+     565,
+     577,
+     578,
+     581,
+     583,
+     590,
+     592,
+     593,
+     594,
+     595,
+     596
+    ],
+    "antibody_side": [
+     "B:30",
+     "B:31",
+     "B:32",
+     "B:33",
+     "B:35",
+     "B:50",
+     "B:52",
+     "B:53",
+     "B:54",
+     "B:57",
+     "B:59",
+     "B:74",
+     "B:99",
+     "B:101",
+     "B:102",
+     "B:104",
+     "C:27",
+     "C:28",
+     "C:29",
+     "C:30",
+     "C:31",
+     "C:32",
+     "C:49",
+     "C:66",
+     "C:67",
+     "C:91",
+     "C:92",
+     "C:93",
+     "C:94",
+     "C:96"
+    ]
+   }
+  ]
+ },
+ {
+  "pdb": "8YRY",
+  "target_kind": "HER3",
+  "cutoff_angstrom": 4.5,
+  "target_chains": [
+   "A"
+  ],
+  "antibody_chains": [
+   "B",
+   "C"
+  ],
+  "copy_count": 1,
+  "copies": [
+   {
+    "target_chain": "A",
+    "antibody_chains": [
+     "B",
+     "C"
+    ],
+    "total_residues": 45,
+    "target_side_count": 21,
+    "antibody_side_count": 24,
+    "target_side_resnum": [
+     1,
+     2,
+     25,
+     26,
+     56,
+     58,
+     59,
+     62,
+     63,
+     65,
+     83,
+     84,
+     86,
+     87,
+     111,
+     112,
+     113,
+     114,
+     115,
+     127,
+     128
+    ],
+    "antibody_side": [
+     "B:31",
+     "B:32",
+     "B:33",
+     "B:34",
+     "B:51",
+     "B:54",
+     "B:57",
+     "B:60",
+     "B:98",
+     "B:99",
+     "B:100",
+     "B:101",
+     "B:102",
+     "B:103",
+     "C:29",
+     "C:31",
+     "C:32",
+     "C:49",
+     "C:50",
+     "C:53",
+     "C:91",
+     "C:92",
+     "C:93",
+     "C:94"
+    ]
+   }
+  ]
+ }
+]

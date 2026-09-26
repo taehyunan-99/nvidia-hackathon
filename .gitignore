@@ -66,3 +66,6 @@ coverage/
 logs/
 tmp/
 temp/
+
+# goldset 평가셋 구조 파일 — fetch_cif.sh로 다시 받는다(약 9MB)
+docs/topics/her2/assets/goldset/cif/

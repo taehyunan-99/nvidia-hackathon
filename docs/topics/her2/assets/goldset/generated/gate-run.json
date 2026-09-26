@@ -1,0 +1,142 @@
+[
+ {
+  "pdb": "3BE1",
+  "target": "HER2",
+  "status": "completed",
+  "decision": "needs_confirmation",
+  "predictions": 1,
+  "trace": [
+   "check_input",
+   "lookup_public_structure",
+   "predict_structure",
+   "compare_structure",
+   "submit_opinion"
+  ]
+ },
+ {
+  "pdb": "3WSQ",
+  "target": "HER2",
+  "status": "completed",
+  "decision": "needs_confirmation",
+  "predictions": 1,
+  "trace": [
+   "check_input",
+   "lookup_public_structure",
+   "predict_structure",
+   "compare_structure",
+   "submit_opinion"
+  ]
+ },
+ {
+  "pdb": "5O4G",
+  "target": "HER2",
+  "status": "completed",
+  "decision": "needs_confirmation",
+  "predictions": 1,
+  "trace": [
+   "check_input",
+   "lookup_public_structure",
+   "predict_structure",
+   "compare_structure",
+   "submit_opinion"
+  ]
+ },
+ {
+  "pdb": "6ATT",
+  "target": "HER2",
+  "status": "completed",
+  "decision": "needs_confirmation",
+  "predictions": 1,
+  "trace": [
+   "check_input",
+   "lookup_public_structure",
+   "predict_structure",
+   "compare_structure",
+   "submit_opinion"
+  ]
+ },
+ {
+  "pdb": "6BGT",
+  "target": "HER2",
+  "status": "completed",
+  "decision": "needs_confirmation",
+  "predictions": 1,
+  "trace": [
+   "check_input",
+   "lookup_public_structure",
+   "predict_structure",
+   "compare_structure",
+   "submit_opinion"
+  ]
+ },
+ {
+  "pdb": "9L1S",
+  "target": "HER2",
+  "status": "completed",
+  "decision": "needs_confirmation",
+  "predictions": 1,
+  "trace": [
+   "check_input",
+   "lookup_public_structure",
+   "predict_structure",
+   "compare_structure",
+   "submit_opinion"
+  ]
+ },
+ {
+  "pdb": "9T3R",
+  "target": "HER2",
+  "status": "completed",
+  "decision": "needs_confirmation",
+  "predictions": 1,
+  "trace": [
+   "check_input",
+   "lookup_public_structure",
+   "predict_structure",
+   "compare_structure",
+   "submit_opinion"
+  ]
+ },
+ {
+  "pdb": "9T3S",
+  "target": "HER2",
+  "status": "completed",
+  "decision": "needs_confirmation",
+  "predictions": 1,
+  "trace": [
+   "check_input",
+   "lookup_public_structure",
+   "predict_structure",
+   "compare_structure",
+   "submit_opinion"
+  ]
+ },
+ {
+  "pdb": "4P59",
+  "target": "HER3",
+  "status": "completed",
+  "decision": "needs_confirmation",
+  "predictions": 1,
+  "trace": [
+   "check_input",
+   "lookup_public_structure",
+   "predict_structure",
+   "compare_structure",
+   "submit_opinion"
+  ]
+ },
+ {
+  "pdb": "8YRY",
+  "target": "HER3",
+  "status": "completed",
+  "decision": "needs_confirmation",
+  "predictions": 1,
+  "trace": [
+   "check_input",
+   "lookup_public_structure",
+   "predict_structure",
+   "compare_structure",
+   "submit_opinion"
+  ]
+ }
+]
