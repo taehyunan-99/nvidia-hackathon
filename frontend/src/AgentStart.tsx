@@ -1,3 +1,5 @@
+import { useState } from "react";
+import publicReferenceInput from "../../docs/frontend-hosting/fixtures/public-reference-input.json";
 import type { ReviewInput } from "./scenario-file";
 import { PersistentInput } from "./PersistentInput";
 export function BioSymbol({ large = false }: { large?: boolean }) {
@@ -45,11 +47,6 @@ export function BioSymbol({ large = false }: { large?: boolean }) {
   );
 }
 export function AgentStart({
-  input,
-  fileName,
-  error,
-  onFile,
-  onStart,
   onRunLive,
   onRunMock,
   mockBusy,
@@ -58,11 +55,6 @@ export function AgentStart({
   liveError,
   savedMode,
 }: {
-  input: ReviewInput | null;
-  fileName: string;
-  error: string;
-  onFile: (file: File) => void;
-  onStart: () => void;
   onRunLive: (preset: string) => void;
   onRunMock: (input: ReviewInput, files: Map<string, File>) => void;
   mockBusy: boolean;
@@ -71,93 +63,53 @@ export function AgentStart({
   liveError: string;
   savedMode: "mock" | "live" | null;
 }) {
+  const [inputMode, setInputMode] = useState<"test" | "direct">("test");
+  const persistent = import.meta.env.VITE_PERSISTENT_SERVICE === "1";
+  const busy = mockBusy || Boolean(liveBusy);
   return (
     <section className="agent-start">
       <div className="agent-heading">
-        <BioSymbol />
         <span className="agent-kicker">HER2 RESEARCH AGENT</span>
-        <h1>
-          후보를 준비하세요.
-          <br />
-          <span>근거를 함께 살펴봅니다.</span>
-        </h1>
-        <p>{import.meta.env.VITE_PERSISTENT_SERVICE === "1" ? "표적과 후보를 입력해 저장형 검토를 시작하거나 시나리오를 재생하세요." : "실제 분석을 실행하거나, 검토 시나리오 파일을 올려 확인하세요."}</p>
+        <h1>HER2 항체 검토를 시작하세요</h1>
+        <p>준비된 테스트 데이터로 시작하거나, 직접 자료를 입력하세요.</p>
       </div>
-      {import.meta.env.VITE_PERSISTENT_SERVICE === "1" && <PersistentInput busy={mockBusy} error={mockError} mode={savedMode} onStart={onRunMock} />}
-      {import.meta.env.VITE_PERSISTENT_SERVICE !== "1" && <section className="analysis-launcher" aria-label="실제 분석 실행">
-        <div className="launcher-heading">
-          <div>
-            <span className="eyebrow">LIVE RUN</span>
-            <h2>실제 분석 실행</h2>
+      <div className="input-mode-switch" role="group" aria-label="입력 방식 선택">
+        <button type="button" aria-pressed={inputMode === "test"} disabled={busy} onClick={() => setInputMode("test")}>테스트 데이터 선택</button>
+        <button type="button" aria-pressed={inputMode === "direct"} disabled={busy} onClick={() => setInputMode("direct")}>직접 입력</button>
+      </div>
+      <div hidden={inputMode !== "test"}>
+        <section className="analysis-launcher test-data-card" aria-label="테스트 데이터 소개">
+          <div className="launcher-heading">
+            <div><span className="eyebrow">공개 실험 데이터 · 항체 2종</span><h2>두 항체는 HER2의 어디에 결합할까요?</h2></div>
           </div>
-          <span className="tag">NVIDIA · 실제 호출</span>
-        </div>
-        <p>
-          공개 구조(1N8Z·1S78)에서 꺼낸 실제 서열로 분석합니다. 모의 재생이 아닙니다.
-        </p>
-        <div className="launcher-action">
-          <span>
-            {liveBusy
-              ? "실행 중입니다. 예측 경로는 10초 이상 걸립니다."
-              : "예측 경로는 NVIDIA API 키가 있어야 합니다."}
-          </span>
-          <span className="live-buttons">
-            <button
-              className="primary"
-              disabled={Boolean(liveBusy)}
-              onClick={() => onRunLive("experimental")}
-            >
-              {liveBusy === "experimental" ? "분석 중…" : "공개 구조 경로"}
+          <p className="test-intro">같은 표적에 서로 다르게 결합하는 두 항체를 비교해 보세요.<br />검증된 공개 서열과 구조가 준비되어 있어, 파일 없이 시작할 수 있습니다.</p>
+          <div className="test-candidates">
+            <article><span className="test-site">막 인접 부위</span><h3>Trastuzumab <small>Fab</small></h3><p>HER2의 세포막 가까운 영역에 결합</p><a href="https://www.rcsb.org/structure/1N8Z" target="_blank" rel="noreferrer">구조 출처 · 1N8Z ↗</a></article>
+            <article><span className="test-site">도메인 II</span><h3>Pertuzumab <small>Fab</small></h3><p>HER2의 다른 결합 부위를 인식</p><a href="https://www.rcsb.org/structure/1S78" target="_blank" rel="noreferrer">구조 출처 · 1S78 ↗</a></article>
+          </div>
+          <div className="test-data-guide"><h3>검토 후 확인할 수 있어요</h3><ol>
+            <li><strong>결합 위치 비교</strong><span>두 항체의 접촉 잔기를 3D 구조에서 살펴봅니다.</span></li>
+            <li><strong>판단에 사용한 근거</strong><span>어떤 실험 구조를 썼고, 왜 새 예측을 생략했는지 확인합니다.</span></li>
+            <li><strong>다음에 확인할 질문</strong><span>당쇄·주변 환경에서 알려진 것과 부족한 자료를 구분합니다.</span></li>
+          </ol></div>
+          <p className="test-boundary">이 테스트는 구조 근거를 비교합니다. 항체의 결합력이나 치료 효과 순위를 정하지 않습니다.</p>
+          {(persistent ? mockError : liveError) && <p role="alert" className="notice">{persistent ? mockError : liveError}</p>}
+          <div className="launcher-action test-start-action">
+            <span>{persistent && savedMode === null ? "서비스 연결을 확인하는 중입니다." : persistent && savedMode === "mock" ? "현재는 모의 실행 환경입니다. 실제 분석은 수행하지 않습니다." : "준비된 입력으로 새 검토를 실행합니다."}</span>
+            <button type="button" className="primary" disabled={busy || (persistent && savedMode === null)} onClick={() => persistent ? onRunMock(publicReferenceInput, new Map()) : onRunLive("public-reference")}>
+              {busy ? "접수·분석 중…" : persistent && savedMode === "mock" ? "테스트 데이터로 모의 검토 →" : "테스트 데이터로 검토 시작 →"}
             </button>
-            <button
-              className="primary"
-              disabled={Boolean(liveBusy)}
-              onClick={() => onRunLive("prediction")}
-            >
-              {liveBusy === "prediction" ? "예측 중…" : "Boltz-2 예측 경로"}
-            </button>
-          </span>
-        </div>
-        {liveError && <p role="alert" className="notice">{liveError}</p>}
-      </section>}
-      <section className="analysis-launcher" aria-label="검토 파일 업로드">
-        <div className="launcher-heading">
-          <div>
-            <span className="eyebrow">REVIEW INPUT</span>
-            <h2>시나리오 파일 업로드</h2>
           </div>
-          <span className="tag">JSON · 모의 재생</span>
-        </div>
-        <label className="scenario-upload">
-          검토 시나리오 JSON
-          <input type="file" accept=".json,application/json" onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) onFile(file);
-          }} />
-        </label>
-        {error && <p role="alert" className="notice">{error}</p>}
-        {input && (
-          <div className="uploaded-input" aria-label="업로드한 입력 미리보기">
-            <strong>{fileName}</strong>
-            <p>표적: {input.target.identifier ?? input.target.fasta?.split("\n")[0] ?? "미제공"}</p>
-            <ul>{input.candidates.map((candidate) => <li key={candidate.candidate_id}>{candidate.name}</li>)}</ul>
-          </div>
-        )}
-        <div className="launcher-action">
-          <span>파일은 이 브라우저에서만 읽습니다.</span>
-          <button
-            className="primary"
-            disabled={!input}
-            onClick={onStart}
-          >
-            검토 흐름 시작 →
-          </button>
-        </div>
-      </section>
-      <p className="agent-disclosure">
-        업로드한 시나리오는 기록된 상태를 재생할 뿐 분석·모델 호출을 실행하지 않습니다.
-        {import.meta.env.VITE_PERSISTENT_SERVICE !== "1" && " 실제 호출은 위의 “실제 분석 실행”에서 합니다."}
-      </p>
+          <details className="test-data-details"><summary>데이터 범위와 분석 한계</summary>
+            <p>표적 입력은 HER2 세포외 구간(P04626 23–629), 항체 입력은 전체 항체 중 결합을 담당하는 Fab의 기탁 서열입니다. 1N8Z는 2.52 Å, 1S78은 3.25 Å 해상도의 X선 결정 구조입니다.</p>
+            <p>관측된 당 성분은 전체 세포 환경을 대신하지 않습니다. 표면 노출·충돌 계산은 현재 연결되지 않아 미실행으로 표시되며, 결과에 추가 확인 의견이 나올 수 있습니다.</p>
+          </details>
+        </section>
+      </div>
+      <div className="direct-input-panel" hidden={inputMode !== "direct"}>
+        {persistent ? <PersistentInput busy={mockBusy} error={mockError} mode={savedMode} onStart={onRunMock} />
+          : <p className="notice">직접 입력은 저장형 서비스에서 사용할 수 있습니다. 이 개발용 미리보기에서는 테스트 데이터로 분석을 시작하세요.</p>}
+      </div>
     </section>
   );
 }

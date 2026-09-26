@@ -23,6 +23,7 @@ HER2 서비스의 입력·진행·비교·보고 화면, 백엔드 접수·저�
 - [backend-deployment-plan.md](backend-deployment-plan.md) — 백엔드·Docker·AWS·HTTPS 준비 순서, CI/CD 도입과 검증·복구·운영 계획
 - [temporary-contract.md](temporary-contract.md) — 사용자 요청으로 먼저 정한 v0.1.0 서비스 개발용 임시 규격
 - [contracts/service.schema.json](contracts/service.schema.json) — 임시 입력·출력의 JSON Schema 원본
+- [test-data.md](test-data.md) — 사이트 기본 공개 입력의 선정·출처·예상 결과·검증 경계
 - [fixtures/scenarios.json](fixtures/scenarios.json) — 합성 입력·9개 모의 상태 예시
 - [contracts/validate-contract.py](contracts/validate-contract.py) — 스키마·참조·상태 및 잘못된 데이터 검사
 
