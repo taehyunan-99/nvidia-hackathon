@@ -50,6 +50,12 @@ RUN_LIVE_NAT=1 python -m pytest logic/tests/test_nat_agent.py -q
 UV_LINK_MODE=copy uv run python -m logic.measure_agent --repeat 3
 ```
 
+`nat`이 기본 모드가 된 뒤로 저장소 루트 `conftest.py`가 `LOGIC_AGENT_MODE=rule`을
+모든 테스트(`service/tests`·`logic/tests`)에 autouse로 고정한다. `nat` 경로를
+직접 확인하는 테스트만 자체적으로 `monkeypatch.setenv("LOGIC_AGENT_MODE", "nat")`로
+재정의한다 — 이 고정이 없으면 `LOGIC_AGENT_MODE`를 지정하지 않은 테스트가 NAT
+설치 환경에서 실제 Nemotron을 호출하게 된다.
+
 ## 구성
 
 | 파일 | 역할 |

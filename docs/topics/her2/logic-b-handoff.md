@@ -159,6 +159,12 @@ B는 **Biopython·freesasa를 쓰지 않는다.** 그 의존성은 로직 A 쪽�
 
 **서비스(S-02):** 2절의 진입점을 호출하고 `ProgressUpdate` 줄을 상태로 옮긴다.
 종료 코드 0 ≠ 전부 성공임을 반영한다. 3절 `measurement_state`를 화면 표기에 연결한다.
+자체 테스트(`service/tests` 등)가 `LOGIC_AGENT_MODE`를 지정하지 않으면 이제
+기본값이 `nat`이라 NAT 설치 환경에서 실제 Nemotron을 호출할 수 있다 — 저장소
+루트 `conftest.py`가 모든 테스트에 `LOGIC_AGENT_MODE=rule`을 autouse로 고정해
+막아 두었지만, 다른 저장소로 옮기거나 이 fixture를 건드리는 경우 테스트가
+직접 `LOGIC_AGENT_MODE=rule`을 (환경변수나 `monkeypatch.setenv`로) 고정해야
+한다.
 
 **로직 A(A-02):** `logic/analysis.py`의 `Measurement` 형태로 충돌·표면 노출 계산을 넘긴다.
 label ↔ auth 잔기 번호 대응표를 D2로 준다.
