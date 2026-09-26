@@ -1,0 +1,52 @@
+name: Integration
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: her2_test
+          POSTGRES_USER: her2
+          POSTGRES_PASSWORD: test_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U her2 -d her2_test"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql://her2:test_only@127.0.0.1:5432/her2_test
+      POSTGRES_PASSWORD: compose_test_only
+      WEB_PORT: '8080'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          python-version: '3.12'
+      - run: npm ci --prefix frontend
+      - run: npm --prefix frontend run build
+      - run: uv sync --locked
+      - run: uv run --locked python docs/frontend-hosting/contracts/validate-contract.py
+      - run: uv run --locked pytest service/tests logic/tests -q
+      - name: Compose mock flow
+        run: |
+          docker compose up --build -d --wait
+          uv run --locked python scripts/check_mock_flow.py
+      - name: Compose logs on failure
+        if: failure()
+        run: docker compose logs --tail 80
+      - name: Stop Compose
+        if: always()
+        run: docker compose down

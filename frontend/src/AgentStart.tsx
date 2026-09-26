@@ -1,4 +1,5 @@
 import type { ReviewInput } from "./scenario-file";
+import { PersistentInput } from "./PersistentInput";
 export function BioSymbol({ large = false }: { large?: boolean }) {
   return (
     <svg
@@ -62,7 +63,7 @@ export function AgentStart({
   onFile: (file: File) => void;
   onStart: () => void;
   onRunLive: (preset: string) => void;
-  onRunMock: () => void;
+  onRunMock: (input: ReviewInput, files: Map<string, File>) => void;
   mockBusy: boolean;
   mockError: string;
   liveBusy: string;
@@ -80,18 +81,7 @@ export function AgentStart({
         </h1>
         <p>{import.meta.env.VITE_PERSISTENT_MOCK === "1" ? "저장형 모의 실행이나 검토 시나리오 재생을 선택하세요." : "실제 분석을 실행하거나, 검토 시나리오 파일을 올려 확인하세요."}</p>
       </div>
-      {import.meta.env.VITE_PERSISTENT_MOCK === "1" && <section className="analysis-launcher" aria-label="저장형 모의 실행">
-        <div className="launcher-heading">
-          <div><span className="eyebrow">SAVED MOCK RUN</span><h2>저장형 모의 실행</h2></div>
-          <span className="tag">실제 분석 아님</span>
-        </div>
-        <p>합성 입력을 서버에 접수하고 별도 실행부의 진행과 결과를 같은 실행에서 조회합니다.</p>
-        <div className="launcher-action">
-          <span>결과는 임시 세션이 유효한 동안 다시 조회할 수 있습니다.</span>
-          <button className="primary" disabled={mockBusy} onClick={onRunMock}>{mockBusy ? "접수 중…" : "모의 실행 시작 →"}</button>
-        </div>
-        {mockError && <p role="alert" className="notice">{mockError}</p>}
-      </section>}
+      {import.meta.env.VITE_PERSISTENT_MOCK === "1" && <PersistentInput busy={mockBusy} error={mockError} onStart={onRunMock} />}
       {import.meta.env.VITE_PERSISTENT_MOCK !== "1" && <section className="analysis-launcher" aria-label="실제 분석 실행">
         <div className="launcher-heading">
           <div>

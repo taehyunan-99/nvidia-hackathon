@@ -12,6 +12,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 import gemmi
 from fastapi import FastAPI, HTTPException, Request, Response
@@ -327,6 +328,15 @@ def create_app(
                 ).fetchone()
         return inserted["state_json"]
 
+    @api.get("/api/reviews/{review_id}")
+    def get_review(review_id: str, request: Request):
+        session = current_session(request)
+        with connect(dsn) as conn:
+            row = conn.execute("SELECT input_json FROM reviews WHERE id = %s AND session_id = %s", (review_id, session["id"])).fetchone()
+        if not row:
+            _fail(404, "NOT_FOUND", "검토를 찾을 수 없습니다.")
+        return JSONResponse(row["input_json"], headers={"Cache-Control": "no-store"})
+
     @api.get("/api/runs/{run_id}")
     def get_run(run_id: str, request: Request, response: Response):
         session = current_session(request)
@@ -350,8 +360,33 @@ def create_app(
 
     @api.get("/api/artifacts/{artifact_id}")
     def get_artifact(artifact_id: str, request: Request):
-        current_session(request)
-        _fail(404, "NOT_FOUND", "산출물을 찾을 수 없습니다.")
+        session = current_session(request)
+        with connect(dsn) as conn:
+            row = conn.execute(
+                """SELECT f.relative_path, r.result_json FROM artifact_files f
+                   JOIN runs r ON r.id = f.run_id
+                   WHERE f.artifact_id = %s AND r.session_id = %s""",
+                (artifact_id, session["id"]),
+            ).fetchone()
+        if not row or not row["result_json"]:
+            _fail(404, "NOT_FOUND", "산출물을 찾을 수 없습니다.")
+        matches = [item for item in row["result_json"].get("artifacts", []) if item.get("artifact_id") == artifact_id]
+        if len(matches) != 1 or matches[0].get("status") != "ready":
+            _fail(404, "NOT_FOUND", "준비된 산출물이 없습니다.")
+        artifact = matches[0]
+        relative = Path(row["relative_path"])
+        artifact_root = (data_root / "artifacts").resolve()
+        path = (data_root / relative).resolve()
+        if relative.is_absolute() or not path.is_relative_to(artifact_root) or not path.is_file():
+            _fail(404, "NOT_FOUND", "산출물 파일을 찾을 수 없습니다.")
+        content = path.read_bytes()
+        if len(content) != artifact["size_bytes"] or hashlib.sha256(content).hexdigest() != artifact["sha256"]:
+            _fail(404, "NOT_FOUND", "산출물 무결성을 확인할 수 없습니다.")
+        media = {"pdb": "chemical/x-pdb", "mmcif": "chemical/x-mmcif", "json": "application/json", "csv": "text/csv"}.get(artifact["format"])
+        if not media:
+            _fail(404, "NOT_FOUND", "산출물 형식을 확인할 수 없습니다.")
+        filename = Path(artifact["file_name"]).name
+        return Response(content, media_type=media, headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff", "Content-Disposition": f"attachment; filename*=UTF-8''{quote(filename)}"})
 
     return api
 

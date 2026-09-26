@@ -18,7 +18,7 @@ DB 준비 확인 후 migration을 한 번 실행하고 API를 시작한다. DB�
 데이터를 유지하려면 `down -v`를 사용하지 않는다. 비밀번호를 바꾸려면 기존 DB 볼륨의
 자격 증명도 함께 관리해야 한다.
 
-이 구성은 `127.0.0.1`의 HTTP 개발 환경이다. 화면의 **저장형 모의 실행**은 합성 입력을
+이 구성은 `127.0.0.1`의 HTTP 개발 환경이다. 화면의 **저장형 모의 실행**은 사용자가 입력한 표적·후보 서열과 선택 구조 파일을
 영속 API에 접수하고 Compose의 별도 worker가 처리한 상태·결과를 조회한다. 같은 브라우저에서
 새로고침하면 유효한 세션과 실행 ID로 다시 조회한다. 모의 결과에는 실제 구조 계산이나
 모델 호출이 없다. 별도 동기식 `/api/review`를 사용하는 **실제 분석 실행** 버튼은
@@ -66,6 +66,12 @@ TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:55432/postgres uv run pytest s
 이 API와 worker는 로컬 모의 검증 단계다. worker 점유·결과 등록·만료 자료 정리는
 임시 PostgreSQL에서 검사한다. HTTPS·공개 접수 제한은 다음 단계에서 구현·검증한다. 공개 서비스에
 연결해서는 안 된다.
+
+준비된 결과 파일은 `artifact_files`에 실행 ID와 `artifacts/` 아래 상대 경로가 등록되고,
+Result의 해당 항목이 `ready`이며 크기·SHA-256이 실제 파일과 일치할 때만 세션 소유자가
+`GET /api/artifacts/{artifact_id}`에서 받는다. 현재 mock worker는 ready 파일을 만들지 않는다.
+`GET /api/reviews/{review_id}`는 같은 세션의 저장된 입력을 새로고침 후 다시 보여준다.
+PR과 main의 자동 검사는 `.github/workflows/integration.yml`에서 수행한다.
 
 ## 기존 시연용 실행부
 

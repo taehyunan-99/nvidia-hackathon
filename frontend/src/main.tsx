@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { AgentStart, About, Team } from "./AgentStart";
 import { ReviewOverview } from "./ReviewOverview";
-import { parseScenarioFile, type Scenario, type ScenarioFile } from "./scenario-file";
+import { ReportView } from "./ReportView";
+import { parseScenarioFile, type ReviewInput, type Scenario, type ScenarioFile } from "./scenario-file";
 import PredictedStructure, { type PredictedView } from "./PredictedStructure";
 import { expiredFrame, isSessionExpired, mockFrame, readMockRun, SAVED_RUN_KEY, startMockRun } from "./persistent-mock";
 
@@ -31,7 +32,7 @@ function predictedViews(result: any, candidates: any[]): PredictedView[] {
     const artifact = (result.artifacts ?? []).find(
       (a: any) => a.artifact_id === s.artifact_id,
     );
-    if (!artifact?.sha256) continue;
+    if (artifact?.status !== "ready" || !artifact.sha256) continue;
     const byRole = (role: string) =>
       (s.chain_mapping ?? []).find((c: any) => c.role === role)?.label_asym_id;
     const chains = [byRole("target"), byRole("heavy"), byRole("light")];
@@ -269,13 +270,13 @@ function App() {
       setLiveBusy("");
     }
   }
-  async function runMock() {
+  async function runMock(input: ReviewInput, files: Map<string, File>) {
     setMockError("");
     setMockBusy(true);
     setPlaying(false);
     try {
-      const { session, run } = await startMockRun();
-      apply(mockFrame(session, run, null), "저장형 모의 실행");
+      const { session, run } = await startMockRun(input, files);
+      apply(mockFrame(input, session, run, null), "저장형 모의 실행");
       setPage(1);
       setSavedRunId(run.run_id);
     } catch (error) {
@@ -302,7 +303,7 @@ function App() {
       } catch (error) {
         if (!active) return;
         if (isSessionExpired(error)) {
-          setScenarioFile(expiredFrame());
+          setScenarioFile((previous) => expiredFrame(previous?.input));
           setFileName("저장형 모의 실행");
           setPage(1);
         } else {
@@ -402,12 +403,12 @@ function App() {
             <>
               {page === 0 ? (
                 <AgentStart
-                  input={scenarioFile?.input ?? null}
+                  input={persistedMock ? null : scenarioFile?.input ?? null}
                   fileName={fileName}
                   error={fileError}
                   onFile={(file) => void loadFile(file)}
                   onRunLive={(preset) => void runLive(preset)}
-                  onRunMock={() => void runMock()}
+                  onRunMock={(input, files) => void runMock(input, files)}
                   mockBusy={mockBusy}
                   mockError={mockError}
                   liveBusy={liveBusy}
@@ -434,14 +435,14 @@ function App() {
                           ? "분석 진행 현황"
                           : page === 2
                             ? "구조와 근거 살펴보기"
-                            : "근거를 다음 질문으로."}
+                            : "후보 검토 결과"}
                       </h1>
                       <p>
                         {page === 1
                           ? "후보별 현재 단계와 결과를 확인할 수 있는지 살펴보세요."
                           : page === 2
                             ? "후보·조건을 바꾸며 확인 가능한 근거와 부족한 자료를 살펴보세요."
-                            : "검토 의견과 미확인 사항을 함께 확인하세요."}
+                            : "실행 범위와 후보별 의견, 근거·한계·다음 질문을 확인하세요."}
                       </p>
                     </div>
                     <span className="tag">기록 {frameIndex + 1} / {scenarioFile.scenarios.length}{playing ? " · 모의 재생 중" : ""}{live ? " · 실제 실행" : persistedMock ? " · 저장형 모의 실행" : ""}</span>
@@ -551,46 +552,7 @@ function App() {
                     </>
                   ) : (
                     <>
-                      <section className="report-intro">
-                        <div>
-                          <span className="eyebrow">REVIEW SUMMARY</span>
-                          <h2>
-                            검토의 끝은,
-                            <br />더 명확한 다음 질문.
-                          </h2>
-                        </div>
-                        <p>
-                          실험에서 확인한 사실, 계산 결과, 미확인을 구분합니다.
-                          <br />
-                          현재 의견은 화면 검토용이며 실제 후보 판정이 아닙니다.
-                        </p>
-                      </section>
-                      <div className="two-col">
-                        {result.opinions.map((o) => (
-                          <article className="panel" key={o.opinion_id}>
-                            <div className="section-heading">
-                              <h3>{scenarioFile.input.candidates.find((item) => item.candidate_id === o.candidate_id)?.name ?? o.candidate_id}</h3>
-                              <span className="tag">
-                                {labels[o.decision] ?? o.decision}
-                              </span>
-                            </div>
-                            <p>{o.reason}</p>
-                            <h4>다음 확인 항목</h4>
-                            <ul>
-                              {o.follow_up_questions.map((q) => (
-                                <li key={q}>{q}</li>
-                              ))}
-                            </ul>
-                            <details>
-                              <summary>근거와 해석 범위</summary>
-                              <p>연결 근거: {o.evidence_ids.join(", ")}</p>
-                              {o.limitations.map((l) => (
-                                <p key={l}>{l}</p>
-                              ))}
-                            </details>
-                          </article>
-                        ))}
-                      </div>
+                      <ReportView result={result} input={scenarioFile.input} run={scenario.run} persistedMock={persistedMock} apiBase={API_BASE} />
                       {(() => {
                         const views = predictedViews(
                           result,
@@ -619,47 +581,6 @@ function App() {
                           </section>
                         );
                       })()}
-                      <section className="download-row">
-                        <div>
-                          <h3>결과를 이어서 검토하기</h3>
-                          <p>
-                            이번 실행이 만든 예측 구조만 내려받을 수 있습니다.
-                            공개 실험 구조는 RCSB에서 직접 받으세요.
-                          </p>
-                        </div>
-                        <div className="actions">
-                          {result.artifacts.map((a: any) => {
-                            // 운영부가 내보내는 것은 work_dir에 쓴 예측 구조뿐이다.
-                            // 공개 실험 구조는 저장소 파일이라 그 경로로 나가지 않는다.
-                            const predicted = (result.structures ?? []).some(
-                              (s: any) =>
-                                s.artifact_id === a.artifact_id &&
-                                s.kind === "predicted",
-                            );
-                            if (!predicted)
-                              return (
-                                <button
-                                  className="secondary"
-                                  disabled
-                                  key={a.artifact_id}
-                                  title="공개 실험 구조는 RCSB에서 받으세요."
-                                >
-                                  {a.format.toUpperCase()} ↓
-                                </button>
-                              );
-                            return (
-                              <a
-                                className="secondary"
-                                key={a.artifact_id}
-                                href={`${API_BASE}/api/runs/${result.run_id}/artifacts/${a.artifact_id}`}
-                                download={a.file_name ?? `${a.artifact_id}.cif`}
-                              >
-                                {a.format.toUpperCase()} ↓
-                              </a>
-                            );
-                          })}
-                        </div>
-                      </section>
                     </>
                   )}
                 </>

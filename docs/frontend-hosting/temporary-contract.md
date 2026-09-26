@@ -43,6 +43,7 @@ JSON Schema의 `$defs`에서 각 자료형을 참조한다. 예를 들어 입력
 | POST `/api/session/heartbeat` | 본문 없음 | 200 Session. 유효한 세션의 expires_at 갱신 |
 | DELETE `/api/session` | 본문 없음 | 202 Session. 접근 종료·삭제 요청 접수이며 물리적 삭제 완료가 아님 |
 | POST `/api/reviews` | 위 multipart | 201 ReviewAccepted. 입력 접수만 수행, 아직 분석 시작 안 함 |
+| GET `/api/reviews/{review_id}` | 본문 없음 | 200 ReviewInput. 소유 세션의 저장된 입력 재조회 |
 | POST `/api/reviews/{review_id}/runs` | RunRequest: request_key | 202 Run. 동일 세션·review_id·request_key 재전송은 기존 실행 반환, 새 key는 새 실행 |
 | GET `/api/runs/{run_id}` | 본문 없음 | 200 Run. 현재 상태 조회 |
 | GET `/api/runs/{run_id}/result` | 본문 없음 | 200 Result. 저장된 스냅샷; 아직 없으면 409 RESULT_NOT_READY |
