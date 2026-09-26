@@ -11,5 +11,11 @@
 docs/HANDOFF.md
 docs/HANDOFF.html
 docs/handoff-runs
-docs/topics/her2/assets
-docs/frontend-hosting/assets
+docs/frontend-hosting/assets/*
+!docs/frontend-hosting/assets/3d-research
+docs/frontend-hosting/assets/3d-research/*
+!docs/frontend-hosting/assets/3d-research/verified-structures.json
+tmp
+temp
+work
+logs

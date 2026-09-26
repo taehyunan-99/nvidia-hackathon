@@ -1,0 +1,93 @@
+# Standalone server rehearsal; real analysis and public admission are not connected yet.
+x-runtime: &runtime
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+x-environment: &environment
+  DATABASE_URL: postgresql://her2:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@db:5432/her2
+  SERVICE_DATA_ROOT: /data
+  DATA_MODE: mock
+  SECURE_COOKIE: "true"
+  ALLOWED_ORIGINS: ${PUBLIC_ORIGIN:?Set the exact HTTPS origin}
+  MAX_UPLOAD_BYTES: "20971520"
+services:
+  db:
+    <<: *runtime
+    image: postgres:17-alpine
+    mem_limit: 512m
+    memswap_limit: 512m
+    environment:
+      POSTGRES_DB: her2
+      POSTGRES_USER: her2
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes:
+      - database:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U her2 -d her2"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+  migrate:
+    image: ${API_IMAGE:?Set a tested API image}
+    mem_limit: 512m
+    memswap_limit: 512m
+    command: ["python", "-m", "service.db"]
+    environment: *environment
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+  api:
+    <<: *runtime
+    image: ${API_IMAGE:?Set a tested API image}
+    mem_limit: 512m
+    memswap_limit: 512m
+    environment: *environment
+    volumes:
+      - uploads:/data
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os; from pathlib import Path; from service.db import require_schema; d=os.environ['DATABASE_URL']; require_schema(d); p=Path('/data/.readiness'); p.write_text('ok'); p.unlink(); import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/openapi.json', timeout=2)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+  worker:
+    <<: *runtime
+    image: ${API_IMAGE:?Set a tested API image}
+    mem_limit: 1536m
+    memswap_limit: 1536m
+    command: ["python", "-m", "service.worker", "--scenario", "scientific-hold"]
+    environment: *environment
+    volumes:
+      - uploads:/data
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+  web:
+    <<: *runtime
+    image: ${WEB_IMAGE:?Set a tested web image}
+    mem_limit: 256m
+    memswap_limit: 256m
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?Set a hostname without scheme or port}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?Set the exact HTTPS origin}
+    ports:
+      - "${WEB_BIND_ADDRESS:-127.0.0.1}:${HTTP_PORT:-8081}:80"
+      - "${WEB_BIND_ADDRESS:-127.0.0.1}:${HTTPS_PORT:-8443}:443"
+    volumes:
+      - ./Caddyfile.server:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+volumes:
+  database:
+  uploads:
+  caddy_data:
+  caddy_config:

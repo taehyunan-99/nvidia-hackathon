@@ -19,6 +19,7 @@ HER2 서비스의 입력·진행·비교·보고 화면, 백엔드 접수·저�
 - [frontend-contract.md](frontend-contract.md) — 화면이 소비할 데이터·상태·3D 연결·계약 검토 항목
 - [hosting-requirements.md](hosting-requirements.md) — 실행·저장·외부 호출·배포 조건과 실측 인계
 - [hosting-guide.md](hosting-guide.md) — AWS·Docker 입문 설명, 호스팅 비교·공식 가격·선택 조건 조사
+- [server-rehearsal.md](server-rehearsal.md) — 배포 전 HTTPS·이미지·재시작·격리 복구 검증 절차
 - [backend-deployment-plan.md](backend-deployment-plan.md) — 백엔드·Docker·AWS·HTTPS 준비 순서, CI/CD 도입과 검증·복구·운영 계획
 - [temporary-contract.md](temporary-contract.md) — 사용자 요청으로 먼저 정한 v0.1.0 서비스 개발용 임시 규격
 - [contracts/service.schema.json](contracts/service.schema.json) — 임시 입력·출력의 JSON Schema 원본
