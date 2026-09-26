@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 const StructurePreview = lazy(() => import("./StructurePreview"));
 import type { Result, ReviewInput } from "./scenario-file";
+import PredictedStructure, { type PredictedView } from "./PredictedStructure";
 const decisions: Record<string, string> = {
   hold: "판단 보류",
   not_assessed: "미검토",
@@ -26,6 +27,8 @@ const topics: Record<string, string> = {
 export function ReviewOverview({
   result,
   input,
+  views,
+  apiBase,
   candidate,
   conditionKind,
   evidenceId,
@@ -33,6 +36,8 @@ export function ReviewOverview({
 }: {
   result: Result;
   input: ReviewInput;
+  views: PredictedView[];
+  apiBase: string;
   candidate: string;
   conditionKind: string;
   evidenceId: string | null;
@@ -59,12 +64,13 @@ export function ReviewOverview({
       (o) => selected && o.evidence_ids.includes(selected.evidence_id),
     ) ?? opinions[0];
   const gaps = [...new Set(conditions.flatMap((c) => c.gaps))];
-  const hasMeasuredEvidence = result.evidence.some((item) => item.measurement_state === "measured");
+  const hasMeasuredEvidence = evidence.some((item) => item.measurement_state === "measured");
+  const selectedView = views.find((view) => view.candidateId === candidate && conditions.some((condition) => (condition.structure_ids as string[]).includes(view.structureId)));
   const selectionControls = (
     <div className="review-workbench-controls" aria-label="검토 결과 선택">
       <div className="review-workbench-controls-title">
         <strong>검토 결과 선택</strong>
-        <span>공개 3D 예제와 별개로 오른쪽 근거가 바뀝니다.</span>
+        <span>{live ? "후보와 조건에 연결된 구조·근거가 함께 바뀝니다." : "공개 3D 예제와 별개로 오른쪽 근거가 바뀝니다."}</span>
       </div>
       <div className="review-selection-pair">
         <div className="review-control-field">
@@ -95,20 +101,16 @@ export function ReviewOverview({
         </label>
       </div>
       <div className="review-control-field">
-        <span>{evidence.length > 1 ? "확인할 근거 선택" : "근거 기록"}</span>
-        <div className="evidence-choices" role="group" aria-label={evidence.length > 1 ? "검토 근거 선택" : "검토 근거 상태"}>
-          {evidence.length === 1 ? (
-            <p className="evidence-record">
-              {topics[evidence[0].topic] ?? evidence[0].topic} 근거 · {states[evidence[0].measurement_state] ?? evidence[0].measurement_state}
-              <small>오른쪽에 표시 중</small>
-            </p>
-          ) : evidence.length > 1 ? evidence.map((item) => (
+        <span>확인할 근거 선택</span>
+        <div className="evidence-categories" role="group" aria-label="확인할 근거 선택">
+          {evidence.length ? evidence.map((item) => (
             <button
               key={item.evidence_id}
+              title={`${topics[item.topic] ?? item.topic} · ${states[item.measurement_state] ?? item.measurement_state}`}
               aria-pressed={selected?.evidence_id === item.evidence_id}
               onClick={() => onSelect(candidate, conditionKind, item.evidence_id)}
             >
-              {topics[item.topic] ?? item.topic} · {states[item.measurement_state] ?? item.measurement_state}
+              {topics[item.topic] ?? item.topic}
             </button>
           )) : <span>이 조건에 연결된 근거가 없습니다.</span>}
         </div>
@@ -122,9 +124,9 @@ export function ReviewOverview({
           <span className="eyebrow">현재 이 결과에서 알 수 있는 것</span>
           <h2>이 화면만으로 후보 우열을 단정할 수 없습니다</h2>
           <p>
-            {result.structures.length ? "후보 구조 기록의 좌표 파일은 이 화면에 연결되지 않았습니다. " : "후보 구조 좌표가 제공되지 않았습니다. "}
+            {selectedView ? "선택한 후보와 조건의 구조 파일을 왼쪽에서 확인할 수 있습니다. " : "선택한 후보와 조건의 구조 좌표가 제공되지 않았습니다. "}
             {hasMeasuredEvidence ? "기록된 측정 근거는 오른쪽에서 확인해 주세요. " : "실제 근거 측정도 없습니다. "}
-            왼쪽 3D는 공개 실험 구조 예제이며 {live ? "이번 실행의 근거와 직접 연결되지 않습니다." : "업로드한 후보의 분석 결과가 아닙니다."}
+            {!live && "왼쪽 3D는 공개 실험 구조 예제이며 업로드한 후보의 분석 결과가 아닙니다."}
           </p>
         </div>
         <div className="review-insight-facts">
@@ -139,15 +141,13 @@ export function ReviewOverview({
             <span className="eyebrow">01 / EXPLORE</span>
             <h2>구조를 보며 근거 확인하기</h2>
           </div>
-          <span className="tag">공개 구조 예제 · {live ? "실제 실행 결과" : "모의 결과"}와 별개</span>
+          <span className="tag">{live ? selectedView ? "이번 실행의 구조" : "선택 조건의 구조 없음" : "공개 구조 예제 · 모의 결과와 별개"}</span>
         </div>
         {selectionControls}
       <div
         className="compare-grid review-focus"
       >
-        <Suspense fallback={<p>3D 준비 중…</p>}>
-          <StructurePreview />
-        </Suspense>
+        {live ? selectedView ? <PredictedStructure key={selectedView.artifactId} view={selectedView} apiBase={apiBase} /> : <p className="panel">선택한 후보와 조건에 연결된 구조 파일이 없습니다.</p> : <Suspense fallback={<p>3D 준비 중…</p>}><StructurePreview /></Suspense>}
         <section
           className="panel review-evidence"
           aria-live="polite"

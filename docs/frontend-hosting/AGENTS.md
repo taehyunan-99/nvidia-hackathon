@@ -31,7 +31,7 @@ HER2 서비스의 입력·진행·비교·보고 화면, 백엔드 접수·저�
 현재 구현 참조:
 
 - [frontend/src/](../../frontend/src/) — 입력·진행·비교·보고 화면, Mol* 표시, 서비스 응답 소비.
-- [service/README.md](../../service/README.md) — 두 API 경로와 로컬 실행 절차. `service/operational.py`는 영속 접수·조회·세션·파일 접근, `service/worker.py`는 mock 작업 점유·진행·정리, `service/db.py`·`service/migrations/`는 저장소 준비다.
+- [service/README.md](../../service/README.md) — 두 API 경로와 로컬 실행 절차. `service/operational.py`는 영속 접수·조회·세션·파일 접근, `service/worker.py`는 mock/live 작업 점유·진행·정리, `service/live.py`는 로직 실행·파일 검증 경계, `service/db.py`·`service/migrations/`는 저장소 준비다.
 - [service/app.py](../../service/app.py) — `logic.flow`를 호출하는 별도 동기식 실제 분석 시연 API. 영속 API·worker와 통합된 경로가 아니다.
 - [compose.yaml](../../compose.yaml), [Dockerfile.web](../../Dockerfile.web), [Dockerfile.api](../../Dockerfile.api), [Caddyfile](../../Caddyfile) — 로컬 HTTP의 web·api·worker·db와 일회성 migration 구성.
 - [integration.yml](../../.github/workflows/integration.yml), [check_mock_flow.py](../../scripts/check_mock_flow.py), [service/tests/](../../service/tests/) — 빌드·계약·서비스·Compose mock 검사.
@@ -42,7 +42,7 @@ HER2 서비스의 입력·진행·비교·보고 화면, 백엔드 접수·저�
 
 - 프런트는 같은 실행·후보·조건의 결과를 입력→진행→비교→보고에 연결하고, 분석값·보류 이유를 재계산하거나 임의 판정으로 바꾸지 않는다. 3D는 제공된 구조·사슬·잔기 대응을 표시한다.
 - 백엔드는 세션 소유권, 입력 검증, 접수·저장·조회·파일 전달과 worker의 점유·생존·중단·자료 정리를 맡는다. 분석 함수·판정·도구 선택은 로직 담당과 연결 계약을 맞춘다.
-- 영속 경로는 현재 `DATA_MODE=mock`만 허용한다. Compose의 화면은 같은 출처의 `/api`를 사용하며 `VITE_PERSISTENT_MOCK=1`로 빌드된다. 별도 시연 API의 실제 분석 성공을 영속 worker 연결 성공으로 취급하지 않는다.
+- 영속 경로는 `DATA_MODE=mock|live`를 허용한다. Compose 화면은 같은 출처의 `/api`를 사용하며 `VITE_PERSISTENT_SERVICE=1`로 빌드된다. 실제 연결은 저장형 worker·진행·파일 경로를 함께 검사하고 별도 동기 시연 API 결과로 대신하지 않는다.
 - 호스팅은 로컬 Compose·CI 구현, 실제 분석 연결, 공개 배포를 나누어 기록한다. AWS·HTTPS·공개 실행 제한·백업 복구·CD는 준비 과제이며 계정·예산·도메인과 실행 근거 없이 완료로 바꾸지 않는다.
 
 ## 4. HOW NOT — 주의할 함정

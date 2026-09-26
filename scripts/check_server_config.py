@@ -21,7 +21,8 @@ for name in ['migrate', 'api', 'worker']:
     origin = urlsplit(env['ALLOWED_ORIGINS'])
     assert origin.scheme == 'https' and origin.hostname == host, 'HTTPS origin and site hostname must match'
     assert not origin.path and not origin.query and not origin.fragment and not origin.username
-    assert env['SECURE_COOKIE'] == 'true' and env['DATA_MODE'] == 'mock'
+    assert env['SECURE_COOKIE'] == 'true' and env['DATA_MODE'] in {'mock', 'live'}
+assert len({services[name]['environment']['DATA_MODE'] for name in ['migrate', 'api', 'worker']}) == 1
 for name in ['db', 'api', 'worker']:
     assert not services[name].get('ports'), f'{name} must not publish a port'
 for port in services['web']['ports']:

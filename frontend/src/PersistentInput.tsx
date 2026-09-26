@@ -10,7 +10,7 @@ function validFasta(value: string): boolean {
   return Boolean(sequence) && /^[ACDEFGHIKLMNPQRSTVWYBXZUO]+$/i.test(sequence);
 }
 
-export function PersistentInput({ busy, error, onStart }: { busy: boolean; error: string; onStart: (input: ReviewInput, files: Map<string, File>) => void }) {
+export function PersistentInput({ busy, error, mode, onStart }: { busy: boolean; error: string; mode: "mock" | "live" | null; onStart: (input: ReviewInput, files: Map<string, File>) => void }) {
   const [targetId, setTargetId] = useState("");
   const [targetFasta, setTargetFasta] = useState("");
   const [candidates, setCandidates] = useState<CandidateDraft[]>([emptyCandidate(), emptyCandidate()]);
@@ -48,9 +48,9 @@ export function PersistentInput({ busy, error, onStart }: { busy: boolean; error
   return <section className="analysis-launcher review-launcher" aria-label="새 검토 입력">
     <div className="launcher-heading">
       <div><span className="eyebrow">NEW REVIEW</span><h2>표적과 후보 입력</h2></div>
-      <span className="tag">저장형 모의 실행</span>
+      <span className="tag">{mode === "live" ? "저장형 실제 실행" : mode === "mock" ? "저장형 모의 실행" : "저장형 검토"}</span>
     </div>
-    <p className="review-intro">표적과 후보 2~3개를 입력하세요. 구조 파일은 선택 사항입니다. 결과는 모의 데이터이며 실제 분석은 수행하지 않습니다.</p>
+    <p className="review-intro">표적과 후보 2~3개를 입력하세요. 구조 파일은 선택 사항입니다. {mode === "live" ? "실제 분석이 실행되며 결과는 같은 실행에 저장됩니다." : mode === "mock" ? "결과는 모의 데이터이며 실제 분석은 수행하지 않습니다." : "서비스 실행 모드를 확인하는 중입니다."}</p>
     <form className="review-form" onSubmit={submit}>
       <section className="review-target" aria-labelledby="review-target-title">
         <div className="review-section-heading"><h3 id="review-target-title">표적</h3><span>ID 또는 FASTA 중 하나는 필수</span></div>
@@ -83,7 +83,7 @@ export function PersistentInput({ busy, error, onStart }: { busy: boolean; error
       <div className="review-submit">
         <label className="review-confirm"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />입력 자료를 사용할 권한과 공개 자료 여부를 확인했습니다.</label>
         {(fieldError || error) && <p role="alert" className="notice">{fieldError || error}</p>}
-        <button className="primary" type="submit" disabled={busy}>{busy ? "접수 중…" : "모의 검토 시작 →"}</button>
+        <button className="primary" type="submit" disabled={busy || mode === null}>{busy ? "접수 중…" : mode === "live" ? "실제 검토 시작 →" : "모의 검토 시작 →"}</button>
       </div>
     </form>
   </section>;

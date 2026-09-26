@@ -56,6 +56,7 @@ export function AgentStart({
   mockError,
   liveBusy,
   liveError,
+  savedMode,
 }: {
   input: ReviewInput | null;
   fileName: string;
@@ -68,6 +69,7 @@ export function AgentStart({
   mockError: string;
   liveBusy: string;
   liveError: string;
+  savedMode: "mock" | "live" | null;
 }) {
   return (
     <section className="agent-start">
@@ -79,10 +81,10 @@ export function AgentStart({
           <br />
           <span>근거를 함께 살펴봅니다.</span>
         </h1>
-        <p>{import.meta.env.VITE_PERSISTENT_MOCK === "1" ? "저장형 모의 실행이나 검토 시나리오 재생을 선택하세요." : "실제 분석을 실행하거나, 검토 시나리오 파일을 올려 확인하세요."}</p>
+        <p>{import.meta.env.VITE_PERSISTENT_SERVICE === "1" ? "표적과 후보를 입력해 저장형 검토를 시작하거나 시나리오를 재생하세요." : "실제 분석을 실행하거나, 검토 시나리오 파일을 올려 확인하세요."}</p>
       </div>
-      {import.meta.env.VITE_PERSISTENT_MOCK === "1" && <PersistentInput busy={mockBusy} error={mockError} onStart={onRunMock} />}
-      {import.meta.env.VITE_PERSISTENT_MOCK !== "1" && <section className="analysis-launcher" aria-label="실제 분석 실행">
+      {import.meta.env.VITE_PERSISTENT_SERVICE === "1" && <PersistentInput busy={mockBusy} error={mockError} mode={savedMode} onStart={onRunMock} />}
+      {import.meta.env.VITE_PERSISTENT_SERVICE !== "1" && <section className="analysis-launcher" aria-label="실제 분석 실행">
         <div className="launcher-heading">
           <div>
             <span className="eyebrow">LIVE RUN</span>
@@ -154,7 +156,7 @@ export function AgentStart({
       </section>
       <p className="agent-disclosure">
         업로드한 시나리오는 기록된 상태를 재생할 뿐 분석·모델 호출을 실행하지 않습니다.
-        {import.meta.env.VITE_PERSISTENT_MOCK !== "1" && " 실제 호출은 위의 “실제 분석 실행”에서 합니다."}
+        {import.meta.env.VITE_PERSISTENT_SERVICE !== "1" && " 실제 호출은 위의 “실제 분석 실행”에서 합니다."}
       </p>
     </section>
   );

@@ -42,7 +42,6 @@ export function parseScenarioFile(value: unknown): ScenarioFile {
     return candidate.candidate_id;
   });
   if (new Set(ids).size !== ids.length) invalid();
-  let runId: string | null = null;
   for (const frame of frames) {
     if (typeof frame.name !== "string" || typeof frame.description !== "string" || !record(frame.session) || !sameMode(frame.session.data_mode, mode)) invalid();
     const run = frame.run;
@@ -50,14 +49,12 @@ export function parseScenarioFile(value: unknown): ScenarioFile {
     if (frame.session.status === "expired" && (run !== null || result !== null)) invalid();
     if (run !== null) {
       if (!record(run) || !sameMode(run.data_mode, mode) || typeof run.run_id !== "string" || !records(run.candidates) || typeof run.result_available !== "boolean") invalid();
-      if (runId !== null && runId !== run.run_id) invalid();
-      runId = run.run_id;
       if (run.result_available !== (result !== null)) invalid();
       if (run.candidates.length !== ids.length || run.candidates.some((candidate) => !ids.includes(candidate.candidate_id as string) || !records(candidate.steps) || candidate.steps.some((step) => typeof step.step_id !== "string" || typeof step.status !== "string"))) invalid();
       if (run.error !== null && (!record(run.error) || typeof run.error.message !== "string")) invalid();
     } else if (result !== null) invalid();
     if (result !== null) {
-      if (!record(result) || !sameMode(result.data_mode, mode) || result.run_id !== runId || !records(result.conditions) || !records(result.evidence) || !records(result.opinions) || !records(result.artifacts) || !records(result.structures)) invalid();
+      if (!record(result) || !sameMode(result.data_mode, mode) || result.run_id !== run?.run_id || !records(result.conditions) || !records(result.evidence) || !records(result.opinions) || !records(result.artifacts) || !records(result.structures)) invalid();
       if (result.conditions.some((condition) => !Array.isArray(condition.gaps)) || result.evidence.some((item) => !Array.isArray(item.sources) || !Array.isArray(item.residues)) || result.opinions.some((opinion) => !Array.isArray(opinion.evidence_ids) || !Array.isArray(opinion.limitations) || !Array.isArray(opinion.follow_up_questions)) || result.artifacts.some((artifact) => typeof artifact.format !== "string")) invalid();
     }
     if (frame.error !== null && (!record(frame.error) || !sameMode(frame.error.data_mode, mode) || typeof frame.error.message !== "string")) invalid();
