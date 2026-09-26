@@ -1,0 +1,86 @@
+[
+ {
+  "precision": 0.455,
+  "recall": 0.263,
+  "f1": 0.333,
+  "tp": 5,
+  "pred_n": 11,
+  "gold_n": 19,
+  "predicted_contacts_target_side": 11,
+  "name": "boltz2",
+  "label": "Boltz-2 (서비스와 같은 설정)",
+  "sha256": "6512eab799abdd88fec2a97cece59e38c5f2dc03906adab87d82a3cde37a8448"
+ },
+ {
+  "precision": 0.455,
+  "recall": 0.263,
+  "f1": 0.333,
+  "tp": 5,
+  "pred_n": 11,
+  "gold_n": 19,
+  "predicted_contacts_target_side": 11,
+  "name": "boltz2-r2",
+  "label": "같은 설정 2회차",
+  "sha256": "6512eab799abdd88fec2a97cece59e38c5f2dc03906adab87d82a3cde37a8448"
+ },
+ {
+  "precision": 0.455,
+  "recall": 0.263,
+  "f1": 0.333,
+  "tp": 5,
+  "pred_n": 11,
+  "gold_n": 19,
+  "predicted_contacts_target_side": 11,
+  "name": "boltz2-r3",
+  "label": "같은 설정 3회차",
+  "sha256": "6512eab799abdd88fec2a97cece59e38c5f2dc03906adab87d82a3cde37a8448"
+ },
+ {
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "tp": 0,
+  "pred_n": 14,
+  "gold_n": 19,
+  "predicted_contacts_target_side": 14,
+  "name": "boltz2_msa",
+  "label": "Boltz-2 + MSA",
+  "sha256": "660b41e29117bd29501f0c43593f33f7b66309282af7d433fc1c6539c7e2335c"
+ },
+ {
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "tp": 0,
+  "pred_n": 14,
+  "gold_n": 19,
+  "predicted_contacts_target_side": 14,
+  "name": "boltz2_msa-r2",
+  "label": "MSA 2회차",
+  "sha256": "660b41e29117bd29501f0c43593f33f7b66309282af7d433fc1c6539c7e2335c"
+ },
+ {
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "tp": 0,
+  "pred_n": 14,
+  "gold_n": 19,
+  "predicted_contacts_target_side": 14,
+  "name": "boltz2_msa-r3",
+  "label": "MSA 3회차",
+  "sha256": "660b41e29117bd29501f0c43593f33f7b66309282af7d433fc1c6539c7e2335c"
+ },
+ {
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "tp": 0,
+  "pred_n": 0,
+  "gold_n": 19,
+  "predicted_contacts_target_side": 0,
+  "name": "openfold3_msa",
+  "label": "OpenFold3 + MSA",
+  "sha256": "81150d737a9a365073e2a7ca0be49cbe874107257d00b5dbf76073f3ce69d74b"
+ }
+]

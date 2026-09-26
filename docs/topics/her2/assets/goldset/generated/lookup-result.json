@@ -1,0 +1,122 @@
+[
+ {
+  "pdb": "3BE1",
+  "target": "HER2",
+  "match": "일치 없음",
+  "gold": "predict",
+  "pass": true,
+  "lens": [
+   624,
+   230,
+   218
+  ]
+ },
+ {
+  "pdb": "3WSQ",
+  "target": "HER2",
+  "match": "일치 없음",
+  "gold": "predict",
+  "pass": true,
+  "lens": [
+   564,
+   218,
+   215
+  ]
+ },
+ {
+  "pdb": "5O4G",
+  "target": "HER2",
+  "match": "일치 없음",
+  "gold": "predict",
+  "pass": true,
+  "lens": [
+   606,
+   247,
+   214
+  ]
+ },
+ {
+  "pdb": "6ATT",
+  "target": "HER2",
+  "match": "일치 없음",
+  "gold": "predict",
+  "pass": true,
+  "lens": [
+   630,
+   224,
+   220
+  ]
+ },
+ {
+  "pdb": "6BGT",
+  "target": "HER2",
+  "match": "일치 없음",
+  "gold": "predict",
+  "pass": true,
+  "lens": [
+   658,
+   231,
+   214
+  ]
+ },
+ {
+  "pdb": "9L1S",
+  "target": "HER2",
+  "match": "1S78 부분(경쇄만)",
+  "gold": "predict",
+  "pass": true,
+  "lens": [
+   636,
+   227,
+   214
+  ]
+ },
+ {
+  "pdb": "9T3R",
+  "target": "HER2",
+  "match": "일치 없음",
+  "gold": "predict",
+  "pass": true,
+  "lens": [
+   636,
+   267,
+   216
+  ]
+ },
+ {
+  "pdb": "9T3S",
+  "target": "HER2",
+  "match": "일치 없음",
+  "gold": "predict",
+  "pass": true,
+  "lens": [
+   636,
+   267,
+   216
+  ]
+ },
+ {
+  "pdb": "4P59",
+  "target": "HER3",
+  "match": "일치 없음",
+  "gold": "predict",
+  "pass": true,
+  "lens": [
+   627,
+   238,
+   214
+  ]
+ },
+ {
+  "pdb": "8YRY",
+  "target": "HER3",
+  "match": "일치 없음",
+  "gold": "predict",
+  "pass": true,
+  "lens": [
+   135,
+   220,
+   214
+  ]
+ }
+]
