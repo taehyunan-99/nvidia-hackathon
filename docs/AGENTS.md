@@ -11,7 +11,7 @@
 - [ARCHITECTURE.md](ARCHITECTURE.md) — 구성요소·데이터·실행 흐름·Docker와 AWS 배치안
 - [ADR.md](ADR.md) — 기술 선택의 배경·대안·결정 상태
 - [plan.md](plan.md) — 로직 2명·서비스 1명의 제안 분담·선행 작업·인계·검증 계획
-- [frontend-hosting/AGENTS.md](frontend-hosting/AGENTS.md) — 프런트·호스팅 관점의 로직 조사·데이터 소비 요구·실행 조건·인터뷰
+- [frontend-hosting/AGENTS.md](frontend-hosting/AGENTS.md) — 프런트엔드·백엔드·worker 운영·호스팅의 작업 기준·현재 구현·검사 명령
 - `hackathon/` — 규정·신청·교육·데모
 - [topics/her2/overview.md](topics/her2/overview.md) — 현재 프로젝트 목적·입력·산출물
 - [topics/her2/agent-design.md](topics/her2/agent-design.md) — 에이전트 판단 흐름
@@ -21,7 +21,7 @@
 - `references/` — 출처·선별 기록
 - `collaboration/` — 팀 공통 설정
 
-형식: Markdown 중심. 현재 기술 선택과 잠정안은 ARCHITECTURE.md와 ADR.md에서 구분하며, 구현·배포는 미검증이다.
+형식: Markdown 중심. 현재 기술 선택과 잠정안은 ARCHITECTURE.md와 ADR.md에서 구분한다. 서비스 화면·영속 mock API·worker·로컬 Compose·CI 정의는 구현되어 있으며, 실제 분석의 영속 경로 연결과 공개 배포는 별도 미완료 사항이다. 과거 조사 문서의 기준일을 유지하고 현재 서비스 상태는 frontend-hosting/AGENTS.md와 코드에서 확인한다.
 
 ## 3. HOW — 수정 방법
 
@@ -41,7 +41,7 @@
 
 ## 7. COMMANDS — 검증 명령
 
-저장소 루트에서 `git diff --check`로 공백 오류를 확인하고 변경 문서의 상대 링크·import 대상을 직접 확인한다. 앱 빌드·테스트 명령은 아직 없다.
+저장소 루트에서 `git diff --check`로 공백 오류를 확인하고 변경 문서의 상대 링크·import 대상을 직접 확인한다. 서비스 빌드·검사 명령과 임시 DB 조건은 [서비스 가이드](frontend-hosting/AGENTS.md#7-commands--검증)를 따른다.
 
 ## 8. ⚠️ LEARNED CAUTIONS — 학습된 주의사항
 

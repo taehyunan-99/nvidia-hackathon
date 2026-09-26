@@ -8,6 +8,7 @@
 ## 영역별 가이드
 
 - [docs/AGENTS.md](docs/AGENTS.md) — 문서 전체 구조와 출처 관리.
+- [docs/frontend-hosting/AGENTS.md](docs/frontend-hosting/AGENTS.md) — 프런트엔드·백엔드·worker 운영·호스팅의 작업 기준과 현재 구현 참조.
 - [docs/hackathon/AGENTS.md](docs/hackathon/AGENTS.md) — 규정·신청·교육·데모 준비.
 - [docs/topics/AGENTS.md](docs/topics/AGENTS.md) → [HER2 가이드](docs/topics/her2/AGENTS.md) — 현재 프로젝트의 목적·판단 흐름·검증 기준.
 - [docs/tools/AGENTS.md](docs/tools/AGENTS.md) — NVIDIA 스킬·모델·도구와 환경 조건.
