@@ -11,17 +11,19 @@ docker compose --env-file .env.compose.local config -q
 docker compose --env-file .env.compose.local up --build -d --wait
 ```
 
-`http://127.0.0.1:8080`에서 정적 화면을 제공하고 `/api/*`는 영속 접수 API로 전달한다.
+기본 주소 `http://127.0.0.1:8080`에서 정적 화면을 제공하고 `/api/*`는 영속 API로 전달한다.
+로컬 설정의 `WEB_PORT`를 바꾸면 그 포트로 접속한다.
 DB 준비 확인 후 migration을 한 번 실행하고 API를 시작한다. DB와 업로드는 이름 있는 볼륨에
 저장된다. 종료할 때는 `docker compose --env-file .env.compose.local down`을 사용하며
 데이터를 유지하려면 `down -v`를 사용하지 않는다. 비밀번호를 바꾸려면 기존 DB 볼륨의
 자격 증명도 함께 관리해야 한다.
 
-이 구성은 `127.0.0.1`의 HTTP 개발 환경이다. 현재 화면의 분석 시작은 기존 동기식
-`/api/review`를 사용하지만 이 Compose의 API는 세션·입력·실행 **접수**만 제공한다.
-따라서 화면 분석 흐름은 다음 연결 단계 전까지 동작하지 않으며, 접수된 실행도 Compose에
-worker를 연결하기 전에는 `queued`에 머문다. 로컬에서 별도 worker를 직접 실행하려면
-API와 같은 `DATABASE_URL`, `SERVICE_DATA_ROOT`를 설정하고 아래 명령을 사용한다.
+이 구성은 `127.0.0.1`의 HTTP 개발 환경이다. 화면의 **저장형 모의 실행**은 합성 입력을
+영속 API에 접수하고 Compose의 별도 worker가 처리한 상태·결과를 조회한다. 같은 브라우저에서
+새로고침하면 유효한 세션과 실행 ID로 다시 조회한다. 모의 결과에는 실제 구조 계산이나
+모델 호출이 없다. 별도 동기식 `/api/review`를 사용하는 **실제 분석 실행** 버튼은
+이 Compose 화면에서 숨긴다. 로컬에서 worker를 따로 실행하려면 API와 같은
+`DATABASE_URL`, `SERVICE_DATA_ROOT`를 설정하고 아래 명령을 사용한다.
 
 ```bash
 uv run python -m service.worker --scenario scientific-hold --once
@@ -30,7 +32,7 @@ uv run python -m service.worker --scenario scientific-hold --once
 `completed`, `scientific-hold`, `partial`, `failed`는 모두 실제 분석을 하지 않는
 모의 시나리오다. `--once`를 빼면 대기 중인 실행을 계속 처리한다. worker는 점유가
 만료된 실행을 `interrupted`로 기록하고 자동 재실행하지 않는다. 세션 삭제·만료 후에는
-점유가 끝난 자료 파일을 정리한다. Compose 서비스 연결은 다음 단계에서 한다. HTTPS, 공개 접수
+점유가 끝난 자료 파일을 정리한다. HTTPS, 공개 접수
 제한, 백업·복구, 실제 모델 호출과 AWS 자원은 아직 준비되지 않았다.
 
 ## 영속 접수 API 준비
