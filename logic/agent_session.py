@@ -194,7 +194,22 @@ class CandidateTools:
         self._accept("predict_structure")
         self._decision("structure_source", "predict", reason, facts)
         cid = self.s.cid
-        self.s.structure_id = self.flow._predict(cid, self.s.candidate, self.s.match)
+        # NAT는 도구 예외를 모델에게 오류 메시지로 돌려주고 루프를 잇는다. 예외를
+        # 그냥 두면 structure_id가 비어 있어 모델이 predict_structure를 다시 부를
+        # 수 있다. 호출이 성공한 뒤 기록에서 터졌다면 그건 유료 재호출이다.
+        # 그래서 여기서 잡아 후보를 실패로 끝내고, 반쯤 쌓인 기록은 되돌린다.
+        flow = self.flow
+        records = (flow.structures, flow.artifacts, flow.conditions, flow.evidence, flow.opinions)
+        sizes = [len(r) for r in records]
+        try:
+            self.s.structure_id = flow._predict(cid, self.s.candidate, self.s.match)
+        except Exception as exc:
+            for r, n in zip(records, sizes):
+                del r[n:]
+            reason = f"예측 단계 오류로 검토를 끝냈다: {type(exc).__name__}: {exc}"[:200]
+            flow._fail_prediction(cid, reason)
+            self.s.terminal = "failed"
+            return reason
         if self.s.structure_id is None:
             state = self.flow.states[cid]
             if state.status == "running":

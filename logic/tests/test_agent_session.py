@@ -189,3 +189,65 @@ def test_opinion_reason_with_a_truly_invented_number_is_still_refused(tmp_path):
     assert out.startswith("거부:")
     assert "9999" in out
     assert session.terminal is None
+
+
+def _break_recording(flow):
+    """Boltz-2 호출은 성공하고, 그 뒤 기록 단계가 중간에서 터지게 한다.
+
+    구조 목록에 한 건을 넣은 뒤 터져서, 반쯤 쌓인 기록이 남는 상황을 만든다.
+    """
+    def _record(cid, response, sequences=None):
+        flow.structures.append({"structure_id": f"st-{cid}-boltz2", "candidate_id": cid})
+        raise OSError("디스크에 쓰지 못했다")
+    flow._record_predicted = _record
+
+
+def test_predict_failure_after_paid_call_ends_candidate_without_repredicting(tmp_path):
+    """M1: 예측 호출이 성공한 뒤 도구가 터지면 후보를 실패로 끝내고 다시 예측하지 않는다.
+
+    NAT의 ToolNode는 도구 예외를 모델에게 오류 메시지로 돌려준다
+    (tool_calling_agent의 handle_tool_errors 기본값 True). 예외를 그대로 두면
+    structure_id가 비어 있어 관문이 predict_structure를 다시 허용하고, 모델이
+    다시 부르면 유료 Boltz-2가 한 번 더 나간다.
+    """
+    client, flow, session, tools = _setup(tmp_path, _variant())
+    tools.check_input()
+    tools.lookup_public_structure()
+    _break_recording(flow)
+
+    out = tools.predict_structure("일치하는 공개 구조가 없어 새로 만든다.")
+
+    assert client.predictions == 1
+    assert "OSError" in out
+    assert session.terminal == "failed"
+    assert flow.states[session.cid].status == "failed"
+    assert flow.structures == []  # 반쯤 쌓인 기록은 되돌린다
+    again = tools.predict_structure("다시 만든다.")
+    assert again.startswith("거부:")
+    assert client.predictions == 1
+
+
+def test_rule_finish_after_predict_failure_does_not_repredict(tmp_path, monkeypatch):
+    """M1: 에이전트가 그 뒤 종료 도구 없이 끝나도 규칙 마무리가 다시 예측하지 않는다."""
+    from logic import nat_agent
+    from logic.contract import validate
+    from logic.flow import run_flow
+
+    def _agent(flow, session, **kwargs):
+        tools = CandidateTools(flow, session)
+        tools.check_input()
+        tools.lookup_public_structure()
+        _break_recording(flow)
+        tools.predict_structure("일치하는 공개 구조가 없어 새로 만든다.")
+        return nat_agent._fallback_reason(session, "")
+
+    monkeypatch.setenv("LOGIC_AGENT_MODE", "nat")
+    monkeypatch.setattr(nat_agent, "NAT_AVAILABLE", True)
+    monkeypatch.setattr(nat_agent, "run_candidate", _agent)
+    client = ScriptedClient()
+    output, flow = run_flow(make_request([_variant(), _filler()], tmp_path, target_fasta=TARGET),
+                            client=client)
+
+    validate(output, "LogicOutput")
+    assert client.predictions == 1
+    assert flow.states["cand-v"].status == "failed"
