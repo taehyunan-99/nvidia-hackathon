@@ -1,0 +1,116 @@
+# NAT 에이전트 루프 설계 — 로직 B
+
+작성일 2026-09-26. 상태: **설계. 구현·측정 전.** 담당 로직 B.
+판단 흐름의 원 설계는 [agent-design.md](agent-design.md), 현재 실행부 상태는 [logic-b-handoff.md](logic-b-handoff.md)를 따른다.
+
+## 1. 왜 바꾸는가
+
+설계 문서는 "Nemotron이 상태에 따른 작업 선택, NAT가 함수 연결·실행 흐름·추적"이다. 현재 구현은 다르다.
+
+- 흐름은 `logic/flow.py`의 고정 순서와 `if`다. 모델은 분기 2곳(`structure_source`, `review_opinion`)에서 선택지 하나를 고를 뿐이다.
+- NAT는 코드와 의존성 어디에도 없다 (`logic/*.py`, `pyproject.toml` 검색 기준).
+
+목표: **Nemotron이 NAT의 tool-calling 루프 안에서 다음에 실행할 도구를 직접 고른다.** 숫자 계산·입력 검사·호출 한도는 계속 코드가 쥔다.
+
+## 2. 확인한 전제 (2026-09-26 실측)
+
+| 항목 | 결과 | 근거 |
+|---|---|---|
+| Nemotron tool-calling | `nvidia/nemotron-3-super-120b-a12b`가 도구 2개 중 올바른 것을 1.6초에 호출, `finish_reason=tool_calls` | 기존 `NvidiaClient.chat(tools=...)`로 1회 호출 |
+| NAT 설치 | `nvidia-nat[langchain]` 1.9.0, Python 3.13에서 설치됨. 약 676 MB | 임시 venv |
+| NAT Python 범위 | `>=3.11,<3.14` | PyPI 메타데이터 |
+| 기본 에이전트 | `tool_calling_agent`는 시작 시 도구 목록을 한 번 `bind_tools`하고 끝까지 쓴다. `max_iterations` 기본 15 | `nat/plugins/langchain/agent/tool_calling_agent/` |
+| LLM 호출 방식 | NAT 에이전트는 응답을 **스트리밍**(`astream`)으로 받는다 | 같은 파일 `_invoke_llm` |
+| NAT 루프 실호출 (0단계) | `tool_calling_agent` + 커스텀 도구 3개 + `nemotron-3-super` 스트리밍: 6.2초, 호출 순서 check→predict→finish, `return_direct`로 종료, `contextvars` 상태가 도구 안에서 보임. 최종 문장이 영어로 나옴 → 시스템 프롬프트에 한국어 지시 필요 | 임시 스크립트, 2026-09-26 |
+
+확인됨(위 행): NVIDIA 엔드포인트에서 **스트리밍 + tool-calling 조합**이 이 모델로 동작함.
+
+## 3. 결정: A로 시작하고 B로 넘어갈 수 있게 짠다
+
+| | A — 기본 에이전트 + 도구 쪽 관문 | B — 상태별 도구 노출 |
+|---|---|---|
+| 루프 | NAT `tool_calling_agent` 그대로 | NAT `ToolCallAgentGraph`를 상속해 매 바퀴 허용 도구만 `bind_tools` |
+| 모델이 보는 도구 | 전부 | 현재 상태에서 허용된 것만 |
+| 순서 위반 | 도구가 거부 문구를 반환. 한 바퀴를 소모 | 발생하지 않음 |
+| 직접 짜는 것 | 도구·관문·설정·연결부 | A 전부 + 그래프 하위 클래스와 커스텀 워크플로 등록 |
+
+**전환 비용을 줄이는 원칙:** 관문 판단(`allowed_tools(session)`)을 도구 밖의 순수 함수 하나로 둔다. A에서는 각 도구가 이 함수로 거부 여부를 정하고, B에서는 같은 함수로 노출할 도구를 고른다. 도구·세션·폴백·결과 조립은 B에서 그대로 재사용한다. B의 그래프 하위 클래스가 `_invoke_llm` 재정의만으로 되는지는 미확인이다.
+
+## 4. 구조
+
+```
+service/app.py ── run_flow(request)            # 시그니처·결과 계약(D5) 유지
+                    └ Flow.run()
+                        └ 후보마다 mode에 따라
+                           ├ "nat":  NatRunner.run_candidate(session)
+                           │           └ NAT tool_calling_agent (YAML)
+                           │               └ 도구 7개 ── CandidateSession ── Flow 단계 메서드
+                           │           └ 종료 상태가 아니면 → 규칙으로 이어서 마무리
+                           └ "rule": 기존 _run_candidate (현행 그대로)
+```
+
+- **`CandidateSession`**: 후보 하나의 진행 상태(`input_checked`, `match`, `structure_id`, `compared`, `terminal`)와 거부·도구 호출 기록. Flow를 참조해 기존 `_emit`·기록 메서드를 쓴다. 진행 이벤트(ProgressUpdate)는 지금과 같게 나간다.
+- **세션 전달**: NAT 도구는 설정으로 생성되므로 인자로 세션을 넘길 수 없다. 실행 직전 `contextvars`에 현재 세션을 넣고 도구가 꺼내 쓴다.
+- **후보 단위 실행**: 에이전트 한 번 = 후보 하나. 도구에 `candidate_id` 인자를 두지 않는다. 잘못된 후보를 가리키는 호출을 없애기 위해서다.
+- **동기 진입점**: NAT는 async다. `run_flow`는 동기를 유지하고 내부에서 이벤트 루프를 돌린다. 이미 루프가 도는 스레드에서 불리면 별도 스레드에서 실행한다.
+- **모드 선택**: 환경변수 `LOGIC_AGENT_MODE=nat|rule`. 기본은 0–2단계 검증 후 `nat`으로 바꾼다. 그 전까지 기본 `rule`.
+
+## 5. 도구와 관문
+
+| 도구 | 허용 조건 | 하는 일 (기존 메서드) | 종료 |
+|---|---|---|---|
+| `check_input` | 아직 검사 전 | `_check_input` → 문제 있으면 실패·보류 의견까지 기록 | 문제 있으면 종료(failed) |
+| `lookup_public_structure` | 입력 통과, 조회 전 | `structures.find_structure` → 일치 여부·서열 길이를 사실 문장으로 반환 | |
+| `use_experimental_structure` | 조회 완료, 완전 일치(`match.complete`) | `_record_experimental`, prediction `skipped` | |
+| `predict_structure` | 조회 완료, 표적·중쇄·경쇄 모두 `MIN_CHAIN_LENGTH` 이상, 구조 미확보 | `_predict` (Boltz-2, 기존 재시도·한도 그대로) | 호출 실패면 종료(failed/partial, 현행 규칙) |
+| `compare_structure` | 구조 확보, 비교 전 | `_compare` | |
+| `submit_opinion(decision, reason)` | 비교 완료 | `_report`와 같은 의견 기록. `decision ∈ {reviewable, needs_confirmation}` | 종료(completed) |
+| `hold_candidate(reason)` | 조회 완료, 구조 미확보, 완전 일치가 아님 (현행 `_choose_source`와 같은 조건) | `_hold_opinion`, 이후 단계 `skipped` | 종료(partial) |
+
+규칙:
+- 거부는 예외가 아니라 **거부 사유 문자열 반환**이다. 상태를 바꾸지 않고 세션의 거부 기록에 남긴다.
+- 종료 뒤의 모든 호출은 거부한다. 종료 도구는 NAT `return_direct`로 지정해 루프를 바로 끝낸다.
+- `submit_opinion`·`hold_candidate`의 `reason`은 기존 `agent.invented_numbers`로 검사한다. 사실에 없는 숫자가 있으면 거부하고 다시 쓰게 한다.
+- 도구가 반환하는 사실 문장은 기존 `_choose_source`·`_report`의 facts와 같은 문구를 쓴다. 이미 화면에서 교정한 문구다.
+- 의견 기록의 판단 주체 표기는 현행 `(판단: <모델명>)`을 유지한다. 규칙으로 마무리한 부분은 `(판단: 규칙 — <이유>)`.
+
+## 6. 끝나지 않을 때
+
+| 상황 | 처리 |
+|---|---|
+| `max_iterations`(초기값 10) 도달 | 에이전트 중단 → 현재 상태부터 규칙으로 마무리, 사유 "에이전트 반복 상한" |
+| 모델 호출 실패(503·timeout) | NAT 호출 오류 → 같은 방식으로 규칙 마무리, 사유에 오류 요약 |
+| 종료 도구 없이 최종 답변만 냄 | 규칙 마무리 |
+| NAT import 실패 | 실행 시작 시 `rule` 모드로 전환하고 결과 경고에 기록 |
+
+"규칙으로 이어서 마무리"는 새 함수 `_continue_by_rule(session)`이다. 세션 상태를 보고 남은 단계만 기존 규칙 경로로 실행한다. 이미 끝난 Boltz-2 호출을 다시 보내지 않는다.
+
+## 7. 측정과 B 전환 기준
+
+고정 시나리오 5개: trastuzumab(기존 구조), pertuzumab(기존 구조), 가상 변이체(예측), 잘못된 문자 입력, 50자 미만 서열. 각 3회 실행해 후보별로 기록한다: 도구 호출 수, 거부 수, 반복 상한 도달, 규칙 마무리 여부, 소요 시간, 최종 의견.
+
+아래 중 하나면 B로 넘어간다. 수치는 **설계 제안**이며 측정 전에 조정할 수 있다.
+1. 후보당 평균 거부 1회 초과
+2. 반복 상한 도달이 15회 실행 중 1회 이상
+3. 거부 때문에 `predict_structure`가 불필요하게 늦어져 시나리오 소요 시간이 규칙 모드 대비 2배 초과
+
+0단계에서 스트리밍 + tool-calling이 안 되는 것으로 나오면 B로도 해결되지 않는다. 그때는 멈추고 보고한다(대안: NAT 비스트리밍 LLM 설정 여부 조사, 또는 C안 — 자체 루프 + NAT 추적).
+
+## 8. 로드맵
+
+| 단계 | 내용 | 완료 확인 |
+|---|---|---|
+| 0 환경·전제 | `requires-python`을 `>=3.11,<3.14`로, `nvidia-nat[langchain]` 추가, `.venv`를 3.13으로 재생성. 더미 도구 하나로 NAT `tool_calling_agent` + Nemotron 실호출 | 도구가 실제 호출됨. 실패 시 중단·보고 |
+| 1 세션·관문·도구 | `logic/nat_tools.py`(가칭): `CandidateSession`, `allowed_tools`, 도구 7개. NAT 없이 테스트 | 순서 위반 거부·종료 후 거부·숫자 검사 단위 테스트 통과 |
+| 2 NAT 연결 | NAT 함수 등록, `logic/nat_workflow.yml`, `NatRunner`, 모드 스위치, 규칙 마무리 | 기존 테스트 전부 통과 + 모드별 결과가 `LogicOutput` 스키마 통과 |
+| 3 측정 | 7절 시나리오 실행, 결과를 이 문서에 기록 | 표 채움. 실행하지 않은 값은 비워 둠 |
+| 4 판단 | A 유지 또는 B 전환 결정 | 사용자 확인 |
+| 4B (조건부) | `ToolCallAgentGraph` 하위 클래스로 허용 도구만 노출, 커스텀 워크플로 등록. 3단계 재측정 | 거부 0, 기준 재확인 |
+| 5 인계 | `logic/README.md`, `logic-b-handoff.md`, D6(의존성·이미지 크기), ADR NAT 상태 갱신. 기본 모드를 `nat`으로 | 서비스 담당이 읽고 실행 가능한 상태 |
+
+## 9. 범위 밖
+
+- 충돌·표면 노출 계산(로직 A의 A-02·A-03).
+- 서비스 API·DB 변경. `run_flow` 계약을 바꾸지 않는다.
+- `nat eval`·프로파일러 연동. 필요하면 5단계 이후 별도 작업.
+- 여러 후보를 한 에이전트가 동시에 다루는 방식.
