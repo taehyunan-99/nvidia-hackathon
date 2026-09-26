@@ -18,3 +18,4 @@ dev = ["pytest>=8,<10", "httpx>=0.28,<1"]
 
 [tool.pytest.ini_options]
 testpaths = ["service/tests", "logic/tests"]
+markers = ["live: 실제 NVIDIA API를 호출한다. 루트 conftest가 키를 지우지 않는다."]

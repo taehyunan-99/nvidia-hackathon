@@ -89,6 +89,7 @@ def test_workflow_config_loads_with_registered_tools():
     assert config.workflow.max_empty_response_retries == 2
 
 
+@pytest.mark.live
 @pytest.mark.skipif(os.getenv("RUN_LIVE_NAT") != "1", reason="실제 Nemotron 호출은 RUN_LIVE_NAT=1에서만")
 def test_live_agent_reviews_experimental_candidate(tmp_path, monkeypatch):
     monkeypatch.setenv("LOGIC_AGENT_MODE", "nat")
