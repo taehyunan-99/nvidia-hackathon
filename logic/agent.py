@@ -46,36 +46,33 @@ DECISION_TIMEOUT = 60
 # 숫자로 읽히는 토막. 설명이 사실에 없는 값을 만들어내는지 볼 때 쓴다.
 _NUMBER = re.compile(r"\d+(?:\.\d+)?")
 
+# 글자·숫자·하이픈이 이어진 토막. 그 중 글자와 숫자를 모두 포함하는 것만
+# "식별자로 보이는 토큰" 후보다("HER2", "Boltz-2", "1N8Z", "92kDa" 등).
+# 한글·공백·문장부호가 나오면 토큰이 끊긴다.
+_IDENTIFIER_TOKEN = re.compile(r"[A-Za-z0-9-]+")
 
-def _is_identifier_digit(text: str, start: int, end: int) -> bool:
-    """이 숫자 토막이 수치 주장이 아니라 식별자의 일부로 보이는가.
-
-    "1N8Z"(PDB ID), "HER2"(표적 이름), "Boltz-2"(모델 이름)처럼 영문자
-    바로 옆에 붙은 숫자는 값이 아니라 이름의 일부다. 앞이 영문자거나,
-    앞이 "-"이고 그 앞이 다시 영문자면("Boltz-2") 식별자로 본다. 뒤가
-    영문자인 경우도("1N8Z"의 "1", "8") 마찬가지다. 한글·공백·문장부호
-    옆의 숫자("39개", "접촉 잔기 39")는 그대로 값 주장으로 본다.
-    """
-    before = text[start - 1] if start > 0 else ""
-    after = text[end] if end < len(text) else ""
-    if after.isascii() and after.isalpha():
-        return True
-    if before.isascii() and before.isalpha():
-        return True
-    if before == "-" and start - 2 >= 0:
-        before2 = text[start - 2]
-        if before2.isascii() and before2.isalpha():
-            return True
-    return False
+# 프롬프트(시스템 프롬프트·도구 설명)에 고정으로 등장하는 식별자.
+# 사실 텍스트에 그대로 없어도 예외로 인정한다.
+PROMPT_IDENTIFIERS = {"HER2", "Boltz-2"}
 
 
-def _numeric_claims(text: str) -> list[str]:
-    """텍스트에서 식별자에 붙은 숫자를 뺀, 값 주장으로 볼 숫자 토막만 돌려준다."""
-    return [
-        m.group()
-        for m in _NUMBER.finditer(text)
-        if not _is_identifier_digit(text, m.start(), m.end())
-    ]
+def _identifier_tokens(text: str) -> set[str]:
+    """text 안에서 글자와 숫자를 모두 포함하는 토큰만 뽑는다."""
+    tokens = set()
+    for m in _IDENTIFIER_TOKEN.finditer(text):
+        token = m.group()
+        if any(c.isalpha() for c in token) and any(c.isdigit() for c in token):
+            tokens.add(token)
+    return tokens
+
+
+def _identifier_spans(text: str, allowed: set[str]) -> list[tuple[int, int]]:
+    """text 안에서 allowed에 속하는 식별자 토큰들의 (start, end) 구간."""
+    spans = []
+    for m in _IDENTIFIER_TOKEN.finditer(text):
+        if m.group() in allowed:
+            spans.append((m.start(), m.end()))
+    return spans
 
 SYSTEM_PROMPT = (
     "너는 항체 후보 검토 실행의 판단부다. 아래 '확인된 사실'만 근거로 "
@@ -131,17 +128,32 @@ def invented_numbers(reason: str, facts: list[str]) -> list[str]:
     저장해 문장이 "39.0residue"가 되는 경우가 실제로 있었다). 느슨한
     검사이지만 없는 수치를 그대로 보고서에 싣는 것보다 낫다.
 
-    식별자 안의 숫자는 애초에 값 주장으로 보지 않는다("Boltz-2로 예측한다",
-    "HER2 표적", "1N8Z 구조"의 2·2·1·8은 수치가 아니라 이름의 일부다).
-    양쪽(설명·사실)에 같은 `_numeric_claims`를 써서 식별자 숫자를 똑같이
-    뺀 뒤 대조한다 — 실측(variant, "2")에서 predict_structure 도구 설명의
-    "Boltz-2"와 시스템 프롬프트·표적명의 "HER2"가 원인일 가능성이 높았다.
+    식별자 예외는 "글자 옆 숫자는 전부 봐준다"가 아니라 훨씬 좁다.
+    숫자가 "식별자로 보이는 토큰 전체"(글자·숫자·하이픈이 이어지고 글자와
+    숫자를 모두 포함하는 덩어리, 예: "HER2", "Boltz-2", "1N8Z")의 일부일
+    때만, 그리고 그 토큰이 고정 상수 `PROMPT_IDENTIFIERS`에 있거나 사실
+    텍스트에 그 토큰이 통째로 그대로 나타날 때만 예외로 본다. 그 밖의
+    글자 옆 숫자("3nM", "KD 5nM", "92kDa", "pLDDT-85", "42residue")는
+    전부 값 주장으로 보고 사실의 숫자와 대조한다 — 이전 버전은 "글자
+    바로 옆 숫자면 전부 식별자"로 봐서 이런 지어낸 단위 주장을 놓쳤다.
+
+    사실 쪽은 식별자 안에 있는 숫자까지 포함해 전부 모은다. 그래야
+    "1N8Z"의 "1"·"8"처럼 식별자 안에 있던 값이 알려진 값 목록에서
+    빠지지 않는다(모델이 그 값을 나중에 다시 쓸 수 있다).
     """
-    known = set()
-    for fact in facts:
-        for token in _numeric_claims(fact):
-            known.add(float(token))
-    return [n for n in _numeric_claims(reason) if float(n) not in known]
+    facts_text = "\n".join(facts)
+    known = {float(m.group()) for m in _NUMBER.finditer(facts_text)}
+
+    allowed = PROMPT_IDENTIFIERS | _identifier_tokens(facts_text)
+    spans = _identifier_spans(reason, allowed)
+
+    invented = []
+    for m in _NUMBER.finditer(reason):
+        if any(s <= m.start() < e for s, e in spans):
+            continue
+        if float(m.group()) not in known:
+            invented.append(m.group())
+    return invented
 
 
 def parse_choice(text: str, allowed: set[str]) -> tuple[str, str] | None:

@@ -76,6 +76,8 @@ service/app.py ── run_flow(request)            # 시그니처·결과 계약
   시스템 프롬프트에서 그 도구가 "검토를 끝냈다"고 답하면 한국어 한 문장으로 답하고
   더는 도구를 부르지 않게 지시해, 모델의 최종 답변으로 자연스럽게 끝나게 한다.
 - `submit_opinion`·`hold_candidate`의 `reason`은 기존 `agent.invented_numbers`로 검사한다. 사실에 없는 숫자가 있으면 거부하고 다시 쓰게 한다.
+- `invented_numbers`의 식별자 예외는 "글자 옆 숫자는 전부 봐준다"가 아니다. 숫자가 식별자로 보이는 토큰 전체(글자·숫자·하이픈이 이어지고 글자와 숫자를 모두 포함하는 덩어리, 예: `HER2`, `Boltz-2`, `1N8Z`)의 일부이고, 그 토큰이 고정 상수 `PROMPT_IDENTIFIERS`에 있거나 사실 텍스트에 그대로 나타날 때만 예외로 본다. 그 밖의 글자 옆 숫자("3nM", "92kDa", "42residue")는 값 주장으로 보고 사실의 숫자와 대조한다.
+- `CandidateTools`는 도구 메서드 7개 전체(관문 확인 + 실행)를 인스턴스당 `threading.Lock` 하나로 감싼다. NAT/langgraph의 `ToolNode`가 한 모델 메시지의 도구 호출을 `asyncio.gather` + `asyncio.to_thread`로 동시에 실행하기 때문에, 락이 없으면 같은 후보에 대한 `predict_structure` 두 호출이 모두 관문을 통과해 Boltz-2가 중복 호출될 수 있다.
 - 도구가 반환하는 사실 문장은 기존 `_choose_source`·`_report`의 facts와 같은 문구를 쓴다. 이미 화면에서 교정한 문구다.
 - 의견 기록의 판단 주체 표기는 현행 `(판단: <모델명>)`을 유지한다. 규칙으로 마무리한 부분은 `(판단: 규칙 — <이유>)`.
 

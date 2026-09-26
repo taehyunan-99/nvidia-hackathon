@@ -6,6 +6,8 @@ NAT에 의존하지 않는다. 규칙 경로(Flow._resume)와 에이전트 도�
 
 from __future__ import annotations
 
+import functools
+import threading
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -70,12 +72,34 @@ def allowed_tools(s: CandidateSession) -> set[str]:
     return {"submit_opinion"}
 
 
+def _locked(method):
+    """관문 확인부터 실행까지를 인스턴스 락으로 감싼다.
+
+    NAT/langgraph의 ToolNode는 모델 응답 하나에 담긴 도구 호출을 전부
+    `asyncio.gather`로 동시에 실행하고, 각 래퍼는 `asyncio.to_thread`로 그
+    도구를 부른다. `CandidateTools`는 후보 하나당 하나씩 만들어지므로,
+    한 후보에 대해 같은 모델 메시지가 predict_structure를 두 번 발행하면
+    두 스레드가 거의 동시에 `_gate`를 통과해 Boltz-2가 중복 호출될 수
+    있다(실측: 구조·기록이 두 번 남았다). 도구 메서드 전체(관문 확인 +
+    행동)를 락으로 감싸 두 번째 호출이 첫 번째가 상태를 바꾼 뒤에야
+    관문을 보게 만든다.
+    """
+
+    @functools.wraps(method)
+    def wrapper(self: "CandidateTools", *args, **kwargs):
+        with self._lock:
+            return method(self, *args, **kwargs)
+
+    return wrapper
+
+
 class CandidateTools:
     """에이전트가 부르는 도구 7개. 각 도구는 기존 Flow 단계를 그대로 쓴다."""
 
     def __init__(self, flow, session: CandidateSession):
         self.flow = flow
         self.s = session
+        self._lock = threading.Lock()
         if not session.terminal:
             self.flow.states[self.s.cid].status = "running"
 
@@ -116,6 +140,7 @@ class CandidateTools:
         return None
 
     # ---------------------------------------------------------- 도구
+    @_locked
     def check_input(self) -> str:
         if (r := self._gate("check_input")):
             return r
@@ -130,6 +155,7 @@ class CandidateTools:
             return "입력 검사 실패. 검토를 끝냈다: " + " ".join(problems)
         return "입력 검사 통과. 다음은 lookup_public_structure로 공개 구조를 조회한다."
 
+    @_locked
     def lookup_public_structure(self) -> str:
         if (r := self._gate("lookup_public_structure")):
             return r
@@ -144,6 +170,7 @@ class CandidateTools:
         return "확인된 사실:\n" + "\n".join(f"- {f}" for f in facts) + (
             f"\n지금 가능한 도구: {', '.join(sorted(allowed_tools(self.s)))}")
 
+    @_locked
     def use_experimental_structure(self, reason: str) -> str:
         if (r := self._gate("use_experimental_structure")):
             return r
@@ -157,6 +184,7 @@ class CandidateTools:
         self.flow._emit(self.s.cid, "prediction", "skipped", _explain(d))
         return f"공개 실험 구조를 검토 구조로 정했다({self.s.structure_id}). 다음은 compare_structure."
 
+    @_locked
     def predict_structure(self, reason: str) -> str:
         if (r := self._gate("predict_structure")):
             return r
@@ -175,6 +203,7 @@ class CandidateTools:
             return f"예측을 얻지 못해 검토를 끝냈다: {state.reason}"
         return f"예측 구조를 확보했다({self.s.structure_id}). 다음은 compare_structure."
 
+    @_locked
     def compare_structure(self) -> str:
         if (r := self._gate("compare_structure")):
             return r
@@ -186,6 +215,7 @@ class CandidateTools:
         return ("비교를 마쳤다. 확인된 사실:\n" + "\n".join(f"- {f}" for f in facts)
                 + f"\n다음은 submit_opinion. decision은 {' 또는 '.join(OPINIONS)} 중 하나.")
 
+    @_locked
     def submit_opinion(self, decision: str, reason: str) -> str:
         if (r := self._gate("submit_opinion")):
             return r
@@ -203,6 +233,7 @@ class CandidateTools:
         self.s.terminal = "completed"
         return f"검토 의견을 기록했다({decision}). 검토를 끝냈다."
 
+    @_locked
     def hold_candidate(self, reason: str) -> str:
         if (r := self._gate("hold_candidate")):
             return r

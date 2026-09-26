@@ -213,23 +213,36 @@ def test_invented_numbers_treats_the_same_value_written_differently_as_known():
     assert invented_numbers("접촉 잔기 42개", ["x: 39.0 residue (...)"]) == ["42"]
 
 
-def test_invented_numbers_does_not_treat_identifier_digits_as_numeric_claims():
-    """"Boltz-2"·"HER2"·"1N8Z"처럼 영문자에 붙은 숫자는 이름의 일부이지
-    수치 주장이 아니다. 실측(work/measure-agent.jsonl variant, "2")에서
-    predict_structure 도구 설명의 "Boltz-2"와 시스템 프롬프트·표적명의
-    "HER2"가 원인이었을 가능성이 높다(logic/nat_agent.py, logic/nat_workflow.yml).
-    양쪽(설명·사실)에 같은 판정을 적용하므로, 사실에 "2"가 전혀 없어도
-    거부하지 않는다."""
+def test_invented_numbers_exempts_only_fixed_prompt_identifiers():
+    """"Boltz-2"·"HER2"는 프롬프트에 고정으로 등장하는 이름이라, 사실에
+    그 숫자가 없어도 예외로 본다(logic.agent.PROMPT_IDENTIFIERS)."""
     assert invented_numbers("일치하는 구조가 없어 Boltz-2로 예측한다.", ["표적 서열 길이 300자"]) == []
     assert invented_numbers("HER2 표적에 대해 검토한다.", ["표적 서열 길이 300자"]) == []
-    assert invented_numbers("1N8Z 구조를 그대로 쓴다.", ["표적 서열 길이 300자"]) == []
-    # 식별자가 아닌, 진짜 값 주장은 여전히 잡는다.
-    assert invented_numbers("접촉 잔기 42개로 충분하다.", ["x: 39.0 residue (...)"]) == ["42"]
 
 
-def test_invented_numbers_treats_a_number_glued_to_a_unit_as_an_identifier_too():
-    """이 판정의 트레이드오프를 분명히 남겨 둔다: 숫자 바로 뒤에 영문 단위를
-    붙이면("42residue") 식별자 판정과 구분할 수 없어 값 주장으로 보지 않는다.
-    그래서 `Flow._opinion_facts`는 숫자와 단위 사이에 공백을 둔다("42 residue")
-    — 이 테스트는 공백이 없을 때 "42"가 걸러진다는 것만 확인한다."""
-    assert invented_numbers("42residue라고 썼다.", []) == []
+def test_invented_numbers_exempts_an_identifier_token_only_when_it_is_in_the_facts():
+    """"1N8Z"는 고정 상수가 아니라 후보마다 달라지는 PDB ID다. 그 토큰이
+    사실 텍스트에 그대로 나타날 때만 예외로 보고, 없으면 값 주장으로 잡는다."""
+    assert invented_numbers("1N8Z 구조를 그대로 쓴다.", ["1N8Z와 정확히 일치한다."]) == []
+    assert invented_numbers("1N8Z 구조를 그대로 쓴다.", ["표적 서열 길이 300자"]) != []
+
+
+def test_invented_numbers_catches_invented_unit_claims_next_to_letters():
+    """글자 옆에 있다는 이유만으로 봐주지 않는다. "3nM", "KD 5nM", "92kDa",
+    "pLDDT-85", "42residue"는 모두 식별자가 아니라 지어낸 수치 주장이므로
+    사실에 없으면 잡아야 한다(구 버전은 글자 바로 옆 숫자를 전부 식별자로
+    봐서 이런 값을 놓쳤다)."""
+    facts = ["표적 서열 길이 300자"]
+    assert invented_numbers("KD 5nM로 결합한다.", facts) == ["5"]
+    assert invented_numbers("분자량은 92kDa다.", facts) == ["92"]
+    assert invented_numbers("pLDDT-85로 신뢰도가 높다.", facts) == ["85"]
+    assert invented_numbers("접촉 잔기가 42residue다.", facts) == ["42"]
+    assert invented_numbers("0.95nM의 친화도를 보인다.", facts) == ["0.95"]
+
+
+def test_invented_numbers_still_allows_a_real_value_claim_that_matches_facts():
+    """접촉 잔기 수처럼 한글·공백 옆의 숫자는 그대로 값 주장으로 보고,
+    사실에 같은 값이 있으면 통과시킨다."""
+    assert invented_numbers("접촉 잔기 39개로 충분하다.", ["39 residue 접촉."]) == []
+    # 값이 다르면("39.4" vs 사실의 "39") 여전히 잡는다.
+    assert invented_numbers("접촉 잔기 39.4개다.", ["39 residue 접촉."]) == ["39.4"]
