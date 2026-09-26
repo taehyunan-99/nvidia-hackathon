@@ -1,4 +1,28 @@
-# 시연용 실행부
+# 서비스 실행
+
+## 로컬 Docker 뼈대
+
+저장소 루트에서 개인 설정 파일을 만들고 영숫자 비밀번호를 넣는다. 이 파일은 Git에서 제외된다.
+
+```bash
+test -e .env.compose.local || printf 'POSTGRES_PASSWORD=%s\nWEB_PORT=8080\n' "$(openssl rand -hex 16)" > .env.compose.local
+chmod 600 .env.compose.local
+docker compose --env-file .env.compose.local config -q
+docker compose --env-file .env.compose.local up --build -d --wait
+```
+
+`http://127.0.0.1:8080`에서 정적 화면을 제공하고 `/api/*`는 영속 접수 API로 전달한다.
+DB 준비 확인 후 migration을 한 번 실행하고 API를 시작한다. DB와 업로드는 이름 있는 볼륨에
+저장된다. 종료할 때는 `docker compose --env-file .env.compose.local down`을 사용하며
+데이터를 유지하려면 `down -v`를 사용하지 않는다. 비밀번호를 바꾸려면 기존 DB 볼륨의
+자격 증명도 함께 관리해야 한다.
+
+이 구성은 `127.0.0.1`의 HTTP 개발 환경이다. 현재 화면의 분석 시작은 기존 동기식
+`/api/review`를 사용하지만 이 Compose의 API는 세션·입력·실행 **접수**만 제공한다.
+따라서 화면 분석 흐름은 다음 연결 단계 전까지 동작하지 않으며, 접수된 실행도 별도
+worker가 생기기 전에는 `queued`에 머문다. worker는 이후 같은 Python 이미지에 별도
+실행 명령을 추가하고 DB·업로드 볼륨을 공유하는 서비스로 연결한다. HTTPS, 공개 접수
+제한, 백업·복구, 실제 모델 호출과 AWS 자원은 아직 준비되지 않았다.
 
 ## 영속 접수 API 준비
 
@@ -29,7 +53,7 @@ TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:55432/postgres uv run pytest s
 ```
 
 이 API는 로컬 접수 단계다. worker 점유·결과 등록·만료 자료의 물리적 정리,
-Compose·HTTPS·공개 접수 제한은 다음 단계에서 구현·검증한다. 공개 서비스에
+HTTPS·공개 접수 제한은 다음 단계에서 구현·검증한다. 공개 서비스에
 연결해서는 안 된다.
 
 ## 기존 시연용 실행부

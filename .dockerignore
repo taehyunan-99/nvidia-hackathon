@@ -1,0 +1,15 @@
+.git
+.env
+.env.*
+!.env.example
+.venv
+**/__pycache__
+**/.pytest_cache
+**/node_modules
+**/dist
+**/.DS_Store
+docs/HANDOFF.md
+docs/HANDOFF.html
+docs/handoff-runs
+docs/topics/her2/assets
+docs/frontend-hosting/assets
