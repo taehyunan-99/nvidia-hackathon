@@ -17,6 +17,8 @@ HER2 분석 로직을 서비스 화면·연동·운영 관점에서 읽고, 구�
 - [agent-logic.md](agent-logic.md) — 분석 분기·산출물·공개 구조에서 확인한 연결 주의점
 - [frontend-contract.md](frontend-contract.md) — 화면이 소비할 데이터·상태·3D 연결·계약 검토 항목
 - [hosting-requirements.md](hosting-requirements.md) — 실행·저장·외부 호출·배포 조건과 실측 인계
+- [hosting-guide.md](hosting-guide.md) — AWS·Docker 입문 설명, 호스팅 비교·공식 가격·선택 조건 조사
+- [backend-deployment-plan.md](backend-deployment-plan.md) — 백엔드·Docker·AWS·HTTPS 준비 순서, CI/CD 도입과 검증·복구·운영 계획
 - [temporary-contract.md](temporary-contract.md) — 사용자 요청으로 먼저 정한 v0.1.0 서비스 개발용 임시 규격
 - [contracts/service.schema.json](contracts/service.schema.json) — 임시 입력·출력의 JSON Schema 원본
 - [fixtures/scenarios.json](fixtures/scenarios.json) — 합성 입력·9개 모의 상태 예시
