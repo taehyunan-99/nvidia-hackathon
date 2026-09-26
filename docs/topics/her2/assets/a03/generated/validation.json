@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "tests_run": 15,
+  "tests": [
+    "test_absent_context_or_protein_is_unknown",
+    "test_analytic_spherical_cap_protein_only",
+    "test_author_number_and_insertion_keep_sugars_distinct",
+    "test_distant_observed_glycan_is_measured_zero",
+    "test_duplicate_invalid_element_and_nonfinite_are_rejected",
+    "test_fixed_protein_coordinates_and_context_preserved",
+    "test_ambiguous_occupancy_altloc_unknown_sugar_and_element_fail",
+    "test_assembly_specific_glycan_inventory_and_covalent_endpoints",
+    "test_contract_conditions_dependency_and_unknown_states",
+    "test_core_matches_a02_and_per_residue_totals_at_both_resolutions",
+    "test_missing_or_ambiguous_covalent_endpoints_fail",
+    "test_missing_residues_and_partial_atom_annotations_preserved",
+    "test_recorded_hashes_and_original_input_preservation",
+    "test_reproducible_full_rebuild",
+    "test_water_ions_and_unselected_assembly_are_excluded"
+  ],
+  "failures": [],
+  "errors": [],
+  "test_implementation_sha256": "5060bc3db11dff43e9633bc5a303e840e44f267b0eecd62a88c59eec57cc13fc",
+  "basis": "Analytic cap; original assembly/connection identity; unchanged A-02 baseline; missing data; schema; byte reproducibility"
+}

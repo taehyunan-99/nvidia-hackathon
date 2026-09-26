@@ -1,0 +1,430 @@
+{
+  "format": "a03-fragments-1",
+  "purpose": "Condition/Evidence additions; not a live Result",
+  "a02_dependency": {
+    "repository_path": "docs/topics/her2/assets/a02/generated/service-fragments.json",
+    "sha256": "e521d9fd70648e738f6e09a777e146cc26e3fcd392695b9497ae84b95a7fb48a"
+  },
+  "conditions": [
+    {
+      "condition_id": "a03-1n8z-core",
+      "candidate_id": "reference-trastuzumab-fab",
+      "kind": "core",
+      "structure_ids": [
+        "1n8z-assembly-1"
+      ],
+      "included_components": [
+        "observed HER2 heavy atoms",
+        "observed Fab heavy/light-chain heavy atoms"
+      ],
+      "gaps": [
+        "target: 26 residues lack coordinates at input positions [[124, 132], [325, 327], [383, 386], [603, 612]]",
+        "12 explicitly unobserved atoms in selected residues (chain, input position): [('A', 190), ('B', 30), ('B', 217)]",
+        "Observed atoms only; complete side chains and missing regions are not reconstructed.",
+        "Whole-range accessibility and absence of clashes cannot be concluded.",
+        "Observed NAG fragments only; unobserved glycans and missing atoms are not reconstructed.",
+        "No glycan coordinates means unknown context, not glycan absence or zero shielding.",
+        "Protein-only SASA in fixed coordinates; no glycan surface is added to the readout.",
+        "Water, ions, hydrogen/deuterium, membrane and assembly 2 are excluded.",
+        "No efficacy, affinity, complete accessibility or validated clash classification.",
+        "Observed glycans intentionally omitted in core condition."
+      ],
+      "sources": [
+        {
+          "title": "RCSB PDB 1N8Z",
+          "url": "https://www.rcsb.org/structure/1N8Z",
+          "record_id": "1N8Z"
+        }
+      ]
+    },
+    {
+      "condition_id": "a03-1n8z-context",
+      "candidate_id": "reference-trastuzumab-fab",
+      "kind": "context",
+      "structure_ids": [
+        "1n8z-assembly-1"
+      ],
+      "included_components": [
+        "observed HER2 heavy atoms",
+        "observed Fab heavy/light-chain heavy atoms",
+        "observed assembly-1 NAG heavy atoms as occluders only"
+      ],
+      "gaps": [
+        "target: 26 residues lack coordinates at input positions [[124, 132], [325, 327], [383, 386], [603, 612]]",
+        "12 explicitly unobserved atoms in selected residues (chain, input position): [('A', 190), ('B', 30), ('B', 217)]",
+        "Observed atoms only; complete side chains and missing regions are not reconstructed.",
+        "Whole-range accessibility and absence of clashes cannot be concluded.",
+        "Observed NAG fragments only; unobserved glycans and missing atoms are not reconstructed.",
+        "No glycan coordinates means unknown context, not glycan absence or zero shielding.",
+        "Protein-only SASA in fixed coordinates; no glycan surface is added to the readout.",
+        "Water, ions, hydrogen/deuterium, membrane and assembly 2 are excluded.",
+        "No efficacy, affinity, complete accessibility or validated clash classification."
+      ],
+      "sources": [
+        {
+          "title": "RCSB PDB 1N8Z",
+          "url": "https://www.rcsb.org/structure/1N8Z",
+          "record_id": "1N8Z"
+        }
+      ]
+    },
+    {
+      "condition_id": "a03-1s78-core",
+      "candidate_id": "reference-pertuzumab-fab",
+      "kind": "core",
+      "structure_ids": [
+        "1s78-assembly-1"
+      ],
+      "included_components": [
+        "observed HER2 heavy atoms",
+        "observed Fab heavy/light-chain heavy atoms"
+      ],
+      "gaps": [
+        "target: 52 residues lack coordinates at input positions [[124, 132], [587, 629]]",
+        "heavy: 4 residues lack coordinates at input positions [[223, 226]]",
+        "Observed atoms only; complete side chains and missing regions are not reconstructed.",
+        "Whole-range accessibility and absence of clashes cannot be concluded.",
+        "Observed NAG fragments only; unobserved glycans and missing atoms are not reconstructed.",
+        "No glycan coordinates means unknown context, not glycan absence or zero shielding.",
+        "Protein-only SASA in fixed coordinates; no glycan surface is added to the readout.",
+        "Water, ions, hydrogen/deuterium, membrane and assembly 2 are excluded.",
+        "No efficacy, affinity, complete accessibility or validated clash classification.",
+        "Observed glycans intentionally omitted in core condition."
+      ],
+      "sources": [
+        {
+          "title": "RCSB PDB 1S78",
+          "url": "https://www.rcsb.org/structure/1S78",
+          "record_id": "1S78"
+        }
+      ]
+    },
+    {
+      "condition_id": "a03-1s78-context",
+      "candidate_id": "reference-pertuzumab-fab",
+      "kind": "context",
+      "structure_ids": [
+        "1s78-assembly-1"
+      ],
+      "included_components": [
+        "observed HER2 heavy atoms",
+        "observed Fab heavy/light-chain heavy atoms",
+        "observed assembly-1 NAG heavy atoms as occluders only"
+      ],
+      "gaps": [
+        "target: 52 residues lack coordinates at input positions [[124, 132], [587, 629]]",
+        "heavy: 4 residues lack coordinates at input positions [[223, 226]]",
+        "Observed atoms only; complete side chains and missing regions are not reconstructed.",
+        "Whole-range accessibility and absence of clashes cannot be concluded.",
+        "Observed NAG fragments only; unobserved glycans and missing atoms are not reconstructed.",
+        "No glycan coordinates means unknown context, not glycan absence or zero shielding.",
+        "Protein-only SASA in fixed coordinates; no glycan surface is added to the readout.",
+        "Water, ions, hydrogen/deuterium, membrane and assembly 2 are excluded.",
+        "No efficacy, affinity, complete accessibility or validated clash classification."
+      ],
+      "sources": [
+        {
+          "title": "RCSB PDB 1S78",
+          "url": "https://www.rcsb.org/structure/1S78",
+          "record_id": "1S78"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "a03-1n8z-core-surface_exposure",
+      "candidate_id": "reference-trastuzumab-fab",
+      "condition_id": "a03-1n8z-core",
+      "structure_id": "1n8z-assembly-1",
+      "topic": "surface_exposure",
+      "kind": "computed",
+      "measurement_state": "measured",
+      "value": 47482.87683177106,
+      "unit": "angstrom^2",
+      "definition": "Fixed identical protein atom readout; observed NAG occluders only in context; core minus context for reduction; 1.4 A probe, 960 points; not efficacy.",
+      "reason": null,
+      "residues": [],
+      "sources": [
+        {
+          "title": "RCSB PDB 1N8Z",
+          "url": "https://www.rcsb.org/structure/1N8Z",
+          "record_id": "1N8Z"
+        }
+      ]
+    },
+    {
+      "evidence_id": "a03-1n8z-context-surface_exposure",
+      "candidate_id": "reference-trastuzumab-fab",
+      "condition_id": "a03-1n8z-context",
+      "structure_id": "1n8z-assembly-1",
+      "topic": "surface_exposure",
+      "kind": "computed",
+      "measurement_state": "measured",
+      "value": 47242.15198183947,
+      "unit": "angstrom^2",
+      "definition": "Fixed identical protein atom readout; observed NAG occluders only in context; core minus context for reduction; 1.4 A probe, 960 points; not efficacy.",
+      "reason": null,
+      "residues": [],
+      "sources": [
+        {
+          "title": "RCSB PDB 1N8Z",
+          "url": "https://www.rcsb.org/structure/1N8Z",
+          "record_id": "1N8Z"
+        }
+      ]
+    },
+    {
+      "evidence_id": "a03-1n8z-context-observed_glycan_protein_sasa_reduction",
+      "candidate_id": "reference-trastuzumab-fab",
+      "condition_id": "a03-1n8z-context",
+      "structure_id": "1n8z-assembly-1",
+      "topic": "observed_glycan_protein_sasa_reduction",
+      "kind": "computed",
+      "measurement_state": "measured",
+      "value": 240.7248499315863,
+      "unit": "angstrom^2",
+      "definition": "Fixed identical protein atom readout; observed NAG occluders only in context; core minus context for reduction; 1.4 A probe, 960 points; not efficacy.",
+      "reason": null,
+      "residues": [],
+      "sources": [
+        {
+          "title": "RCSB PDB 1N8Z",
+          "url": "https://www.rcsb.org/structure/1N8Z",
+          "record_id": "1N8Z"
+        }
+      ]
+    },
+    {
+      "evidence_id": "a03-1n8z-core-whole_range_accessibility",
+      "candidate_id": "reference-trastuzumab-fab",
+      "condition_id": "a03-1n8z-core",
+      "structure_id": "1n8z-assembly-1",
+      "topic": "whole_range_accessibility",
+      "kind": "unknown",
+      "measurement_state": "unknown",
+      "value": null,
+      "unit": null,
+      "definition": null,
+      "reason": "Incomplete protein and glycans/environment.",
+      "residues": [],
+      "sources": [
+        {
+          "title": "RCSB PDB 1N8Z",
+          "url": "https://www.rcsb.org/structure/1N8Z",
+          "record_id": "1N8Z"
+        }
+      ]
+    },
+    {
+      "evidence_id": "a03-1n8z-core-atom_clash",
+      "candidate_id": "reference-trastuzumab-fab",
+      "condition_id": "a03-1n8z-core",
+      "structure_id": "1n8z-assembly-1",
+      "topic": "atom_clash",
+      "kind": "unknown",
+      "measurement_state": "not_run",
+      "value": null,
+      "unit": null,
+      "definition": null,
+      "reason": "Validated bonded/hydrogen-aware clash classification not implemented.",
+      "residues": [],
+      "sources": [
+        {
+          "title": "RCSB PDB 1N8Z",
+          "url": "https://www.rcsb.org/structure/1N8Z",
+          "record_id": "1N8Z"
+        }
+      ]
+    },
+    {
+      "evidence_id": "a03-1n8z-context-whole_range_accessibility",
+      "candidate_id": "reference-trastuzumab-fab",
+      "condition_id": "a03-1n8z-context",
+      "structure_id": "1n8z-assembly-1",
+      "topic": "whole_range_accessibility",
+      "kind": "unknown",
+      "measurement_state": "unknown",
+      "value": null,
+      "unit": null,
+      "definition": null,
+      "reason": "Incomplete protein and glycans/environment.",
+      "residues": [],
+      "sources": [
+        {
+          "title": "RCSB PDB 1N8Z",
+          "url": "https://www.rcsb.org/structure/1N8Z",
+          "record_id": "1N8Z"
+        }
+      ]
+    },
+    {
+      "evidence_id": "a03-1n8z-context-atom_clash",
+      "candidate_id": "reference-trastuzumab-fab",
+      "condition_id": "a03-1n8z-context",
+      "structure_id": "1n8z-assembly-1",
+      "topic": "atom_clash",
+      "kind": "unknown",
+      "measurement_state": "not_run",
+      "value": null,
+      "unit": null,
+      "definition": null,
+      "reason": "Validated bonded/hydrogen-aware clash classification not implemented.",
+      "residues": [],
+      "sources": [
+        {
+          "title": "RCSB PDB 1N8Z",
+          "url": "https://www.rcsb.org/structure/1N8Z",
+          "record_id": "1N8Z"
+        }
+      ]
+    },
+    {
+      "evidence_id": "a03-1s78-core-surface_exposure",
+      "candidate_id": "reference-pertuzumab-fab",
+      "condition_id": "a03-1s78-core",
+      "structure_id": "1s78-assembly-1",
+      "topic": "surface_exposure",
+      "kind": "computed",
+      "measurement_state": "measured",
+      "value": 46188.26756769667,
+      "unit": "angstrom^2",
+      "definition": "Fixed identical protein atom readout; observed NAG occluders only in context; core minus context for reduction; 1.4 A probe, 960 points; not efficacy.",
+      "reason": null,
+      "residues": [],
+      "sources": [
+        {
+          "title": "RCSB PDB 1S78",
+          "url": "https://www.rcsb.org/structure/1S78",
+          "record_id": "1S78"
+        }
+      ]
+    },
+    {
+      "evidence_id": "a03-1s78-context-surface_exposure",
+      "candidate_id": "reference-pertuzumab-fab",
+      "condition_id": "a03-1s78-context",
+      "structure_id": "1s78-assembly-1",
+      "topic": "surface_exposure",
+      "kind": "computed",
+      "measurement_state": "measured",
+      "value": 45761.93614751898,
+      "unit": "angstrom^2",
+      "definition": "Fixed identical protein atom readout; observed NAG occluders only in context; core minus context for reduction; 1.4 A probe, 960 points; not efficacy.",
+      "reason": null,
+      "residues": [],
+      "sources": [
+        {
+          "title": "RCSB PDB 1S78",
+          "url": "https://www.rcsb.org/structure/1S78",
+          "record_id": "1S78"
+        }
+      ]
+    },
+    {
+      "evidence_id": "a03-1s78-context-observed_glycan_protein_sasa_reduction",
+      "candidate_id": "reference-pertuzumab-fab",
+      "condition_id": "a03-1s78-context",
+      "structure_id": "1s78-assembly-1",
+      "topic": "observed_glycan_protein_sasa_reduction",
+      "kind": "computed",
+      "measurement_state": "measured",
+      "value": 426.33142017768677,
+      "unit": "angstrom^2",
+      "definition": "Fixed identical protein atom readout; observed NAG occluders only in context; core minus context for reduction; 1.4 A probe, 960 points; not efficacy.",
+      "reason": null,
+      "residues": [],
+      "sources": [
+        {
+          "title": "RCSB PDB 1S78",
+          "url": "https://www.rcsb.org/structure/1S78",
+          "record_id": "1S78"
+        }
+      ]
+    },
+    {
+      "evidence_id": "a03-1s78-core-whole_range_accessibility",
+      "candidate_id": "reference-pertuzumab-fab",
+      "condition_id": "a03-1s78-core",
+      "structure_id": "1s78-assembly-1",
+      "topic": "whole_range_accessibility",
+      "kind": "unknown",
+      "measurement_state": "unknown",
+      "value": null,
+      "unit": null,
+      "definition": null,
+      "reason": "Incomplete protein and glycans/environment.",
+      "residues": [],
+      "sources": [
+        {
+          "title": "RCSB PDB 1S78",
+          "url": "https://www.rcsb.org/structure/1S78",
+          "record_id": "1S78"
+        }
+      ]
+    },
+    {
+      "evidence_id": "a03-1s78-core-atom_clash",
+      "candidate_id": "reference-pertuzumab-fab",
+      "condition_id": "a03-1s78-core",
+      "structure_id": "1s78-assembly-1",
+      "topic": "atom_clash",
+      "kind": "unknown",
+      "measurement_state": "not_run",
+      "value": null,
+      "unit": null,
+      "definition": null,
+      "reason": "Validated bonded/hydrogen-aware clash classification not implemented.",
+      "residues": [],
+      "sources": [
+        {
+          "title": "RCSB PDB 1S78",
+          "url": "https://www.rcsb.org/structure/1S78",
+          "record_id": "1S78"
+        }
+      ]
+    },
+    {
+      "evidence_id": "a03-1s78-context-whole_range_accessibility",
+      "candidate_id": "reference-pertuzumab-fab",
+      "condition_id": "a03-1s78-context",
+      "structure_id": "1s78-assembly-1",
+      "topic": "whole_range_accessibility",
+      "kind": "unknown",
+      "measurement_state": "unknown",
+      "value": null,
+      "unit": null,
+      "definition": null,
+      "reason": "Incomplete protein and glycans/environment.",
+      "residues": [],
+      "sources": [
+        {
+          "title": "RCSB PDB 1S78",
+          "url": "https://www.rcsb.org/structure/1S78",
+          "record_id": "1S78"
+        }
+      ]
+    },
+    {
+      "evidence_id": "a03-1s78-context-atom_clash",
+      "candidate_id": "reference-pertuzumab-fab",
+      "condition_id": "a03-1s78-context",
+      "structure_id": "1s78-assembly-1",
+      "topic": "atom_clash",
+      "kind": "unknown",
+      "measurement_state": "not_run",
+      "value": null,
+      "unit": null,
+      "definition": null,
+      "reason": "Validated bonded/hydrogen-aware clash classification not implemented.",
+      "residues": [],
+      "sources": [
+        {
+          "title": "RCSB PDB 1S78",
+          "url": "https://www.rcsb.org/structure/1S78",
+          "record_id": "1S78"
+        }
+      ]
+    }
+  ]
+}

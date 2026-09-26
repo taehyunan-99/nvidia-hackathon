@@ -1,0 +1,788 @@
+[
+  {
+    "pdb_id": "1N8Z",
+    "assembly_id": "1",
+    "operator_id": "1",
+    "state": "observed_partial",
+    "observed_glycan_residues": [
+      {
+        "residue": {
+          "model_number": 1,
+          "label_asym_id": "D",
+          "auth_asym_id": "C",
+          "label_seq_id": null,
+          "auth_seq_id": 766,
+          "insertion_code": null,
+          "sequence_position": null,
+          "has_coordinates": true,
+          "operator_id": "1"
+        },
+        "component": "NAG",
+        "observed_heavy_atoms": 14,
+        "atom_names": [
+          "C1",
+          "C2",
+          "C3",
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "C8",
+          "N2",
+          "O3",
+          "O4",
+          "O5",
+          "O6",
+          "O7"
+        ]
+      },
+      {
+        "residue": {
+          "model_number": 1,
+          "label_asym_id": "E",
+          "auth_asym_id": "C",
+          "label_seq_id": null,
+          "auth_seq_id": 738,
+          "insertion_code": null,
+          "sequence_position": null,
+          "has_coordinates": true,
+          "operator_id": "1"
+        },
+        "component": "NAG",
+        "observed_heavy_atoms": 14,
+        "atom_names": [
+          "C1",
+          "C2",
+          "C3",
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "C8",
+          "N2",
+          "O3",
+          "O4",
+          "O5",
+          "O6",
+          "O7"
+        ]
+      }
+    ],
+    "observed_glycan_atoms": 28,
+    "excluded_nonprotein_atoms": {
+      "SO4": 5,
+      "HOH": 79
+    },
+    "covalent_links": [
+      {
+        "annotation": {
+          "id": "covale1",
+          "conn_type_id": "covale",
+          "pdbx_leaving_atom_flag": "one",
+          "pdbx_PDB_id": "?",
+          "ptnr1_label_asym_id": "C",
+          "ptnr1_label_comp_id": "ASN",
+          "ptnr1_label_seq_id": "165",
+          "ptnr1_label_atom_id": "ND2",
+          "pdbx_ptnr1_label_alt_id": "?",
+          "pdbx_ptnr1_PDB_ins_code": "?",
+          "pdbx_ptnr1_standard_comp_id": "?",
+          "ptnr1_symmetry": "1_555",
+          "ptnr2_label_asym_id": "D",
+          "ptnr2_label_comp_id": "NAG",
+          "ptnr2_label_seq_id": ".",
+          "ptnr2_label_atom_id": "C1",
+          "pdbx_ptnr2_label_alt_id": "?",
+          "pdbx_ptnr2_PDB_ins_code": "?",
+          "ptnr1_auth_asym_id": "C",
+          "ptnr1_auth_comp_id": "ASN",
+          "ptnr1_auth_seq_id": "165",
+          "ptnr2_auth_asym_id": "C",
+          "ptnr2_auth_comp_id": "NAG",
+          "ptnr2_auth_seq_id": "766",
+          "ptnr2_symmetry": "1_555",
+          "pdbx_ptnr3_label_atom_id": "?",
+          "pdbx_ptnr3_label_seq_id": "?",
+          "pdbx_ptnr3_label_comp_id": "?",
+          "pdbx_ptnr3_label_asym_id": "?",
+          "pdbx_ptnr3_label_alt_id": "?",
+          "pdbx_ptnr3_PDB_ins_code": "?",
+          "details": "?",
+          "pdbx_dist_value": "1.439",
+          "pdbx_value_order": "?",
+          "pdbx_role": "N-Glycosylation"
+        },
+        "endpoints": [
+          {
+            "residue": {
+              "model_number": 1,
+              "label_asym_id": "C",
+              "auth_asym_id": "C",
+              "label_seq_id": 165,
+              "auth_seq_id": 165,
+              "insertion_code": null,
+              "sequence_position": 187,
+              "has_coordinates": true,
+              "operator_id": "1"
+            },
+            "atom_name": "ND2",
+            "component": "ASN"
+          },
+          {
+            "residue": {
+              "model_number": 1,
+              "label_asym_id": "D",
+              "auth_asym_id": "C",
+              "label_seq_id": null,
+              "auth_seq_id": 766,
+              "insertion_code": null,
+              "sequence_position": null,
+              "has_coordinates": true,
+              "operator_id": "1"
+            },
+            "atom_name": "C1",
+            "component": "NAG"
+          }
+        ],
+        "observed_distance_angstrom": 1.439445031948089
+      },
+      {
+        "annotation": {
+          "id": "covale2",
+          "conn_type_id": "covale",
+          "pdbx_leaving_atom_flag": "one",
+          "pdbx_PDB_id": "?",
+          "ptnr1_label_asym_id": "C",
+          "ptnr1_label_comp_id": "ASN",
+          "ptnr1_label_seq_id": "237",
+          "ptnr1_label_atom_id": "ND2",
+          "pdbx_ptnr1_label_alt_id": "?",
+          "pdbx_ptnr1_PDB_ins_code": "?",
+          "pdbx_ptnr1_standard_comp_id": "?",
+          "ptnr1_symmetry": "1_555",
+          "ptnr2_label_asym_id": "E",
+          "ptnr2_label_comp_id": "NAG",
+          "ptnr2_label_seq_id": ".",
+          "ptnr2_label_atom_id": "C1",
+          "pdbx_ptnr2_label_alt_id": "?",
+          "pdbx_ptnr2_PDB_ins_code": "?",
+          "ptnr1_auth_asym_id": "C",
+          "ptnr1_auth_comp_id": "ASN",
+          "ptnr1_auth_seq_id": "237",
+          "ptnr2_auth_asym_id": "C",
+          "ptnr2_auth_comp_id": "NAG",
+          "ptnr2_auth_seq_id": "738",
+          "ptnr2_symmetry": "1_555",
+          "pdbx_ptnr3_label_atom_id": "?",
+          "pdbx_ptnr3_label_seq_id": "?",
+          "pdbx_ptnr3_label_comp_id": "?",
+          "pdbx_ptnr3_label_asym_id": "?",
+          "pdbx_ptnr3_label_alt_id": "?",
+          "pdbx_ptnr3_PDB_ins_code": "?",
+          "details": "?",
+          "pdbx_dist_value": "1.436",
+          "pdbx_value_order": "?",
+          "pdbx_role": "N-Glycosylation"
+        },
+        "endpoints": [
+          {
+            "residue": {
+              "model_number": 1,
+              "label_asym_id": "C",
+              "auth_asym_id": "C",
+              "label_seq_id": 237,
+              "auth_seq_id": 237,
+              "insertion_code": null,
+              "sequence_position": 259,
+              "has_coordinates": true,
+              "operator_id": "1"
+            },
+            "atom_name": "ND2",
+            "component": "ASN"
+          },
+          {
+            "residue": {
+              "model_number": 1,
+              "label_asym_id": "E",
+              "auth_asym_id": "C",
+              "label_seq_id": null,
+              "auth_seq_id": 738,
+              "insertion_code": null,
+              "sequence_position": null,
+              "has_coordinates": true,
+              "operator_id": "1"
+            },
+            "atom_name": "C1",
+            "component": "NAG"
+          }
+        ],
+        "observed_distance_angstrom": 1.4355089689723317
+      }
+    ],
+    "component_definitions": [
+      {
+        "id": "NAG",
+        "type": "D-saccharide, beta linking",
+        "mon_nstd_flag": ".",
+        "name": "2-acetamido-2-deoxy-beta-D-glucopyranose",
+        "pdbx_synonyms": "N-acetyl-beta-D-glucosamine; 2-acetamido-2-deoxy-beta-D-glucose; 2-acetamido-2-deoxy-D-glucose; 2-acetamido-2-deoxy-glucose; N-ACETYL-D-GLUCOSAMINE",
+        "formula": "C8 H15 N O6",
+        "formula_weight": "221.208"
+      }
+    ],
+    "covalent_annotation_source": "docs/topics/her2/assets/a01/sources/1N8Z.cif",
+    "limits": [
+      "Observed NAG fragments only; unobserved glycans and missing atoms are not reconstructed.",
+      "No glycan coordinates means unknown context, not glycan absence or zero shielding.",
+      "Protein-only SASA in fixed coordinates; no glycan surface is added to the readout.",
+      "Water, ions, hydrogen/deuterium, membrane and assembly 2 are excluded.",
+      "No efficacy, affinity, complete accessibility or validated clash classification."
+    ]
+  },
+  {
+    "pdb_id": "1S78",
+    "assembly_id": "1",
+    "operator_id": "1",
+    "state": "observed_partial",
+    "observed_glycan_residues": [
+      {
+        "residue": {
+          "model_number": 1,
+          "label_asym_id": "G",
+          "auth_asym_id": "G",
+          "label_seq_id": null,
+          "auth_seq_id": 1,
+          "insertion_code": null,
+          "sequence_position": null,
+          "has_coordinates": true,
+          "operator_id": "1"
+        },
+        "component": "NAG",
+        "observed_heavy_atoms": 14,
+        "atom_names": [
+          "C1",
+          "C2",
+          "C3",
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "C8",
+          "N2",
+          "O3",
+          "O4",
+          "O5",
+          "O6",
+          "O7"
+        ]
+      },
+      {
+        "residue": {
+          "model_number": 1,
+          "label_asym_id": "G",
+          "auth_asym_id": "G",
+          "label_seq_id": null,
+          "auth_seq_id": 2,
+          "insertion_code": null,
+          "sequence_position": null,
+          "has_coordinates": true,
+          "operator_id": "1"
+        },
+        "component": "NAG",
+        "observed_heavy_atoms": 14,
+        "atom_names": [
+          "C1",
+          "C2",
+          "C3",
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "C8",
+          "N2",
+          "O3",
+          "O4",
+          "O5",
+          "O6",
+          "O7"
+        ]
+      },
+      {
+        "residue": {
+          "model_number": 1,
+          "label_asym_id": "H",
+          "auth_asym_id": "H",
+          "label_seq_id": null,
+          "auth_seq_id": 1,
+          "insertion_code": null,
+          "sequence_position": null,
+          "has_coordinates": true,
+          "operator_id": "1"
+        },
+        "component": "NAG",
+        "observed_heavy_atoms": 14,
+        "atom_names": [
+          "C1",
+          "C2",
+          "C3",
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "C8",
+          "N2",
+          "O3",
+          "O4",
+          "O5",
+          "O6",
+          "O7"
+        ]
+      },
+      {
+        "residue": {
+          "model_number": 1,
+          "label_asym_id": "H",
+          "auth_asym_id": "H",
+          "label_seq_id": null,
+          "auth_seq_id": 2,
+          "insertion_code": null,
+          "sequence_position": null,
+          "has_coordinates": true,
+          "operator_id": "1"
+        },
+        "component": "NAG",
+        "observed_heavy_atoms": 14,
+        "atom_names": [
+          "C1",
+          "C2",
+          "C3",
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "C8",
+          "N2",
+          "O3",
+          "O4",
+          "O5",
+          "O6",
+          "O7"
+        ]
+      },
+      {
+        "residue": {
+          "model_number": 1,
+          "label_asym_id": "L",
+          "auth_asym_id": "A",
+          "label_seq_id": null,
+          "auth_seq_id": 1006,
+          "insertion_code": null,
+          "sequence_position": null,
+          "has_coordinates": true,
+          "operator_id": "1"
+        },
+        "component": "NAG",
+        "observed_heavy_atoms": 14,
+        "atom_names": [
+          "C1",
+          "C2",
+          "C3",
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "C8",
+          "N2",
+          "O3",
+          "O4",
+          "O5",
+          "O6",
+          "O7"
+        ]
+      }
+    ],
+    "observed_glycan_atoms": 70,
+    "excluded_nonprotein_atoms": {},
+    "covalent_links": [
+      {
+        "annotation": {
+          "id": "covale1",
+          "conn_type_id": "covale",
+          "pdbx_leaving_atom_flag": "one",
+          "pdbx_PDB_id": "?",
+          "ptnr1_label_asym_id": "A",
+          "ptnr1_label_comp_id": "ASN",
+          "ptnr1_label_seq_id": "165",
+          "ptnr1_label_atom_id": "ND2",
+          "pdbx_ptnr1_label_alt_id": "?",
+          "pdbx_ptnr1_PDB_ins_code": "?",
+          "pdbx_ptnr1_standard_comp_id": "?",
+          "ptnr1_symmetry": "1_555",
+          "ptnr2_label_asym_id": "G",
+          "ptnr2_label_comp_id": "NAG",
+          "ptnr2_label_seq_id": ".",
+          "ptnr2_label_atom_id": "C1",
+          "pdbx_ptnr2_label_alt_id": "?",
+          "pdbx_ptnr2_PDB_ins_code": "?",
+          "ptnr1_auth_asym_id": "A",
+          "ptnr1_auth_comp_id": "ASN",
+          "ptnr1_auth_seq_id": "165",
+          "ptnr2_auth_asym_id": "G",
+          "ptnr2_auth_comp_id": "NAG",
+          "ptnr2_auth_seq_id": "1",
+          "ptnr2_symmetry": "1_555",
+          "pdbx_ptnr3_label_atom_id": "?",
+          "pdbx_ptnr3_label_seq_id": "?",
+          "pdbx_ptnr3_label_comp_id": "?",
+          "pdbx_ptnr3_label_asym_id": "?",
+          "pdbx_ptnr3_label_alt_id": "?",
+          "pdbx_ptnr3_PDB_ins_code": "?",
+          "details": "?",
+          "pdbx_dist_value": "1.447",
+          "pdbx_value_order": "?",
+          "pdbx_role": "N-Glycosylation"
+        },
+        "endpoints": [
+          {
+            "residue": {
+              "model_number": 1,
+              "label_asym_id": "A",
+              "auth_asym_id": "A",
+              "label_seq_id": 165,
+              "auth_seq_id": 165,
+              "insertion_code": null,
+              "sequence_position": 187,
+              "has_coordinates": true,
+              "operator_id": "1"
+            },
+            "atom_name": "ND2",
+            "component": "ASN"
+          },
+          {
+            "residue": {
+              "model_number": 1,
+              "label_asym_id": "G",
+              "auth_asym_id": "G",
+              "label_seq_id": null,
+              "auth_seq_id": 1,
+              "insertion_code": null,
+              "sequence_position": null,
+              "has_coordinates": true,
+              "operator_id": "1"
+            },
+            "atom_name": "C1",
+            "component": "NAG"
+          }
+        ],
+        "observed_distance_angstrom": 1.4473427375711707
+      },
+      {
+        "annotation": {
+          "id": "covale2",
+          "conn_type_id": "covale",
+          "pdbx_leaving_atom_flag": "one",
+          "pdbx_PDB_id": "?",
+          "ptnr1_label_asym_id": "A",
+          "ptnr1_label_comp_id": "ASN",
+          "ptnr1_label_seq_id": "237",
+          "ptnr1_label_atom_id": "ND2",
+          "pdbx_ptnr1_label_alt_id": "?",
+          "pdbx_ptnr1_PDB_ins_code": "?",
+          "pdbx_ptnr1_standard_comp_id": "?",
+          "ptnr1_symmetry": "1_555",
+          "ptnr2_label_asym_id": "H",
+          "ptnr2_label_comp_id": "NAG",
+          "ptnr2_label_seq_id": ".",
+          "ptnr2_label_atom_id": "C1",
+          "pdbx_ptnr2_label_alt_id": "?",
+          "pdbx_ptnr2_PDB_ins_code": "?",
+          "ptnr1_auth_asym_id": "A",
+          "ptnr1_auth_comp_id": "ASN",
+          "ptnr1_auth_seq_id": "237",
+          "ptnr2_auth_asym_id": "H",
+          "ptnr2_auth_comp_id": "NAG",
+          "ptnr2_auth_seq_id": "1",
+          "ptnr2_symmetry": "1_555",
+          "pdbx_ptnr3_label_atom_id": "?",
+          "pdbx_ptnr3_label_seq_id": "?",
+          "pdbx_ptnr3_label_comp_id": "?",
+          "pdbx_ptnr3_label_asym_id": "?",
+          "pdbx_ptnr3_label_alt_id": "?",
+          "pdbx_ptnr3_PDB_ins_code": "?",
+          "details": "?",
+          "pdbx_dist_value": "1.441",
+          "pdbx_value_order": "?",
+          "pdbx_role": "N-Glycosylation"
+        },
+        "endpoints": [
+          {
+            "residue": {
+              "model_number": 1,
+              "label_asym_id": "A",
+              "auth_asym_id": "A",
+              "label_seq_id": 237,
+              "auth_seq_id": 237,
+              "insertion_code": null,
+              "sequence_position": 259,
+              "has_coordinates": true,
+              "operator_id": "1"
+            },
+            "atom_name": "ND2",
+            "component": "ASN"
+          },
+          {
+            "residue": {
+              "model_number": 1,
+              "label_asym_id": "H",
+              "auth_asym_id": "H",
+              "label_seq_id": null,
+              "auth_seq_id": 1,
+              "insertion_code": null,
+              "sequence_position": null,
+              "has_coordinates": true,
+              "operator_id": "1"
+            },
+            "atom_name": "C1",
+            "component": "NAG"
+          }
+        ],
+        "observed_distance_angstrom": 1.4409823038469234
+      },
+      {
+        "annotation": {
+          "id": "covale3",
+          "conn_type_id": "covale",
+          "pdbx_leaving_atom_flag": "one",
+          "pdbx_PDB_id": "?",
+          "ptnr1_label_asym_id": "A",
+          "ptnr1_label_comp_id": "ASN",
+          "ptnr1_label_seq_id": "508",
+          "ptnr1_label_atom_id": "ND2",
+          "pdbx_ptnr1_label_alt_id": "?",
+          "pdbx_ptnr1_PDB_ins_code": "?",
+          "pdbx_ptnr1_standard_comp_id": "?",
+          "ptnr1_symmetry": "1_555",
+          "ptnr2_label_asym_id": "L",
+          "ptnr2_label_comp_id": "NAG",
+          "ptnr2_label_seq_id": ".",
+          "ptnr2_label_atom_id": "C1",
+          "pdbx_ptnr2_label_alt_id": "?",
+          "pdbx_ptnr2_PDB_ins_code": "?",
+          "ptnr1_auth_asym_id": "A",
+          "ptnr1_auth_comp_id": "ASN",
+          "ptnr1_auth_seq_id": "508",
+          "ptnr2_auth_asym_id": "A",
+          "ptnr2_auth_comp_id": "NAG",
+          "ptnr2_auth_seq_id": "1006",
+          "ptnr2_symmetry": "1_555",
+          "pdbx_ptnr3_label_atom_id": "?",
+          "pdbx_ptnr3_label_seq_id": "?",
+          "pdbx_ptnr3_label_comp_id": "?",
+          "pdbx_ptnr3_label_asym_id": "?",
+          "pdbx_ptnr3_label_alt_id": "?",
+          "pdbx_ptnr3_PDB_ins_code": "?",
+          "details": "?",
+          "pdbx_dist_value": "1.461",
+          "pdbx_value_order": "?",
+          "pdbx_role": "N-Glycosylation"
+        },
+        "endpoints": [
+          {
+            "residue": {
+              "model_number": 1,
+              "label_asym_id": "A",
+              "auth_asym_id": "A",
+              "label_seq_id": 508,
+              "auth_seq_id": 508,
+              "insertion_code": null,
+              "sequence_position": 530,
+              "has_coordinates": true,
+              "operator_id": "1"
+            },
+            "atom_name": "ND2",
+            "component": "ASN"
+          },
+          {
+            "residue": {
+              "model_number": 1,
+              "label_asym_id": "L",
+              "auth_asym_id": "A",
+              "label_seq_id": null,
+              "auth_seq_id": 1006,
+              "insertion_code": null,
+              "sequence_position": null,
+              "has_coordinates": true,
+              "operator_id": "1"
+            },
+            "atom_name": "C1",
+            "component": "NAG"
+          }
+        ],
+        "observed_distance_angstrom": 1.4611249091025726
+      },
+      {
+        "annotation": {
+          "id": "covale8",
+          "conn_type_id": "covale",
+          "pdbx_leaving_atom_flag": "both",
+          "pdbx_PDB_id": "?",
+          "ptnr1_label_asym_id": "G",
+          "ptnr1_label_comp_id": "NAG",
+          "ptnr1_label_seq_id": ".",
+          "ptnr1_label_atom_id": "O4",
+          "pdbx_ptnr1_label_alt_id": "?",
+          "pdbx_ptnr1_PDB_ins_code": "?",
+          "pdbx_ptnr1_standard_comp_id": "?",
+          "ptnr1_symmetry": "1_555",
+          "ptnr2_label_asym_id": "G",
+          "ptnr2_label_comp_id": "NAG",
+          "ptnr2_label_seq_id": ".",
+          "ptnr2_label_atom_id": "C1",
+          "pdbx_ptnr2_label_alt_id": "?",
+          "pdbx_ptnr2_PDB_ins_code": "?",
+          "ptnr1_auth_asym_id": "G",
+          "ptnr1_auth_comp_id": "NAG",
+          "ptnr1_auth_seq_id": "1",
+          "ptnr2_auth_asym_id": "G",
+          "ptnr2_auth_comp_id": "NAG",
+          "ptnr2_auth_seq_id": "2",
+          "ptnr2_symmetry": "1_555",
+          "pdbx_ptnr3_label_atom_id": "?",
+          "pdbx_ptnr3_label_seq_id": "?",
+          "pdbx_ptnr3_label_comp_id": "?",
+          "pdbx_ptnr3_label_asym_id": "?",
+          "pdbx_ptnr3_label_alt_id": "?",
+          "pdbx_ptnr3_PDB_ins_code": "?",
+          "details": "?",
+          "pdbx_dist_value": "1.463",
+          "pdbx_value_order": "?",
+          "pdbx_role": "?"
+        },
+        "endpoints": [
+          {
+            "residue": {
+              "model_number": 1,
+              "label_asym_id": "G",
+              "auth_asym_id": "G",
+              "label_seq_id": null,
+              "auth_seq_id": 1,
+              "insertion_code": null,
+              "sequence_position": null,
+              "has_coordinates": true,
+              "operator_id": "1"
+            },
+            "atom_name": "O4",
+            "component": "NAG"
+          },
+          {
+            "residue": {
+              "model_number": 1,
+              "label_asym_id": "G",
+              "auth_asym_id": "G",
+              "label_seq_id": null,
+              "auth_seq_id": 2,
+              "insertion_code": null,
+              "sequence_position": null,
+              "has_coordinates": true,
+              "operator_id": "1"
+            },
+            "atom_name": "C1",
+            "component": "NAG"
+          }
+        ],
+        "observed_distance_angstrom": 1.4627460476788199
+      },
+      {
+        "annotation": {
+          "id": "covale9",
+          "conn_type_id": "covale",
+          "pdbx_leaving_atom_flag": "both",
+          "pdbx_PDB_id": "?",
+          "ptnr1_label_asym_id": "H",
+          "ptnr1_label_comp_id": "NAG",
+          "ptnr1_label_seq_id": ".",
+          "ptnr1_label_atom_id": "O4",
+          "pdbx_ptnr1_label_alt_id": "?",
+          "pdbx_ptnr1_PDB_ins_code": "?",
+          "pdbx_ptnr1_standard_comp_id": "?",
+          "ptnr1_symmetry": "1_555",
+          "ptnr2_label_asym_id": "H",
+          "ptnr2_label_comp_id": "NAG",
+          "ptnr2_label_seq_id": ".",
+          "ptnr2_label_atom_id": "C1",
+          "pdbx_ptnr2_label_alt_id": "?",
+          "pdbx_ptnr2_PDB_ins_code": "?",
+          "ptnr1_auth_asym_id": "H",
+          "ptnr1_auth_comp_id": "NAG",
+          "ptnr1_auth_seq_id": "1",
+          "ptnr2_auth_asym_id": "H",
+          "ptnr2_auth_comp_id": "NAG",
+          "ptnr2_auth_seq_id": "2",
+          "ptnr2_symmetry": "1_555",
+          "pdbx_ptnr3_label_atom_id": "?",
+          "pdbx_ptnr3_label_seq_id": "?",
+          "pdbx_ptnr3_label_comp_id": "?",
+          "pdbx_ptnr3_label_asym_id": "?",
+          "pdbx_ptnr3_label_alt_id": "?",
+          "pdbx_ptnr3_PDB_ins_code": "?",
+          "details": "?",
+          "pdbx_dist_value": "1.448",
+          "pdbx_value_order": "?",
+          "pdbx_role": "?"
+        },
+        "endpoints": [
+          {
+            "residue": {
+              "model_number": 1,
+              "label_asym_id": "H",
+              "auth_asym_id": "H",
+              "label_seq_id": null,
+              "auth_seq_id": 1,
+              "insertion_code": null,
+              "sequence_position": null,
+              "has_coordinates": true,
+              "operator_id": "1"
+            },
+            "atom_name": "O4",
+            "component": "NAG"
+          },
+          {
+            "residue": {
+              "model_number": 1,
+              "label_asym_id": "H",
+              "auth_asym_id": "H",
+              "label_seq_id": null,
+              "auth_seq_id": 2,
+              "insertion_code": null,
+              "sequence_position": null,
+              "has_coordinates": true,
+              "operator_id": "1"
+            },
+            "atom_name": "C1",
+            "component": "NAG"
+          }
+        ],
+        "observed_distance_angstrom": 1.4478086890193733
+      }
+    ],
+    "component_definitions": [
+      {
+        "id": "NAG",
+        "type": "D-saccharide, beta linking",
+        "mon_nstd_flag": ".",
+        "name": "2-acetamido-2-deoxy-beta-D-glucopyranose",
+        "pdbx_synonyms": "N-acetyl-beta-D-glucosamine; 2-acetamido-2-deoxy-beta-D-glucose; 2-acetamido-2-deoxy-D-glucose; 2-acetamido-2-deoxy-glucose; N-ACETYL-D-GLUCOSAMINE",
+        "formula": "C8 H15 N O6",
+        "formula_weight": "221.208"
+      }
+    ],
+    "covalent_annotation_source": "docs/topics/her2/assets/a01/sources/1S78.cif",
+    "limits": [
+      "Observed NAG fragments only; unobserved glycans and missing atoms are not reconstructed.",
+      "No glycan coordinates means unknown context, not glycan absence or zero shielding.",
+      "Protein-only SASA in fixed coordinates; no glycan surface is added to the readout.",
+      "Water, ions, hydrogen/deuterium, membrane and assembly 2 are excluded.",
+      "No efficacy, affinity, complete accessibility or validated clash classification."
+    ]
+  }
+]
