@@ -93,13 +93,18 @@ def invented_numbers(reason: str, facts: list[str]) -> list[str]:
     """설명에 있지만 사실에는 없는 숫자를 돌려준다.
 
     모델이 "접촉 잔기 42개"처럼 없는 값을 만들어 오면 여기서 잡는다.
-    사실 쪽 숫자를 문자열로 모아 두고 대조한다. 느슨한 검사이지만
-    없는 수치를 그대로 보고서에 싣는 것보다 낫다.
+
+    값으로 비교한다. 사실 쪽 숫자를 문자열로만 모아 두고 대조하면
+    "39"와 "39.0"처럼 같은 값의 다른 표기가 서로 달라 보여 오탐이
+    난다(`analysis.contact_measurement`가 `value=float(len(residues))`로
+    저장해 문장이 "39.0residue"가 되는 경우가 실제로 있었다). 느슨한
+    검사이지만 없는 수치를 그대로 보고서에 싣는 것보다 낫다.
     """
     known = set()
     for fact in facts:
-        known.update(_NUMBER.findall(fact))
-    return [n for n in _NUMBER.findall(reason) if n not in known]
+        for token in _NUMBER.findall(fact):
+            known.add(float(token))
+    return [n for n in _NUMBER.findall(reason) if float(n) not in known]
 
 
 def parse_choice(text: str, allowed: set[str]) -> tuple[str, str] | None:

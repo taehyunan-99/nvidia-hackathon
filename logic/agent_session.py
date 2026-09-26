@@ -23,6 +23,12 @@ class CandidateSession:
     compared: bool = False
     terminal: str | None = None  # "completed" | "partial" | "failed"
     calls: list[dict[str, Any]] = field(default_factory=list)
+    # 모델에게 "확인된 사실"로 보여 준 문장을 도구 호출을 거치며 계속 쌓아 둔다.
+    # 숫자 검사(invented_numbers)가 매번 그 단계의 facts만 보면, 이전 도구가
+    # 보여 준 문장(예: lookup_public_structure의 "1N8Z")에 있던 숫자를 모델이
+    # 뒤에서 다시 쓸 때 사실에 없는 것처럼 잘못 걸린다(측정: work/measure-agent.jsonl
+    # trastuzumab "8", pertuzumab "78" — 둘 다 PDB ID의 숫자 부분과 일치).
+    shown_facts: list[str] = field(default_factory=list)
 
     @property
     def cid(self) -> str:
@@ -99,7 +105,9 @@ class CandidateTools:
             note = "거부: reason이 비어 있다. 고른 이유를 두 문장 이내로 쓴다."
             self.s.calls.append({"tool": name, "accepted": False, "note": note})
             return note
-        invented = invented_numbers(reason, facts)
+        # 이번 단계의 facts뿐 아니라, 앞선 도구가 모델에게 이미 보여 준 문장도
+        # 같이 대조한다. 대화가 이어지는 한 모델은 그 값도 계속 볼 수 있다.
+        invented = invented_numbers(reason, facts + self.s.shown_facts)
         if invented:
             note = (f"거부: reason에 확인된 사실에 없는 숫자가 있다: {', '.join(invented)}. "
                     "사실에 있는 값만 쓰거나 숫자를 빼고 다시 쓴다.")
@@ -132,6 +140,7 @@ class CandidateTools:
         self.s.lengths = self.flow._lengths(c)
         self.flow._emit(self.s.cid, "input_mapping", "completed", None)
         facts = self.flow._source_facts(c, self.s.match)
+        self.s.shown_facts.extend(facts)
         return "확인된 사실:\n" + "\n".join(f"- {f}" for f in facts) + (
             f"\n지금 가능한 도구: {', '.join(sorted(allowed_tools(self.s)))}")
 
@@ -173,6 +182,7 @@ class CandidateTools:
         self.flow._compare(self.s.cid, self.s.structure_id, self.s.match)
         self.s.compared = True
         facts, _, _ = self.flow._opinion_facts(self.s.cid)
+        self.s.shown_facts.extend(facts)
         return ("비교를 마쳤다. 확인된 사실:\n" + "\n".join(f"- {f}" for f in facts)
                 + f"\n다음은 submit_opinion. decision은 {' 또는 '.join(OPINIONS)} 중 하나.")
 

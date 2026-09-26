@@ -200,3 +200,12 @@ def test_invented_numbers_compares_against_every_fact():
 
 def test_parse_choice_refuses_an_empty_reason():
     assert parse_choice(json.dumps({"action": "hold", "reason": "  "}), {"hold"}) is None
+
+
+def test_invented_numbers_treats_the_same_value_written_differently_as_known():
+    """접촉 잔기 수는 `contact_measurement`가 float로 저장해 사실 문장이
+    "39.0residue"가 된다(logic/analysis.py). 모델은 "39"라고 쓴다. 같은 값이면
+    표기가 달라도 통과해야 한다."""
+    assert invented_numbers("접촉 잔기 39개", ["x: 39.0residue (...)"]) == []
+    # 사실에 없는 값은 여전히 잡는다.
+    assert invented_numbers("접촉 잔기 42개", ["x: 39.0residue (...)"]) == ["42"]

@@ -139,3 +139,50 @@ def test_short_sequences_only_allow_hold(tmp_path):
     assert tools.predict_structure("예측").startswith("거부:")
     tools.hold_candidate("중쇄·경쇄 서열이 너무 짧다.")
     assert session.terminal == "partial"
+
+
+def test_opinion_fact_sentence_shows_integer_not_39_point_0(tmp_path):
+    """접촉 잔기 수는 계약을 지키려고 float로 저장된다(analysis.contact_measurement).
+    모델이 읽는 문장은 "39.0residue"가 아니라 "39residue"여야, 모델이 자연스럽게
+    쓰는 "39"와 표기가 같아진다. value 필드 자체(계약)는 바꾸지 않는다."""
+    _, flow, session, tools = _setup(tmp_path, _trastuzumab())
+    tools.check_input(); tools.lookup_public_structure()
+    tools.use_experimental_structure("일치한다.")
+    out = tools.compare_structure()
+    assert "39residue" in out
+    assert "39.0residue" not in out
+    facts, measured, _ = flow._opinion_facts(session.cid)
+    assert any("39residue" in f for f in facts)
+    # 계약이 요구하는 숫자 값(Evidence.value)은 여전히 float 39.0이다.
+    contact = next(e for e in measured if e["topic"] == "interface_contact_residues")
+    assert contact["value"] == 39.0
+
+
+def test_opinion_reason_may_cite_a_number_shown_earlier_by_lookup(tmp_path):
+    """lookup_public_structure가 보여 준 "1N8Z"에는 숫자 "8"이 들어 있다. 모델이
+    나중에 submit_opinion에서 그 숫자를 다시 쓰면, 그 단계의 facts(_opinion_facts)
+    에는 없더라도 오탐으로 거부하면 안 된다 — 모델이 실제로 본 값이다
+    (실측: work/measure-agent.jsonl trastuzumab "8", pertuzumab "78" 모두
+    PDB ID의 숫자 부분과 일치)."""
+    _, _, session, tools = _setup(tmp_path, _trastuzumab())
+    tools.check_input()
+    lookup_out = tools.lookup_public_structure()
+    assert "1N8Z" in lookup_out
+    tools.use_experimental_structure("일치한다.")
+    tools.compare_structure()
+    out = tools.submit_opinion("reviewable", "1N8Z 구조와 접촉 잔기 39개로 충분하다.")
+    assert not out.startswith("거부:")
+    assert session.terminal == "completed"
+
+
+def test_opinion_reason_with_a_truly_invented_number_is_still_refused(tmp_path):
+    """앞선 도구가 보여 준 어떤 문장에도 없는 숫자는 여전히 잡는다. 축적한 facts로
+    검사를 느슨하게 만들지 않는다."""
+    _, _, session, tools = _setup(tmp_path, _trastuzumab())
+    tools.check_input(); tools.lookup_public_structure()
+    tools.use_experimental_structure("일치한다.")
+    tools.compare_structure()
+    out = tools.submit_opinion("reviewable", "접촉 잔기 9999개로 충분하다.")
+    assert out.startswith("거부:")
+    assert "9999" in out
+    assert session.terminal is None

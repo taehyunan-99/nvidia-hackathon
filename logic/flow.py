@@ -43,6 +43,20 @@ MIN_CHAIN_LENGTH = 50
 ProgressCallback = Callable[[dict[str, Any]], None]
 
 
+def _format_fact_value(value: Any) -> str:
+    """사실 문장에 값을 쓸 표기. 정수 값인 float는 "39.0"이 아니라 "39"로 쓴다.
+
+    `analysis.contact_measurement`는 계약(Evidence.value: number)을 지키려고
+    `float(len(residues))`로 저장한다. 그 값을 문장에 그대로 넣으면 모델이
+    읽는 사실이 "39.0residue"가 되어, 모델이 자연스럽게 쓰는 "39"와 문자열이
+    달라진다. 계약의 value 필드 자체는 그대로 두고, 문장 표기만 정수로
+    맞춘다.
+    """
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return str(value)
+
+
 def _explain(decision) -> str:
     """판단 결과를 화면에 그대로 쓸 문장으로.
 
@@ -687,7 +701,7 @@ class Flow:
         unmeasured = [e for e in mine if e["measurement_state"] != "measured"]
         facts = [
             f"계산해 확보한 근거 {len(measured)}건, 아직 계산하지 않은 항목 {len(unmeasured)}건.",
-            *(f"{e['topic']}: {e['value']}{e['unit'] or ''} ({e['definition']})"
+            *(f"{e['topic']}: {_format_fact_value(e['value'])}{e['unit'] or ''} ({e['definition']})"
               for e in measured if e["definition"]),
             *(f"{e['topic']}: 미계산 — {e['reason']}" for e in unmeasured if e["reason"]),
         ]
