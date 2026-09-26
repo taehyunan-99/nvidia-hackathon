@@ -24,7 +24,7 @@ services:
       SERVICE_DATA_ROOT: /data
       DATA_MODE: mock
       SECURE_COOKIE: "false"
-      ALLOWED_ORIGINS: ""
+      ALLOWED_ORIGINS: http://127.0.0.1:${WEB_PORT:-8080}
       MAX_UPLOAD_BYTES: "20971520"
     depends_on:
       db:
@@ -46,6 +46,19 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    command: ["python", "-m", "service.worker", "--scenario", "scientific-hold"]
+    environment: *api_environment
+    volumes:
+      - uploads:/data
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   web:

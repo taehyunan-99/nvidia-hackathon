@@ -5,7 +5,7 @@ COPY frontend/package.json frontend/package-lock.json ./frontend/
 RUN cd frontend && npm ci
 COPY frontend ./frontend
 COPY docs/frontend-hosting/fixtures/scenarios.json ./docs/frontend-hosting/fixtures/scenarios.json
-RUN cd frontend && VITE_API_BASE='' npm run build
+RUN cd frontend && VITE_API_BASE='' VITE_PERSISTENT_MOCK=1 npm run build
 
 FROM caddy:2-alpine
 COPY Caddyfile /etc/caddy/Caddyfile
