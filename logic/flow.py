@@ -521,18 +521,20 @@ class Flow:
             self._hold_opinion(cid, "structure_availability", "hold", reason)
             return None
         except CallFailed as exc:
-            reason = str(exc)
-            self._emit(cid, "prediction", "failed", reason)
-            for step in ("structure_comparison", "reporting"):
-                self._emit(cid, step, "skipped", "예측이 실패해 진행하지 않았다.")
-            self.states[cid].status = "failed"
-            self.states[cid].reason = reason
-            self._hold_opinion(cid, "structure_availability", "not_assessed", reason)
+            self._fail_prediction(cid, str(exc))
             return None
 
         return self._record_predicted(
             cid, response, {"target": target_seq, "heavy": heavy, "light": light}
         )
+
+    def _fail_prediction(self, cid: str, reason: str) -> None:
+        self._emit(cid, "prediction", "failed", reason)
+        for step in ("structure_comparison", "reporting"):
+            self._emit(cid, step, "skipped", "예측이 실패해 진행하지 않았다.")
+        self.states[cid].status = "failed"
+        self.states[cid].reason = reason
+        self._hold_opinion(cid, "structure_availability", "not_assessed", reason)
 
     def _predicted_chain_mapping(
         self, path: Path, sequences: dict[str, str]
