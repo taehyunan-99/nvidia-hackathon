@@ -32,8 +32,11 @@ uv run python -m service.worker --scenario scientific-hold --once
 `completed`, `scientific-hold`, `partial`, `failed`는 모두 실제 분석을 하지 않는
 모의 시나리오다. `--once`를 빼면 대기 중인 실행을 계속 처리한다. worker는 점유가
 만료된 실행을 `interrupted`로 기록하고 자동 재실행하지 않는다. 세션 삭제·만료 후에는
-점유가 끝난 자료 파일을 정리한다. HTTPS, 공개 접수
-제한, 백업·복구, 실제 모델 호출과 AWS 자원은 아직 준비되지 않았다.
+점유가 끝난 자료 파일을 정리한다. 공개 HTTPS·접수 제한, 실제 모델 호출과 AWS 자원은 아직 준비되지 않았다. 로컬 HTTPS와 백업·복구 검증은 아래 서버 구성 사전 검증을 따른다.
+
+## 서버 구성 사전 검증
+
+별도 `compose.server.yaml`과 `.env.server.example`로 localhost HTTPS·Secure cookie·저장소 보존을 시험한다. 공개 구조와 분석 의존성은 API 이미지에 포함된다. 준비·재시작·격리 백업 복원은 [서버 검증 절차](../docs/frontend-hosting/server-rehearsal.md)를 따른다. 실제 분석 worker와 공개 접수 제한은 여전히 미연결이다.
 
 ## 영속 접수 API 준비
 
