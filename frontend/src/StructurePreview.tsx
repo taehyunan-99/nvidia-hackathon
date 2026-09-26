@@ -151,7 +151,10 @@ export default function StructurePreview() {
       <div className="section-heading">
         <div>
           <h3>공개 실험 구조</h3>
-          <span className="caption">모의 분석 결과와 별개</span>
+          {/* 이 뷰어는 분석 결과를 읽지 않는다. 자체 contacts.json만 본다.
+              "모의"라고 적으면 실제 실행 중에도 모의로 읽히므로 mode와
+              무관하게 참인 문구를 쓴다. */}
+          <span className="caption">분석 결과와 별개</span>
         </div>
       </div>
       <div className="structure-candidates" aria-label="공개 항체 선택">

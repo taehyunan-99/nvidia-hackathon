@@ -34,6 +34,7 @@ export async function loadMolecule(
   mode: string,
   residues: { chain: string; seq: number }[],
   host: HTMLDivElement,
+  chainIds?: string[],
 ) {
   const data = await plugin.builders.data.rawData({ data: cif, label: pdb });
   const trajectory = await plugin.builders.structure.parseTrajectory(
@@ -41,11 +42,18 @@ export async function loadMolecule(
     "mmcif",
   );
   const model = await plugin.builders.structure.createModel(trajectory);
-  const structure = await plugin.builders.structure.createStructure(model, {
-    name: "assembly",
-    params: { id: "1" },
-  });
-  const chains = pdb === "1N8Z" ? ["C", "B", "A"] : ["A", "D", "C"];
+  // 공개 실험 구조는 assembly 1이 생물학적 단위라 그걸 쓴다. 예측 구조에는
+  // _pdbx_struct_assembly 자체가 없어서(Boltz-2 응답에서 확인) assembly를
+  // 요구하면 만들 수 없다. 그때는 모델을 그대로 쓴다. 예측 구조는 받은
+  // 사슬이 곧 전부라 대칭 전개로 채울 것이 없다.
+  const structure = chainIds
+    ? await plugin.builders.structure.createStructure(model, { name: "model", params: {} })
+    : await plugin.builders.structure.createStructure(model, {
+        name: "assembly",
+        params: { id: "1" },
+      });
+  // 사슬 순서는 표적·중쇄·경쇄다. 아래 색이 그 순서에 맞춰져 있다.
+  const chains = chainIds ?? (pdb === "1N8Z" ? ["C", "B", "A"] : ["A", "D", "C"]);
   const colors = [0x259c91, 0xe99032, 0x7d6bd0];
   const chainQuery = (chain: string) =>
     Q.struct.generator.atomGroups({
