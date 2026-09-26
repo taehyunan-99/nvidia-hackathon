@@ -50,6 +50,9 @@ venv/
 .coverage
 htmlcov/
 
+# Local scratch work (measurement runs, etc.)
+/work/
+
 # Node / build / runtime
 node_modules/
 .pnpm-store/

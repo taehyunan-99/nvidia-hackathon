@@ -100,6 +100,26 @@ service/app.py ── run_flow(request)            # 시그니처·결과 계약
 
 0단계에서 스트리밍 + tool-calling이 안 되는 것으로 나오면 B로도 해결되지 않는다. 그때는 멈추고 보고한다(대안: NAT 비스트리밍 LLM 설정 여부 조사, 또는 C안 — 자체 루프 + NAT 추적).
 
+### 측정 결과 (2026-09-26)
+
+`uv run python -m logic.measure_agent --repeat 3` 1회 실행. 각 시나리오는 `LogicRequest`가 요구하는 후보 2건 이상 조건을 채우려고 입력 오류 필러 후보(`filler`)를 함께 넣었다 — 소요 시간에는 필러의 짧은 실행이 포함되지만, 아래 표의 호출 수·거부 수·상태·의견은 측정 대상 후보만 집계했다. 원본 기록: `work/measure-agent.jsonl`(gitignore 대상, 저장소에는 없음).
+
+| 시나리오 | 규칙 모드 시간 | 에이전트 시간(3회) | 평균 거부 | 상한 도달 | 규칙 마무리 | 최종 상태·의견 |
+|---|---|---|---|---|---|---|
+| trastuzumab (기존 구조) | 22.3s | 31.7s / 25.5s / 24.4s | 1.00 (3/3회 각 1건) | 0/3 | 1/3 | 규칙: completed/needs_confirmation · 에이전트: completed/reviewable ×2, completed/needs_confirmation ×1 |
+| pertuzumab (기존 구조) | 4.6s | 24.3s / 36.8s / 31.4s | 1.33 (1, 2, 1건) | 0/3 | 0/3 | 규칙: completed/needs_confirmation · 에이전트: completed/reviewable ×3 |
+| variant (가상 변이체, 예측) | 10.7s | 27.6s / 51.2s / 16.3s | 1.33 (1, 2, 1건) | 0/3 | 0/3 | 규칙: failed/not_assessed · 에이전트: failed/not_assessed ×3 |
+| invalid (잘못된 문자 입력) | 0.0s | 17.2s / 12.0s / 9.0s | 0.67 (1, 1, 0건) | 0/3 | 0/3 | 규칙: failed/hold · 에이전트: failed/hold ×3 |
+| short (50자 미만 서열) | 2.4s | 10.0s / 5.8s / 11.4s | 0.00 (0, 0, 0건) | 0/3 | 0/3 | 규칙: partial/hold · 에이전트: partial/hold ×3 |
+
+전체 nat 실행 15회(시나리오 5 × 3회) 기준 총 거부 13건, 반복 상한 도달 0건.
+
+1. 후보당 평균 거부 1회 초과 → **비해당** (15회 실행 평균 0.87건 = 13건/15회, 1회를 넘지 않음)
+2. 반복 상한 도달이 15회 실행 중 1회 이상 → **비해당** (0/15, `hit_limit`이 모든 행에서 false)
+3. 거부 때문에 `predict_structure`가 불필요하게 늦어져 시나리오 소요 시간이 규칙 모드 대비 2배 초과 → **해당** (variant 시나리오: 규칙 모드 10.7s, 에이전트 모드 평균 31.7s(=(27.6+51.2+16.3)/3) — 약 2.96배. 3회 중 1회(51.2s)에서 `predict_structure` 자체가 두 번 거부되어 재시도됐고, 나머지 2회(27.6s, 16.3s)는 `predict_structure`는 통과했지만 이후 `hold_candidate` 거부로 늦어졌다)
+
+A 유지 또는 B 전환 결정은 하지 않는다 — 사용자 확인 사항이다.
+
 ## 8. 로드맵
 
 | 단계 | 내용 | 완료 확인 |
