@@ -19,15 +19,24 @@ DB 준비 확인 후 migration을 한 번 실행하고 API를 시작한다. DB�
 
 이 구성은 `127.0.0.1`의 HTTP 개발 환경이다. 현재 화면의 분석 시작은 기존 동기식
 `/api/review`를 사용하지만 이 Compose의 API는 세션·입력·실행 **접수**만 제공한다.
-따라서 화면 분석 흐름은 다음 연결 단계 전까지 동작하지 않으며, 접수된 실행도 별도
-worker가 생기기 전에는 `queued`에 머문다. worker는 이후 같은 Python 이미지에 별도
-실행 명령을 추가하고 DB·업로드 볼륨을 공유하는 서비스로 연결한다. HTTPS, 공개 접수
+따라서 화면 분석 흐름은 다음 연결 단계 전까지 동작하지 않으며, 접수된 실행도 Compose에
+worker를 연결하기 전에는 `queued`에 머문다. 로컬에서 별도 worker를 직접 실행하려면
+API와 같은 `DATABASE_URL`, `SERVICE_DATA_ROOT`를 설정하고 아래 명령을 사용한다.
+
+```bash
+uv run python -m service.worker --scenario scientific-hold --once
+```
+
+`completed`, `scientific-hold`, `partial`, `failed`는 모두 실제 분석을 하지 않는
+모의 시나리오다. `--once`를 빼면 대기 중인 실행을 계속 처리한다. worker는 점유가
+만료된 실행을 `interrupted`로 기록하고 자동 재실행하지 않는다. 세션 삭제·만료 후에는
+점유가 끝난 자료 파일을 정리한다. Compose 서비스 연결은 다음 단계에서 한다. HTTPS, 공개 접수
 제한, 백업·복구, 실제 모델 호출과 AWS 자원은 아직 준비되지 않았다.
 
 ## 영속 접수 API 준비
 
-`service.operational`은 임시 계약 v0.1.0의 세션·입력·실행 **접수와 조회**를
-PostgreSQL에 저장한다. 별도 worker가 아직 없어 실행은 `queued`에 머문다.
+`service.operational`은 임시 계약 v0.1.0의 세션·입력·실행 접수와 조회를
+PostgreSQL에 저장한다. 별도 `service.worker`를 실행하면 저장된 실행을 처리한다.
 시연용 `service.app`의 동기식 `/api/review`와 경로·저장소를 공유하지 않는다.
 
 로컬 PostgreSQL을 준비한 뒤 `DATABASE_URL`과 `SERVICE_DATA_ROOT`를 설정한다.
@@ -49,11 +58,11 @@ PostgreSQL 연동 검사는 별도의 임시 DB를 가리키는 `TEST_DATABASE_U
 필요하며, 검사 중 해당 DB의 서비스 테이블을 비운다.
 
 ```bash
-TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:55432/postgres uv run pytest service/tests/test_operational.py -q
+TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:55432/postgres uv run pytest service/tests/test_operational.py service/tests/test_worker.py -q
 ```
 
-이 API는 로컬 접수 단계다. worker 점유·결과 등록·만료 자료의 물리적 정리,
-HTTPS·공개 접수 제한은 다음 단계에서 구현·검증한다. 공개 서비스에
+이 API와 worker는 로컬 모의 검증 단계다. worker 점유·결과 등록·만료 자료 정리는
+임시 PostgreSQL에서 검사한다. HTTPS·공개 접수 제한은 다음 단계에서 구현·검증한다. 공개 서비스에
 연결해서는 안 된다.
 
 ## 기존 시연용 실행부

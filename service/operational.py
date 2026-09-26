@@ -271,6 +271,12 @@ def create_app(
                 saved.append(target)
                 stored[key] = (str(target.relative_to(data_root)), digest.hexdigest(), size)
             with connect(dsn) as conn:
+                active = conn.execute(
+                    "SELECT 1 FROM sessions WHERE id = %s AND status = 'active' AND expires_at > now() FOR SHARE",
+                    (session["id"],),
+                ).fetchone()
+                if not active:
+                    _fail(410, "SESSION_EXPIRED", "세션이 만료되었습니다.")
                 conn.execute("INSERT INTO reviews(id, session_id, input_json) VALUES (%s, %s, %s)", (review_id, session["id"], Jsonb(body)))
                 for key in manifest:
                     relative, digest, size = stored[key]
@@ -300,6 +306,12 @@ def create_app(
         if len(body["request_key"]) > 128:
             _fail(422, "INPUT_INVALID", "실행 접수 키가 너무 깁니다.", "fix_input")
         with connect(dsn) as conn:
+            active = conn.execute(
+                "SELECT 1 FROM sessions WHERE id = %s AND status = 'active' AND expires_at > now() FOR SHARE",
+                (session["id"],),
+            ).fetchone()
+            if not active:
+                _fail(410, "SESSION_EXPIRED", "세션이 만료되었습니다.")
             review = conn.execute("SELECT input_json FROM reviews WHERE id = %s AND session_id = %s", (review_id, session["id"])).fetchone()
             if not review:
                 _fail(404, "NOT_FOUND", "검토를 찾을 수 없습니다.")
