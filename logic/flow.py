@@ -22,7 +22,8 @@ from pathlib import Path
 from typing import Any, Callable
 
 from . import analysis, structures
-from .agent import Decider, Option
+from .agent import Decider, Decision, Option, RuleDecider
+from .agent_session import CandidateSession
 from .contract import SCHEMA_VERSION, now_rfc3339, validate
 from .nvidia_client import CallFailed, MissingCredentials, NvidiaClient
 
@@ -147,58 +148,66 @@ class Flow:
         return output
 
     def _run_candidate(self, candidate: dict[str, Any]) -> None:
-        cid = candidate["candidate_id"]
+        self._resume(CandidateSession(candidate))
+
+    def _resume(self, s: CandidateSession) -> None:
+        """세션이 멈춘 자리부터 규칙 경로로 끝까지 간다. 끝난 단계는 다시 하지 않는다."""
+        if s.terminal:
+            return
+        cid, candidate = s.cid, s.candidate
         state = self.states[cid]
         state.status = "running"
 
         # ① ② 입력 검사
-        self._emit(cid, "input_mapping", "running", None)
-        problems = self._check_input(candidate)
-        if problems:
-            reason = " ".join(problems)
-            self._emit(cid, "input_mapping", "failed", reason)
-            for step in STEP_IDS[1:]:
-                self._emit(cid, step, "skipped", "입력 정정 전에는 진행하지 않는다.")
-            state.status = "failed"
-            state.reason = reason
-            self._hold_opinion(cid, "input", "hold", reason, limitations=problems)
-            return
-
-        # 공개 자료 조회
-        match = structures.find_structure(
-            candidate["heavy_chain_fasta"], candidate["light_chain_fasta"]
-        )
-        self._emit(cid, "input_mapping", "completed", None)
-
-        # ③ 분기: 기존 구조 / 예측 / 자료 부족
-        # 규칙이 아니라 판단부가 고른다. 모델이 없으면 default로 돌아간다.
-        choice = self._choose_source(cid, candidate, match)
-        if choice.action == "use_experimental":
-            structure_id = self._record_experimental(cid, match)
-            self._emit(cid, "prediction", "skipped", _explain(choice))
-        elif choice.action == "hold":
-            # 판단부가 지금 예측하지 않기로 했다. 실패가 아니라 보류다.
-            reason = _explain(choice)
-            self._emit(cid, "evidence_review", "held", reason)
-            self._emit(cid, "prediction", "held", reason)
-            for step in ("structure_comparison", "reporting"):
-                self._emit(cid, step, "skipped", "예측 구조가 없어 진행하지 않았다.")
-            state.status = "partial"
-            state.reason = reason
-            self._hold_opinion(cid, "structure_availability", "hold", reason)
-            return
-        else:
-            structure_id = self._predict(cid, candidate, match)
-            if structure_id is None:
-                # _predict가 이미 failed로 표시했으면 덮어쓰지 않는다.
-                # 실패한 호출을 부분 결과로 바꾸지 않기 위한 것이다.
-                if state.status == "running":
-                    state.status = "partial"
+        if not s.input_checked:
+            self._emit(cid, "input_mapping", "running", None)
+            problems = self._check_input(candidate)
+            s.input_checked = True
+            if problems:
+                self._fail_input(cid, problems)
+                s.terminal = "failed"
                 return
 
-        self._compare(cid, structure_id, match)
-        self._report(cid, structure_id, match)
+        # 공개 자료 조회
+        if s.match is None:
+            s.match = structures.find_structure(candidate["heavy_chain_fasta"], candidate["light_chain_fasta"])
+            s.lengths = self._lengths(candidate)
+            self._emit(cid, "input_mapping", "completed", None)
+
+        # ③ 분기: 기존 구조 / 예측 / 자료 부족 — 판단 주체는 self.decider
+        if s.structure_id is None:
+            choice = self._choose_source(cid, candidate, s.match)
+            if choice.action == "use_experimental":
+                s.structure_id = self._record_experimental(cid, s.match)
+                self._emit(cid, "prediction", "skipped", _explain(choice))
+            elif choice.action == "hold":
+                self._hold_candidate(cid, _explain(choice))
+                s.terminal = "partial"
+                return
+            else:
+                s.structure_id = self._predict(cid, candidate, s.match)
+                if s.structure_id is None:
+                    # _predict가 이미 failed로 표시했으면 덮어쓰지 않는다.
+                    if state.status == "running":
+                        state.status = "partial"
+                    s.terminal = state.status
+                    return
+
+        if not s.compared:
+            self._compare(cid, s.structure_id, s.match)
+            s.compared = True
+        self._report(cid, s.structure_id, s.match)
         state.status = "completed"
+        s.terminal = "completed"
+
+    def _continue_by_rule(self, s: CandidateSession, why: str) -> None:
+        """에이전트가 끝내지 못한 후보를 규칙으로 마무리한다. 모델을 다시 부르지 않는다."""
+        saved = self.decider
+        self.decider = RuleDecider(why, decisions=saved.decisions, model=saved.model)
+        try:
+            self._resume(s)
+        finally:
+            self.decider = saved
 
     # ------------------------------------------------------------ 입력 검사
     def _check_input(self, candidate: dict[str, Any]) -> list[str]:
@@ -230,7 +239,50 @@ class Flow:
                     )
         return problems
 
+    def _fail_input(self, cid: str, problems: list[str]) -> None:
+        reason = " ".join(problems)
+        self._emit(cid, "input_mapping", "failed", reason)
+        for step in STEP_IDS[1:]:
+            self._emit(cid, step, "skipped", "입력 정정 전에는 진행하지 않는다.")
+        self.states[cid].status = "failed"
+        self.states[cid].reason = reason
+        self._hold_opinion(cid, "input", "hold", reason, limitations=problems)
+
+    def _hold_candidate(self, cid: str, reason: str) -> None:
+        # 판단 주체가 지금 예측하지 않기로 했다. 실패가 아니라 보류다.
+        self._emit(cid, "evidence_review", "held", reason)
+        self._emit(cid, "prediction", "held", reason)
+        for step in ("structure_comparison", "reporting"):
+            self._emit(cid, step, "skipped", "예측 구조가 없어 진행하지 않았다.")
+        self.states[cid].status = "partial"
+        self.states[cid].reason = reason
+        self._hold_opinion(cid, "structure_availability", "hold", reason)
+
     # ------------------------------------------------------------ 판단 분기
+    def _source_facts(self, candidate: dict[str, Any], match: structures.StructureMatch) -> list[str]:
+        # 예측에 쓸 자료가 있는지도 사실로 넣는다. 구조 검색 결과만 주면
+        # 모델은 "일치하는 구조가 없다"를 "자료가 부족하다"로 읽는다.
+        # 실제로 그렇게 보류한 실행을 화면에서 확인했다.
+        facts = [
+            f"공개 구조 검색 결과: {match.pdb_id or '일치 후보 없음'}",
+            f"중쇄 서열 정확히 일치: {'예' if match.heavy_exact else '아니오'}",
+            f"경쇄 서열 정확히 일치: {'예' if match.light_exact else '아니오'}",
+            f"같은 구조에 표적 사슬 있음: {'예' if match.target_entity else '아니오'}",
+        ]
+        facts += [
+            f"{label} 서열 길이 {n}자 "
+            f"({'예측 입력으로 충분' if n >= MIN_CHAIN_LENGTH else f'{MIN_CHAIN_LENGTH}자 미만이라 예측 불가'})"
+            for label, n in self._lengths(candidate).items()
+        ]
+        return facts
+
+    def _lengths(self, candidate: dict[str, Any]) -> dict[str, int]:
+        return {
+            "표적": len(structures.normalize_sequence(self.request["input"]["target"].get("fasta") or "")),
+            "중쇄": len(structures.normalize_sequence(candidate["heavy_chain_fasta"])),
+            "경쇄": len(structures.normalize_sequence(candidate["light_chain_fasta"])),
+        }
+
     def _choose_source(
         self, cid: str, candidate: dict[str, Any], match: structures.StructureMatch
     ):
@@ -243,29 +295,7 @@ class Flow:
         사실은 전부 코드가 조회한 것이다. 모델은 이 값들을 읽고 고르기만
         한다.
         """
-        facts = [
-            f"공개 구조 검색 결과: {match.pdb_id or '일치 후보 없음'}",
-            f"중쇄 서열 정확히 일치: {'예' if match.heavy_exact else '아니오'}",
-            f"경쇄 서열 정확히 일치: {'예' if match.light_exact else '아니오'}",
-            f"같은 구조에 표적 사슬 있음: {'예' if match.target_entity else '아니오'}",
-        ]
-        # 예측에 쓸 자료가 있는지도 사실로 넣는다. 구조 검색 결과만 주면
-        # 모델은 "일치하는 구조가 없다"를 "자료가 부족하다"로 읽는다.
-        # 실제로 그렇게 보류한 실행을 화면에서 확인했다.
-        lengths = {
-            "표적": len(
-                structures.normalize_sequence(
-                    self.request["input"]["target"].get("fasta") or ""
-                )
-            ),
-            "중쇄": len(structures.normalize_sequence(candidate["heavy_chain_fasta"])),
-            "경쇄": len(structures.normalize_sequence(candidate["light_chain_fasta"])),
-        }
-        facts += [
-            f"{label} 서열 길이 {n}자 "
-            f"({'예측 입력으로 충분' if n >= MIN_CHAIN_LENGTH else f'{MIN_CHAIN_LENGTH}자 미만이라 예측 불가'})"
-            for label, n in lengths.items()
-        ]
+        facts = self._source_facts(candidate, match)
         if match.complete:
             options = [
                 Option("use_experimental", "이미 있는 공개 실험 구조로 검토한다. 예측을 건너뛴다."),
@@ -632,43 +662,51 @@ class Flow:
         self._emit(cid, "structure_comparison", "completed", None)
 
     # ------------------------------------------------------------ ⑥ 보고
-    def _report(self, cid: str, structure_id: str, match: structures.StructureMatch) -> None:
-        self._emit(cid, "reporting", "running", None)
-        condition_id = f"cond-{cid}-core"
+    def _opinion_facts(self, cid: str) -> tuple[list[str], list[dict[str, Any]], list[dict[str, Any]]]:
         mine = [e for e in self.evidence if e["candidate_id"] == cid]
         measured = [e for e in mine if e["measurement_state"] == "measured"]
         unmeasured = [e for e in mine if e["measurement_state"] != "measured"]
+        facts = [
+            f"계산해 확보한 근거 {len(measured)}건, 아직 계산하지 않은 항목 {len(unmeasured)}건.",
+            *(f"{e['topic']}: {e['value']}{e['unit'] or ''} ({e['definition']})"
+              for e in measured if e["definition"]),
+            *(f"{e['topic']}: 미계산 — {e['reason']}" for e in unmeasured if e["reason"]),
+        ]
+        return facts, measured, unmeasured
+
+    def _report(
+        self,
+        cid: str,
+        structure_id: str,
+        match: structures.StructureMatch,
+        verdict: Decision | None = None,
+    ) -> None:
+        self._emit(cid, "reporting", "running", None)
+        condition_id = f"cond-{cid}-core"
+        facts, measured, unmeasured = self._opinion_facts(cid)
 
         # ⑥ 두 번째 분기. 지금까지 모은 근거로 검토 의견을 낼 수 있는가?
         # 설계 문서의 "어느 부분까지 근거가 있고 어떤 질문이 남는가"다.
-        facts = [
-            f"계산해 확보한 근거 {len(measured)}건, 아직 계산하지 않은 항목 {len(unmeasured)}건.",
-            *(
-                f"{e['topic']}: {e['value']}{e['unit'] or ''} ({e['definition']})"
-                for e in measured
-                if e["definition"]
-            ),
-            *(f"{e['topic']}: 미계산 — {e['reason']}" for e in unmeasured if e["reason"]),
-        ]
-        verdict = self.decider.choose(
-            "review_opinion",
-            question=(
-                f"후보 {cid}에 대해 지금 검토 의견을 낼 수 있는가? "
-                "결합력·효능이 아니라 구조상 검토 가능 여부만 본다."
-            ),
-            facts=facts,
-            options=[
-                Option("reviewable", "확보한 근거로 구조상 검토 의견을 낼 수 있다."),
-                Option("needs_confirmation", "근거가 모자라 사람의 확인이 필요하다."),
-            ],
-            # 규칙의 기본값을 모델의 입장에 맞춘다.
-            # 예전 규칙은 "측정된 근거가 하나라도 있으면 검토 가능"이었는데,
-            # 모델은 실측에서 늘 "충돌·표면 노출이 미계산이라 확인이 필요하다"를
-            # 골랐다. 둘이 엇갈리면 같은 입력에 NVIDIA 서버 상태에 따라 다른
-            # 결론이 나온다. 실제로 4회 실행 중 1회가 그랬다. 더 보수적인
-            # 쪽으로 맞춘다.
-            default="reviewable" if measured and not unmeasured else "needs_confirmation",
-        )
+        if verdict is None:
+            verdict = self.decider.choose(
+                "review_opinion",
+                question=(
+                    f"후보 {cid}에 대해 지금 검토 의견을 낼 수 있는가? "
+                    "결합력·효능이 아니라 구조상 검토 가능 여부만 본다."
+                ),
+                facts=facts,
+                options=[
+                    Option("reviewable", "확보한 근거로 구조상 검토 의견을 낼 수 있다."),
+                    Option("needs_confirmation", "근거가 모자라 사람의 확인이 필요하다."),
+                ],
+                # 규칙의 기본값을 모델의 입장에 맞춘다.
+                # 예전 규칙은 "측정된 근거가 하나라도 있으면 검토 가능"이었는데,
+                # 모델은 실측에서 늘 "충돌·표면 노출이 미계산이라 확인이 필요하다"를
+                # 골랐다. 둘이 엇갈리면 같은 입력에 NVIDIA 서버 상태에 따라 다른
+                # 결론이 나온다. 실제로 4회 실행 중 1회가 그랬다. 더 보수적인
+                # 쪽으로 맞춘다.
+                default="reviewable" if measured and not unmeasured else "needs_confirmation",
+            )
 
         self.opinions.append(
             {

@@ -215,3 +215,27 @@ class Decider:
             ),
             None,
         )
+
+
+class RuleDecider:
+    """모델을 부르지 않고 규칙 결과를 기록한다.
+
+    에이전트가 끊긴 뒤 규칙으로 마무리할 때 쓴다. 다시 모델을 부르면
+    방금 실패한 호출을 되풀이하게 된다. 끊긴 이유를 결정마다 남긴다.
+    """
+
+    def __init__(self, why: str, *, decisions: list[Decision], model: str):
+        self.why = why
+        self.decisions = decisions
+        self.model = model
+
+    def choose(self, step: str, *, question: str, facts: list[str],
+               options: list[Option], default: str) -> Decision:
+        del question
+        assert any(o.action == default for o in options), "default가 선택지에 없다"
+        decision = Decision(
+            step=step, action=default, reason="코드에 정해 둔 규칙대로 진행했다.",
+            decided_by="rule", model=None, fallback_reason=self.why, facts=facts,
+        )
+        self.decisions.append(decision)
+        return decision
