@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { AgentStart, About, Team } from "./AgentStart";
 import { ReviewOverview } from "./ReviewOverview";
-import { parseScenarioFile, type ScenarioFile } from "./scenario-file";
+import { parseScenarioFile, type Scenario, type ScenarioFile } from "./scenario-file";
 import "./review-overview.css";
 import { createRoot } from "react-dom/client";
 import "./tokens.css";
@@ -37,6 +37,74 @@ const labels: Record<string, string> = {
   measured: "측정됨",
   not_applicable: "해당 없음",
 };
+type RunCandidate = NonNullable<Scenario["run"]>["candidates"][number];
+
+function CandidateProgress({ candidate, name }: { candidate: RunCandidate; name: string }) {
+  const focus = candidate.steps.find((step) => step.status === "failed" || step.status === "held")
+    ?? candidate.steps.find((step) => step.step_id === candidate.current_step)
+    ?? candidate.steps.find((step) => step.status === "skipped")
+    ?? candidate.steps.slice().reverse().find((step) => step.status === "completed");
+  const notableSteps = candidate.steps.filter((step) => step.status === "failed" || step.status === "held" || step.status === "skipped");
+  const stagePosition = candidate.status === "completed"
+    ? `${candidate.steps.length}단계 기록 종료`
+    : focus
+      ? `${candidate.steps.findIndex((step) => step.step_id === focus.step_id) + 1} / ${candidate.steps.length} 단계`
+      : "시작 전";
+  const statusLine = candidate.status === "queued"
+    ? "분석 대기 중"
+    : candidate.status === "interrupted"
+      ? `${focus ? labels[focus.step_id] : "분석"} · 실행 중단`
+      : focus?.status === "held"
+        ? `${labels[focus.step_id]} · 판단 보류`
+        : focus?.status === "failed"
+          ? `${labels[focus.step_id]} · 실행 실패`
+          : candidate.status === "completed"
+            ? "검토 기록 종료"
+            : focus
+              ? `${labels[focus.step_id]} · ${labels[focus.status]}`
+              : labels[candidate.status];
+
+  return (
+    <section className="panel candidate-progress" data-status={candidate.status}>
+      <div className="candidate-progress-heading">
+        <h3>{name}</h3>
+        <span className="tag">{labels[candidate.status]}</span>
+      </div>
+      <div className="stage-track" aria-hidden="true">
+        {candidate.steps.map((step) => <span key={step.step_id} data-status={candidate.status === "interrupted" && step.status === "running" ? "interrupted" : step.status} />)}
+      </div>
+      <div className="progress-status" role="status" aria-live="polite">
+        <div className="progress-status-head">
+          <span className="progress-position">{stagePosition}</span>
+          <strong>{statusLine}</strong>
+        </div>
+        <p>{candidate.reason ?? (focus?.status === "held" || focus?.status === "failed" || focus?.status === "skipped" ? focus.reason : null) ?? (candidate.status === "completed"
+          ? "기록된 단계가 끝났습니다. 결과에서 근거와 한계를 확인해 주세요."
+          : candidate.status === "queued"
+            ? "아직 시작된 단계가 없습니다."
+            : focus?.reason ?? "다음 기록에서 단계 상태가 바뀝니다.")}</p>
+      </div>
+      {notableSteps.some((step) => step !== focus) && (
+        <div className="progress-exceptions">
+          {notableSteps.filter((step) => step !== focus).map((step) => (
+            <p key={step.step_id}><strong>{labels[step.step_id]} · {labels[step.status]}</strong>{step.reason && ` — ${step.reason}`}</p>
+          ))}
+        </div>
+      )}
+      <details className="progress-details">
+        <summary>전체 단계 기록 보기</summary>
+        <ol>
+          {candidate.steps.map((step, index) => (
+            <li key={step.step_id}>
+              <strong>{index + 1}. {labels[step.step_id]} · {candidate.status === "interrupted" && step.status === "running" ? "중단 시점" : labels[step.status]}</strong>
+              {step.reason && <span>{step.reason}</span>}
+            </li>
+          ))}
+        </ol>
+      </details>
+    </section>
+  );
+}
 function ThemeSelector() {
   const [theme, setTheme] = useState(document.documentElement.dataset.theme);
   function chooseTheme(next: string) {
@@ -210,16 +278,16 @@ function App() {
                       <div className="eyebrow">HER2 REVIEW / 0{page + 1}</div>
                       <h1>
                         {page === 1
-                          ? "어디까지 확인했을까요?"
+                          ? "분석 진행 현황"
                           : page === 2
-                            ? "구조와 근거, 함께 살펴보기."
+                            ? "구조와 근거 살펴보기"
                             : "근거를 다음 질문으로."}
                       </h1>
                       <p>
                         {page === 1
-                          ? "후보별로 진행한 단계와 아직 확인하지 못한 이유를 살펴보세요."
+                          ? "후보별 현재 단계와 결과를 확인할 수 있는지 살펴보세요."
                           : page === 2
-                            ? "후보와 구조 조건을 선택하고, 각 근거의 확인 범위를 살펴보세요."
+                            ? "후보·조건을 바꾸며 확인 가능한 근거와 부족한 자료를 살펴보세요."
                             : "검토 의견과 미확인 사항을 함께 확인하세요."}
                       </p>
                     </div>
@@ -261,37 +329,23 @@ function App() {
                       )}
                       {scenario.run && (
                         <>
-                          <div className="section-heading">
-                            <h2>후보별 진행</h2>
-                            <span className="tag">
-                              {labels[scenario.run.status]}
-                            </span>
+                          <div className="section-heading progress-heading">
+                            <div>
+                              <h2>후보별 진행</h2>
+                              <p>막대는 단계의 기록 상태를 나타냅니다. 완료율이나 남은 시간을 뜻하지 않습니다.</p>
+                            </div>
+                            <div className="progress-heading-status">
+                              <span className="tag">{labels[scenario.run.status]}</span>
+                              <span className="tag">{scenario.run.result_available ? "비교 결과 있음" : "비교 결과 없음"}</span>
+                            </div>
                           </div>
-                          <div className="two-col">
+                          <div className="candidate-progress-list">
                             {scenario.run.candidates.map((c) => (
-                              <section className="panel" key={c.candidate_id}>
-                                <div className="section-heading">
-                                  <h3>{scenarioFile.input.candidates.find((item) => item.candidate_id === c.candidate_id)?.name ?? c.candidate_id}</h3>
-                                  <span className="caption">
-                                    실제 항체 아님
-                                  </span>
-                                </div>
-                                <ol className="timeline">
-                                  {c.steps.map((s) => (
-                                    <li key={s.step_id} data-status={s.status}>
-                                      <span className="step-dot" />
-                                      <div>
-                                        {labels[s.step_id]}
-                                        {s.reason && <small>{s.reason}</small>}
-                                      </div>
-                                      <span className="caption">
-                                        {labels[s.status]}
-                                      </span>
-                                    </li>
-                                  ))}
-                                </ol>
-                                {c.reason && <p>{c.reason}</p>}
-                              </section>
+                              <CandidateProgress
+                                key={c.candidate_id}
+                                candidate={c}
+                                name={scenarioFile.input.candidates.find((item) => item.candidate_id === c.candidate_id)?.name ?? c.candidate_id}
+                              />
                             ))}
                           </div>
                           {scenario.run.error && (
@@ -324,35 +378,6 @@ function App() {
                     </section>
                   ) : page === 2 ? (
                     <>
-                      <div className="comparison-toolbar">
-                        <div className="segmented" aria-label="후보 선택">
-                          {scenarioFile.input.candidates.map((c) => (
-                            <button
-                              key={c.candidate_id}
-                              aria-pressed={candidate === c.candidate_id}
-                              onClick={() => {
-                                setCandidate(c.candidate_id);
-                                setExpanded(null);
-                              }}
-                            >
-                              {c.name}
-                            </button>
-                          ))}
-                        </div>
-                        <label>
-                          구조 조건
-                          <select
-                            value={conditionKind}
-                            onChange={(e) => {
-                              setConditionKind(e.target.value);
-                              setExpanded(null);
-                            }}
-                          >
-                            <option value="core">HER2–항체 중심</option>
-                            <option value="context">당쇄·주변 구조 포함</option>
-                          </select>
-                        </label>
-                      </div>
                       <ReviewOverview
                         result={result}
                         input={scenarioFile.input}

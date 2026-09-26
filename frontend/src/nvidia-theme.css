@@ -139,7 +139,7 @@ nav button[aria-current] {
   font-weight: 700;
 }
 .workspace-title .eyebrow,
-.review-heading .eyebrow {
+.review-workbench-heading .eyebrow {
   color: var(--text-secondary);
   letter-spacing: 0.06em;
 }
@@ -148,10 +148,7 @@ nav button[aria-current] {
 .issue-card {
   border-color: var(--border-subtle);
 }
-.segmented button[aria-pressed="true"] {
-  box-shadow: inset 0 -3px var(--color-accent);
-}
-.review-heading h2,
+.review-workbench-heading h2,
 .evidence-panel h2 {
   font-weight: 700;
 }

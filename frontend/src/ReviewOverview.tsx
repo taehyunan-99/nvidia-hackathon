@@ -55,146 +55,91 @@ export function ReviewOverview({
       (o) => selected && o.evidence_ids.includes(selected.evidence_id),
     ) ?? opinions[0];
   const gaps = [...new Set(conditions.flatMap((c) => c.gaps))];
+  const hasMeasuredEvidence = result.evidence.some((item) => item.measurement_state === "measured");
+  const selectionControls = (
+    <div className="review-workbench-controls" aria-label="검토 결과 선택">
+      <div className="review-workbench-controls-title">
+        <strong>검토 결과 선택</strong>
+        <span>공개 3D 예제와 별개로 오른쪽 근거가 바뀝니다.</span>
+      </div>
+      <div className="review-selection-pair">
+        <div className="review-control-field">
+          <span>검토 후보</span>
+          <div className="review-candidate-options" role="group" aria-label="검토 후보 선택">
+            {input.candidates.map((item) => (
+              <button
+                key={item.candidate_id}
+                aria-label={item.name}
+                title={item.name}
+                aria-pressed={candidate === item.candidate_id}
+                onClick={() => onSelect(item.candidate_id, conditionKind, null)}
+              >
+                {item.name.replace(/ · 실제 항체 아님$/, "")}
+              </button>
+            ))}
+          </div>
+        </div>
+        <label className="review-control-field">
+          검토 조건
+          <select
+            value={conditionKind}
+            onChange={(event) => onSelect(candidate, event.target.value, null)}
+          >
+            <option value="core">HER2–항체 중심</option>
+            <option value="context">당쇄·주변 구조 포함</option>
+          </select>
+        </label>
+      </div>
+      <div className="review-control-field">
+        <span>{evidence.length > 1 ? "확인할 근거 선택" : "근거 기록"}</span>
+        <div className="evidence-choices" role="group" aria-label={evidence.length > 1 ? "검토 근거 선택" : "검토 근거 상태"}>
+          {evidence.length === 1 ? (
+            <p className="evidence-record">
+              {topics[evidence[0].topic] ?? evidence[0].topic} 근거 · {states[evidence[0].measurement_state] ?? evidence[0].measurement_state}
+              <small>오른쪽에 표시 중</small>
+            </p>
+          ) : evidence.length > 1 ? evidence.map((item) => (
+            <button
+              key={item.evidence_id}
+              aria-pressed={selected?.evidence_id === item.evidence_id}
+              onClick={() => onSelect(candidate, conditionKind, item.evidence_id)}
+            >
+              {topics[item.topic] ?? item.topic} · {states[item.measurement_state] ?? item.measurement_state}
+            </button>
+          )) : <span>이 조건에 연결된 근거가 없습니다.</span>}
+        </div>
+      </div>
+    </div>
+  );
   return (
     <section className="review-overview" aria-label="시각 중심 검토 요약">
-      <div className="review-context">
-        <span>합성 입력 · 실제 HER2 아님</span>
-        <span>
-          {conditionKind === "core" ? "HER2–항체 중심" : "당쇄·주변 구조 포함"}
-        </span>
-        <span>분석 구간 미정</span>
-      </div>
-      <div className="review-heading">
+      <div className="review-insight">
         <div>
-          <div className="eyebrow">01 / COMPARE</div>
-          <h2>후보별 확인 상태</h2>
+          <span className="eyebrow">현재 이 결과에서 알 수 있는 것</span>
+          <h2>이 화면만으로 후보 우열을 단정할 수 없습니다</h2>
+          <p>
+            {result.structures.length ? "후보 구조 기록의 좌표 파일은 이 화면에 연결되지 않았습니다. " : "후보 구조 좌표가 제공되지 않았습니다. "}
+            {hasMeasuredEvidence ? "기록된 측정 근거는 오른쪽에서 확인해 주세요. " : "실제 근거 측정도 없습니다. "}
+            아래 3D는 공개 실험 구조 예제로, 업로드한 후보의 분석 결과가 아닙니다.
+          </p>
         </div>
-        <span className="tag">△ 동등 조건 비교 미확인</span>
-      </div>
-      <p className="review-lead">
-        좌표와 분석 구간이 없어 후보의 우열은 판단할 수 없습니다.
-      </p>
-      <div className="matrix-scroll">
-        <table className="review-matrix">
-          <caption>
-            모의 자료의 준비 상태 · 후보를 선택하면 아래 근거가 함께 바뀝니다.
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">확인 항목</th>
-              {input.candidates.map((c) => (
-                <th scope="col" key={c.candidate_id}>
-                  <button
-                    aria-pressed={candidate === c.candidate_id}
-                    onClick={() =>
-                      onSelect(c.candidate_id, conditionKind, null)
-                    }
-                  >
-                    {c.name}
-                  </button>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {["조건 기록", "구조·좌표", "근거 측정", "검토 의견"].map(
-              (row, index) => (
-                <tr key={row}>
-                  <th scope="row">{row}</th>
-                  {input.candidates.map((c) => {
-                    const cs = result.conditions.filter(
-                      (x) =>
-                        x.candidate_id === c.candidate_id &&
-                        x.kind === conditionKind,
-                    );
-                    const es = result.evidence.filter((e) =>
-                      cs.some((x) => x.condition_id === e.condition_id),
-                    );
-                    const os = result.opinions.filter((o) =>
-                      cs.some((x) => x.condition_id === o.condition_id),
-                    );
-                    const label =
-                      index === 0
-                        ? cs.length
-                          ? "기록 있음"
-                          : "미제공"
-                        : index === 1
-                          ? "좌표 미제공"
-                          : index === 2
-                            ? es.length
-                              ? [
-                                  ...new Set(
-                                    es.map(
-                                      (e) =>
-                                        states[e.measurement_state] ??
-                                        e.measurement_state,
-                                    ),
-                                  ),
-                                ].join(" · ")
-                              : "근거 없음"
-                            : os.length
-                              ? [
-                                  ...new Set(
-                                    os.map(
-                                      (o) =>
-                                        decisions[o.decision] ?? o.decision,
-                                    ),
-                                  ),
-                                ].join(" · ")
-                              : "의견 없음";
-                    return (
-                      <td
-                        key={c.candidate_id}
-                        data-selected={candidate === c.candidate_id}
-                      >
-                        <button
-                          className="matrix-state"
-                          onClick={() =>
-                            onSelect(
-                              c.candidate_id,
-                              conditionKind,
-                              es[0]?.evidence_id ?? null,
-                            )
-                          }
-                        >
-                          <span aria-hidden="true">
-                            {index === 0 && cs.length ? "▤" : "◇"}
-                          </span>
-                          {label}
-                        </button>
-                      </td>
-                    );
-                  })}
-                </tr>
-              ),
-            )}
-          </tbody>
-        </table>
-      </div>
-      <div className="review-heading">
-        <div>
-          <div className="eyebrow">02 / INSPECT</div>
-          <h2>선택한 근거를 확인하세요</h2>
+        <div className="review-insight-facts">
+          <span>조건 기록 {result.conditions.length}건</span>
+          <span>후보 구조 {result.structures.length ? `${result.structures.length}건 기록` : "미제공"}</span>
+          <span>근거 {hasMeasuredEvidence ? "측정 기록 있음" : "실측·계산값 없음"}</span>
         </div>
-        <span className="tag">
-          {input.candidates.find((c) => c.candidate_id === candidate)?.name ?? "후보 미선택"}
-        </span>
       </div>
-      <div className="evidence-choices" aria-label="검토 근거 선택">
-        {evidence.map((e) => (
-          <button
-            key={e.evidence_id}
-            aria-pressed={selected?.evidence_id === e.evidence_id}
-            onClick={() => onSelect(candidate, conditionKind, e.evidence_id)}
-          >
-            {topics[e.topic] ?? e.topic} ·{" "}
-            {states[e.measurement_state] ?? e.measurement_state}
-          </button>
-        ))}
-      </div>
+      <section className="review-workbench" aria-label="3D와 근거 탐색 작업대">
+        <div className="review-workbench-heading">
+          <div>
+            <span className="eyebrow">01 / EXPLORE</span>
+            <h2>구조를 보며 근거 확인하기</h2>
+          </div>
+          <span className="tag">공개 구조 예제 · 모의 결과와 별개</span>
+        </div>
+        {selectionControls}
       <div
         className="compare-grid review-focus"
-        key={`${result.run_id}-${candidate}-${conditionKind}`}
       >
         <Suspense fallback={<p>3D 준비 중…</p>}>
           <StructurePreview />
@@ -207,12 +152,24 @@ export function ReviewOverview({
           {selected ? (
             <>
               <div className="section-heading">
-                <h3>{topics[selected.topic] ?? selected.topic}</h3>
+                <h3>{topics[selected.topic] ?? selected.topic} 근거</h3>
                 <span className="tag">
                   {states[selected.measurement_state] ??
                     selected.measurement_state}
                 </span>
               </div>
+              <div className="review-evidence-summary">
+                <span className="eyebrow">현재 확인 결과</span>
+                <strong>{selected.measurement_state === "measured" ? "측정 기록이 있습니다" : selected.measurement_state === "failed" ? "이 근거는 계산하지 못했습니다" : "확인된 측정값이 없습니다"}</strong>
+                <p>{selected.reason}</p>
+              </div>
+              {opinion && (
+                <div className="review-decision">
+                  <span className="eyebrow">검토 의견</span>
+                  <strong>{decisions[opinion.decision] ?? opinion.decision}</strong>
+                  <p>{opinion.reason}</p>
+                </div>
+              )}
               <dl className="evidence-facts">
                 <div>
                   <dt>측정값</dt>
@@ -238,15 +195,6 @@ export function ReviewOverview({
                   </dd>
                 </div>
               </dl>
-              <p>{selected.reason}</p>
-              {opinion && (
-                <div className="review-decision">
-                  <strong>
-                    {decisions[opinion.decision] ?? opinion.decision}
-                  </strong>
-                  <p>{opinion.reason}</p>
-                </div>
-              )}
               {gaps.map((g) => (
                 <p className="notice" key={g}>
                   {g}
@@ -289,6 +237,41 @@ export function ReviewOverview({
           )}
         </section>
       </div>
+      </section>
+      <details className="review-matrix-details">
+        <summary>두 후보의 자료 준비 상태 비교</summary>
+        <div className="matrix-scroll">
+          <table className="review-matrix">
+            <caption>선택한 검토 조건에 기록된 모의 자료의 상태입니다.</caption>
+            <thead>
+              <tr>
+                <th scope="col">확인 항목</th>
+                {input.candidates.map((item) => <th scope="col" key={item.candidate_id}>{item.name}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {["조건 기록", "구조·좌표", "근거 측정", "검토 의견"].map((row, index) => (
+                <tr key={row}>
+                  <th scope="row">{row}</th>
+                  {input.candidates.map((item) => {
+                    const candidateConditions = result.conditions.filter((entry) => entry.candidate_id === item.candidate_id && entry.kind === conditionKind);
+                    const candidateEvidence = result.evidence.filter((entry) => candidateConditions.some((condition) => condition.condition_id === entry.condition_id));
+                    const candidateOpinions = result.opinions.filter((entry) => candidateConditions.some((condition) => condition.condition_id === entry.condition_id));
+                    const value = index === 0
+                      ? candidateConditions.length ? "기록 있음" : "미제공"
+                      : index === 1
+                        ? "좌표 미제공"
+                        : index === 2
+                          ? candidateEvidence.length ? [...new Set(candidateEvidence.map((entry) => states[entry.measurement_state] ?? entry.measurement_state))].join(" · ") : "근거 없음"
+                          : candidateOpinions.length ? [...new Set(candidateOpinions.map((entry) => decisions[entry.decision] ?? entry.decision))].join(" · ") : "의견 없음";
+                    return <td key={item.candidate_id} data-selected={candidate === item.candidate_id}>{value}</td>;
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
       <section className="review-next">
         <div>
           <div className="eyebrow">03 / NEXT CHECK</div>
