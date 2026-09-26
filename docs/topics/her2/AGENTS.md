@@ -11,6 +11,7 @@ HER2와 항체 후보를 비교·검토하는 현재 프로젝트의 기능·판
 - [validation.md](validation.md) — 전체 데모·첫 기술 검증·미정 항목
 - [a01-reference-inputs.md](a01-reference-inputs.md) — A-01 공개 구조·서열·assembly·잔기 대응 조사와 D1/D2 인계, Q04/G1 검토 대기
 - [a02-structure-metrics.md](a02-structure-metrics.md) — 승인 공개 구조의 접촉·표면적·정렬 계산, 누락 처리와 기하학적 겹침의 해석 한계
+- [a03-glycan-context.md](a03-glycan-context.md) — 동일 단백질에서 관측 당 포함·제외 표면 비교, 당 identity·공유결합·누락 검증과 B 인계
 - [logic-b-handoff.md](logic-b-handoff.md) — 로직 B 실행부의 현재 동작 범위와 D3–D6 인계 초안
 
 형식: Markdown 중심. 웹 서비스 기술 선택·잠정안은 [ARCHITECTURE](../../ARCHITECTURE.md)와 [ADR](../../ADR.md)을 따른다. 구현·배포는 미검증이다.
