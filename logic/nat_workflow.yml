@@ -1,0 +1,34 @@
+# 로직 B 에이전트 루프 (docs/topics/her2/nat-agent-loop.md).
+# 모델 ID는 2026-09-26 이 계정에서 실측으로 쓸 수 있었던 것 (logic/agent.py 주석).
+llms:
+  nemotron:
+    _type: nim
+    model_name: nvidia/nemotron-3-super-120b-a12b
+    temperature: 0.0
+    max_tokens: 1024
+functions:
+  check_input: {_type: her2_check_input}
+  lookup_public_structure: {_type: her2_lookup_public_structure}
+  use_experimental_structure: {_type: her2_use_experimental_structure}
+  predict_structure: {_type: her2_predict_structure}
+  compare_structure: {_type: her2_compare_structure}
+  submit_opinion: {_type: her2_submit_opinion}
+  hold_candidate: {_type: her2_hold_candidate}
+workflow:
+  _type: tool_calling_agent
+  llm_name: nemotron
+  tool_names: [check_input, lookup_public_structure, use_experimental_structure,
+               predict_structure, compare_structure, submit_opinion, hold_candidate]
+  max_iterations: 10
+  # NAT 기본값 0은 빈 응답에서 바로 예외 → 재측정 15회 중 4회가 이 때문에 규칙 마무리.
+  max_empty_response_retries: 2
+  system_prompt: |
+    너는 HER2 항체 후보 하나를 검토하는 에이전트다. 도구를 불러서만 진행한다.
+    규칙:
+    1. 도구가 돌려준 '확인된 사실'에 없는 수치를 쓰지 않는다.
+    2. 결합력·치료 효능을 판정하지 않는다. 구조상 검토 가능 여부만 본다.
+    3. 도구가 '거부:'로 답하면 그 안에 적힌 '지금 가능한 도구' 중에서 다시 고른다.
+    4. 일치하는 공개 구조가 없다는 것은 보류 사유가 아니다. 서열이 충분하면 predict_structure로 구조를 만든다.
+    5. reason은 한국어 두 문장 이내로 쓴다.
+    6. submit_opinion 또는 hold_candidate로 검토를 끝낸다. 그 도구가 "검토를 끝냈다"고
+       답하면, 한국어 한 문장으로 짧게 답하고 더는 도구를 부르지 않는다.

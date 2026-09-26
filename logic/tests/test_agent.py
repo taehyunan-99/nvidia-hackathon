@@ -200,3 +200,49 @@ def test_invented_numbers_compares_against_every_fact():
 
 def test_parse_choice_refuses_an_empty_reason():
     assert parse_choice(json.dumps({"action": "hold", "reason": "  "}), {"hold"}) is None
+
+
+def test_invented_numbers_treats_the_same_value_written_differently_as_known():
+    """접촉 잔기 수는 `contact_measurement`가 float로 저장해 사실 문장이
+    "39.0"이 된다(logic/analysis.py). 모델은 "39"라고 쓴다. 같은 값이면
+    표기가 달라도 통과해야 한다. (`Flow._opinion_facts`는 숫자와 단위
+    사이를 공백으로 뗀 "39.0 residue"를 쓴다 — 붙이면 아래 식별자 판정에
+    걸린다.)"""
+    assert invented_numbers("접촉 잔기 39개", ["x: 39.0 residue (...)"]) == []
+    # 사실에 없는 값은 여전히 잡는다.
+    assert invented_numbers("접촉 잔기 42개", ["x: 39.0 residue (...)"]) == ["42"]
+
+
+def test_invented_numbers_exempts_only_fixed_prompt_identifiers():
+    """"Boltz-2"·"HER2"는 프롬프트에 고정으로 등장하는 이름이라, 사실에
+    그 숫자가 없어도 예외로 본다(logic.agent.PROMPT_IDENTIFIERS)."""
+    assert invented_numbers("일치하는 구조가 없어 Boltz-2로 예측한다.", ["표적 서열 길이 300자"]) == []
+    assert invented_numbers("HER2 표적에 대해 검토한다.", ["표적 서열 길이 300자"]) == []
+
+
+def test_invented_numbers_exempts_an_identifier_token_only_when_it_is_in_the_facts():
+    """"1N8Z"는 고정 상수가 아니라 후보마다 달라지는 PDB ID다. 그 토큰이
+    사실 텍스트에 그대로 나타날 때만 예외로 보고, 없으면 값 주장으로 잡는다."""
+    assert invented_numbers("1N8Z 구조를 그대로 쓴다.", ["1N8Z와 정확히 일치한다."]) == []
+    assert invented_numbers("1N8Z 구조를 그대로 쓴다.", ["표적 서열 길이 300자"]) != []
+
+
+def test_invented_numbers_catches_invented_unit_claims_next_to_letters():
+    """글자 옆에 있다는 이유만으로 봐주지 않는다. "3nM", "KD 5nM", "92kDa",
+    "pLDDT-85", "42residue"는 모두 식별자가 아니라 지어낸 수치 주장이므로
+    사실에 없으면 잡아야 한다(구 버전은 글자 바로 옆 숫자를 전부 식별자로
+    봐서 이런 값을 놓쳤다)."""
+    facts = ["표적 서열 길이 300자"]
+    assert invented_numbers("KD 5nM로 결합한다.", facts) == ["5"]
+    assert invented_numbers("분자량은 92kDa다.", facts) == ["92"]
+    assert invented_numbers("pLDDT-85로 신뢰도가 높다.", facts) == ["85"]
+    assert invented_numbers("접촉 잔기가 42residue다.", facts) == ["42"]
+    assert invented_numbers("0.95nM의 친화도를 보인다.", facts) == ["0.95"]
+
+
+def test_invented_numbers_still_allows_a_real_value_claim_that_matches_facts():
+    """접촉 잔기 수처럼 한글·공백 옆의 숫자는 그대로 값 주장으로 보고,
+    사실에 같은 값이 있으면 통과시킨다."""
+    assert invented_numbers("접촉 잔기 39개로 충분하다.", ["39 residue 접촉."]) == []
+    # 값이 다르면("39.4" vs 사실의 "39") 여전히 잡는다.
+    assert invented_numbers("접촉 잔기 39.4개다.", ["39 residue 접촉."]) == ["39.4"]

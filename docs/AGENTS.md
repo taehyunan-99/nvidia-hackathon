@@ -17,6 +17,7 @@
 - [topics/her2/agent-design.md](topics/her2/agent-design.md) — 에이전트 판단 흐름
 - [topics/her2/validation.md](topics/her2/validation.md) — 전체 데모·첫 검증·미정 항목
 - [topics/her2/logic-b-handoff.md](topics/her2/logic-b-handoff.md) — 로직 B 실행부 상태와 D3–D6 인계 초안
+- [topics/her2/nat-agent-loop.md](topics/her2/nat-agent-loop.md) — 로직 B NAT 에이전트 루프 설계와 로드맵
 - `tools/` — 실행 도구·스킬·환경
 - `references/` — 출처·선별 기록
 - `collaboration/` — 팀 공통 설정

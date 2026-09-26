@@ -16,14 +16,18 @@
 | B-04 장애·한도·재현성 | **동작** | 한도 실측 완료, 429 재시도 구현·실제 부하에서 확인 |
 | B-05 판단부(Nemotron) | **동작** | 분기 2곳을 모델이 선택. 실제 실행에서 규칙과 다른 결론을 냈다 |
 | B-06 예측 구조 화면 표시 | **동작** | 운영부가 mmCIF를 내보내고 프런트가 sha256 대조 후 3D로 띄운다 |
+| B-07 NAT 에이전트 루프 | **동작** | 재측정(3회 반복, 시나리오 5개) 기준 거부 1/15, 반복 상한 도달 0/15, variant 시나리오 평균 30.07s vs 규칙 32.5s — [nat-agent-loop.md §7](nat-agent-loop.md#7-측정과-b-전환-기준) |
 
 B-02는 **한 조합으로 1건** 성공했다. 다른 길이·`diffusion_samples > 1`·호출 한도는 아직 모른다.
 
-**판단부에 대해 받는 쪽이 알아야 할 것.** 이제 `structure_source`와
-`review_opinion` 두 분기를 Nemotron이 고른다. 결과 계약의 필드는 바뀌지
-않았지만 **`opinions[].reason` 문장이 실행마다 달라진다.** 문장 끝에
-`(판단: <모델명>)` 또는 `(판단: 규칙 — <이유>)`가 붙으니 화면에서 그대로
-보여 주면 된다. 모델 문장을 고정 문구로 가정하고 파싱하지 않는다.
+**판단부에 대해 받는 쪽이 알아야 할 것.** 기본 모드(`LOGIC_AGENT_MODE=nat`)에서는
+Nemotron이 NAT `tool_calling_agent` 안에서 다음 도구를 직접 고르며 후보를
+검토한다. `run_flow` 시그니처와 `LogicOutput` 스키마는 바뀌지 않았지만
+**`opinions[].reason` 문장이 실행마다, 그리고 모델이 그때그때 고른 도구
+선택에 따라 달라진다.** 문장 끝에 `(판단: <모델명>)` 또는
+`(판단: 규칙 — <이유>)`가 붙으니 화면에서 그대로 보여 주면 된다. 모델
+문장을 고정 문구로 가정하고 파싱하지 않는다. `LOGIC_AGENT_MODE=rule`을
+주면 이전 동작(고정 단계·`if` 분기)으로 되돌아간다.
 
 대가가 둘 있다. 실행 시간이 후보 2건 기준 **약 0.2초에서 수십 초**로
 늘었다. 그리고 판단 호출은 **예측 호출보다 불안정하다** — 순차 12회에서
@@ -121,6 +125,9 @@ A-02·A-03의 계산 함수가 들어오면 [logic/analysis.py](../../../logic/a
 | 호출 timeout | 기본 600초 | `DEFAULT_TIMEOUT` |
 | 작업 디렉터리 | `NvidiaClient(work_dir)`에 쓰기 권한 필요 (`call_log.jsonl`) | — |
 | GPU | 불필요 (예측은 원격 NIM) | — |
+| 의존성 (`nat` 모드) | `nvidia-nat[langchain]>=1.9,<2` (설치 버전 1.9.0) | `pyproject.toml` |
+| Python 버전 범위 | `>=3.11,<3.14` (NAT 1.9.0이 3.14 미지원) | PyPI 메타데이터 |
+| 설치 용량 (`nat` 모드) | `.venv` 675 MB (NAT 설치 후) | `du -sh .venv` (Task 1) |
 | 예측 1건 소요 시간 | 1,047잔기 기준 **12.0초** (recycling 3·sampling 50·samples 1) | `call_log.jsonl`의 `elapsed_s` |
 | 예측 응답 파일 크기 | **791,331 bytes** (mmCIF 1건) | 저장된 파일 |
 | 호출 한도 | 한도 헤더·`Retry-After` **없음**. 동시 20건 중 10건 429. **순차 6건 중에도 2건 429** | 실측 2026-09-26 |
@@ -144,11 +151,20 @@ B는 **Biopython·freesasa를 쓰지 않는다.** 그 의존성은 로직 A 쪽�
   → **G1에서 서비스와 합의 필요**
 - `MIN_CHAIN_LENGTH`(50)와 접촉 거리 4.5 Å은 형식 하한·선택 기준이며 과학적 판정 기준이 아니다.
   → **PRD Q05**
+- `Flow._check_input`이 표적 서열의 문자를 검증하지 않아 O·B·Z·U가 통과한다. Boltz-2가
+  `O`를 HTTP 422로 거부하므로 이런 입력은 입력 오류가 아니라 예측 실패로 끝난다.
+  별도 후속 작업으로 이미 만들어 두었다.
 
 ## 7. 받는 쪽이 할 일
 
 **서비스(S-02):** 2절의 진입점을 호출하고 `ProgressUpdate` 줄을 상태로 옮긴다.
 종료 코드 0 ≠ 전부 성공임을 반영한다. 3절 `measurement_state`를 화면 표기에 연결한다.
+자체 테스트(`service/tests` 등)가 `LOGIC_AGENT_MODE`를 지정하지 않으면 이제
+기본값이 `nat`이라 NAT 설치 환경에서 실제 Nemotron을 호출할 수 있다 — 저장소
+루트 `conftest.py`가 모든 테스트에 `LOGIC_AGENT_MODE=rule`을 autouse로 고정해
+막아 두었지만, 다른 저장소로 옮기거나 이 fixture를 건드리는 경우 테스트가
+직접 `LOGIC_AGENT_MODE=rule`을 (환경변수나 `monkeypatch.setenv`로) 고정해야
+한다.
 
 **로직 A(A-02):** `logic/analysis.py`의 `Measurement` 형태로 충돌·표면 노출 계산을 넘긴다.
 label ↔ auth 잔기 번호 대응표를 D2로 준다.

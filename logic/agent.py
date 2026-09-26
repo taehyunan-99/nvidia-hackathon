@@ -46,6 +46,34 @@ DECISION_TIMEOUT = 60
 # 숫자로 읽히는 토막. 설명이 사실에 없는 값을 만들어내는지 볼 때 쓴다.
 _NUMBER = re.compile(r"\d+(?:\.\d+)?")
 
+# 글자·숫자·하이픈이 이어진 토막. 그 중 글자와 숫자를 모두 포함하는 것만
+# "식별자로 보이는 토큰" 후보다("HER2", "Boltz-2", "1N8Z", "92kDa" 등).
+# 한글·공백·문장부호가 나오면 토큰이 끊긴다.
+_IDENTIFIER_TOKEN = re.compile(r"[A-Za-z0-9-]+")
+
+# 프롬프트(시스템 프롬프트·도구 설명)에 고정으로 등장하는 식별자.
+# 사실 텍스트에 그대로 없어도 예외로 인정한다.
+PROMPT_IDENTIFIERS = {"HER2", "Boltz-2"}
+
+
+def _identifier_tokens(text: str) -> set[str]:
+    """text 안에서 글자와 숫자를 모두 포함하는 토큰만 뽑는다."""
+    tokens = set()
+    for m in _IDENTIFIER_TOKEN.finditer(text):
+        token = m.group()
+        if any(c.isalpha() for c in token) and any(c.isdigit() for c in token):
+            tokens.add(token)
+    return tokens
+
+
+def _identifier_spans(text: str, allowed: set[str]) -> list[tuple[int, int]]:
+    """text 안에서 allowed에 속하는 식별자 토큰들의 (start, end) 구간."""
+    spans = []
+    for m in _IDENTIFIER_TOKEN.finditer(text):
+        if m.group() in allowed:
+            spans.append((m.start(), m.end()))
+    return spans
+
 SYSTEM_PROMPT = (
     "너는 항체 후보 검토 실행의 판단부다. 아래 '확인된 사실'만 근거로 "
     "'선택지' 중 정확히 하나를 고른다.\n"
@@ -93,13 +121,39 @@ def invented_numbers(reason: str, facts: list[str]) -> list[str]:
     """설명에 있지만 사실에는 없는 숫자를 돌려준다.
 
     모델이 "접촉 잔기 42개"처럼 없는 값을 만들어 오면 여기서 잡는다.
-    사실 쪽 숫자를 문자열로 모아 두고 대조한다. 느슨한 검사이지만
-    없는 수치를 그대로 보고서에 싣는 것보다 낫다.
+
+    값으로 비교한다. 사실 쪽 숫자를 문자열로만 모아 두고 대조하면
+    "39"와 "39.0"처럼 같은 값의 다른 표기가 서로 달라 보여 오탐이
+    난다(`analysis.contact_measurement`가 `value=float(len(residues))`로
+    저장해 문장이 "39.0residue"가 되는 경우가 실제로 있었다). 느슨한
+    검사이지만 없는 수치를 그대로 보고서에 싣는 것보다 낫다.
+
+    식별자 예외는 "글자 옆 숫자는 전부 봐준다"가 아니라 훨씬 좁다.
+    숫자가 "식별자로 보이는 토큰 전체"(글자·숫자·하이픈이 이어지고 글자와
+    숫자를 모두 포함하는 덩어리, 예: "HER2", "Boltz-2", "1N8Z")의 일부일
+    때만, 그리고 그 토큰이 고정 상수 `PROMPT_IDENTIFIERS`에 있거나 사실
+    텍스트에 그 토큰이 통째로 그대로 나타날 때만 예외로 본다. 그 밖의
+    글자 옆 숫자("3nM", "KD 5nM", "92kDa", "pLDDT-85", "42residue")는
+    전부 값 주장으로 보고 사실의 숫자와 대조한다 — 이전 버전은 "글자
+    바로 옆 숫자면 전부 식별자"로 봐서 이런 지어낸 단위 주장을 놓쳤다.
+
+    사실 쪽은 식별자 안에 있는 숫자까지 포함해 전부 모은다. 그래야
+    "1N8Z"의 "1"·"8"처럼 식별자 안에 있던 값이 알려진 값 목록에서
+    빠지지 않는다(모델이 그 값을 나중에 다시 쓸 수 있다).
     """
-    known = set()
-    for fact in facts:
-        known.update(_NUMBER.findall(fact))
-    return [n for n in _NUMBER.findall(reason) if n not in known]
+    facts_text = "\n".join(facts)
+    known = {float(m.group()) for m in _NUMBER.finditer(facts_text)}
+
+    allowed = PROMPT_IDENTIFIERS | _identifier_tokens(facts_text)
+    spans = _identifier_spans(reason, allowed)
+
+    invented = []
+    for m in _NUMBER.finditer(reason):
+        if any(s <= m.start() < e for s, e in spans):
+            continue
+        if float(m.group()) not in known:
+            invented.append(m.group())
+    return invented
 
 
 def parse_choice(text: str, allowed: set[str]) -> tuple[str, str] | None:
@@ -215,3 +269,27 @@ class Decider:
             ),
             None,
         )
+
+
+class RuleDecider:
+    """모델을 부르지 않고 규칙 결과를 기록한다.
+
+    에이전트가 끊긴 뒤 규칙으로 마무리할 때 쓴다. 다시 모델을 부르면
+    방금 실패한 호출을 되풀이하게 된다. 끊긴 이유를 결정마다 남긴다.
+    """
+
+    def __init__(self, why: str, *, decisions: list[Decision], model: str):
+        self.why = why
+        self.decisions = decisions
+        self.model = model
+
+    def choose(self, step: str, *, question: str, facts: list[str],
+               options: list[Option], default: str) -> Decision:
+        del question
+        assert any(o.action == default for o in options), "default가 선택지에 없다"
+        decision = Decision(
+            step=step, action=default, reason="코드에 정해 둔 규칙대로 진행했다.",
+            decided_by="rule", model=None, fallback_reason=self.why, facts=facts,
+        )
+        self.decisions.append(decision)
+        return decision

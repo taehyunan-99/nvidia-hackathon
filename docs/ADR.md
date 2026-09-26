@@ -33,7 +33,7 @@
 
 ## ADR-003 — Python API와 분석 worker를 분리한다
 
-- **상태:** 설계 선택. NAT·모델·분석 라이브러리의 실제 조합은 미검증.
+- **상태:** 설계 선택. NAT·모델 조합은 2026-09-26 실측 확인 — `nvidia-nat[langchain]` 1.9.0(Python `>=3.11,<3.14`) + `nvidia/nemotron-3-super-120b-a12b`, `tool_calling_agent` + 커스텀 도구 7개 + 스트리밍 동작 확인([nat-agent-loop.md](topics/her2/nat-agent-loop.md)). 분석 라이브러리(Biopython·freesasa 등, 로직 A쪽) 조합은 미검증.
 - **배경:** 기존 분석 설계는 Python 도구와 NAT를 사용한다. 구조 예측과 분석은 웹 요청보다 오래 걸릴 수 있고 브라우저를 닫아도 상태를 남겨야 한다.
 - **결정:** FastAPI는 접수·조회·파일 전달을, 별도 Python worker는 분석을 맡는다. 초기에는 같은 코드·이미지를 두 실행 명령으로 운영하며 브라우저는 저장된 작업 상태를 polling한다.
 - **대안:** API 요청 안의 전체 분석과 FastAPI `BackgroundTasks`만 사용하는 방식은 초기 구현이 단순하지만 긴 계산과 재시작 후 상태 관리를 별도로 해결해야 한다. WebSocket·SSE는 실시간 양방향 제어 요구가 없어 초기 필수로 두지 않는다.
