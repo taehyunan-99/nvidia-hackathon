@@ -17,6 +17,7 @@ LogicRequest를 받아 후보별로 다섯 단계를 진행하고 LogicOutput을
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
@@ -118,6 +119,7 @@ class Flow:
         self.evidence: list[dict[str, Any]] = []
         self.opinions: list[dict[str, Any]] = []
         self.artifacts: list[dict[str, Any]] = []
+        self.agent_traces: dict[str, list[dict[str, Any]]] = {}
 
     # ------------------------------------------------------------ 진행 보고
     def _emit(self, candidate_id: str | None, step_id: str, status: str, reason: str | None) -> None:
@@ -138,8 +140,12 @@ class Flow:
 
     # ------------------------------------------------------------ 실행
     def run(self) -> dict[str, Any]:
+        mode = os.getenv("LOGIC_AGENT_MODE", "rule")
         for candidate in self.request["input"]["candidates"]:
-            self._run_candidate(candidate)
+            if mode == "nat":
+                self._run_candidate_nat(candidate)
+            else:
+                self._run_candidate(candidate)
         output = {
             "result": self._build_result(),
             "files": [],
@@ -149,6 +155,19 @@ class Flow:
 
     def _run_candidate(self, candidate: dict[str, Any]) -> None:
         self._resume(CandidateSession(candidate))
+
+    def _run_candidate_nat(self, candidate: dict[str, Any]) -> None:
+        from . import nat_agent
+
+        session = CandidateSession(candidate)
+        self.states[session.cid].status = "running"
+        if nat_agent.NAT_AVAILABLE:
+            why = nat_agent.run_candidate(self, session)
+        else:
+            why = "NAT를 불러오지 못했다"
+        self.agent_traces[session.cid] = session.calls
+        if why:
+            self._continue_by_rule(session, why)
 
     def _resume(self, s: CandidateSession) -> None:
         """세션이 멈춘 자리부터 규칙 경로로 끝까지 간다. 끝난 단계는 다시 하지 않는다."""
