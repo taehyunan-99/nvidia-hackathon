@@ -28,6 +28,28 @@ python -m logic.run --request req.json --out out.json --progress progress.jsonl
 python -m pytest logic/tests -q
 ```
 
+판단부 모드는 `LOGIC_AGENT_MODE=nat|rule`로 고른다. 기본값은 `nat`(NAT
+`tool_calling_agent`가 도구를 골라 진행하고, 끝내지 못하면 규칙으로
+마무리한다). `LOGIC_AGENT_MODE=rule`은 이전 동작(고정 단계·`if` 분기)을
+그대로 되돌린다. 자세한 설계는 [nat-agent-loop.md](../docs/topics/her2/nat-agent-loop.md).
+
+```bash
+LOGIC_AGENT_MODE=rule python -m logic.run --request req.json --out out.json
+```
+
+`nat` 경로가 실제 Nemotron을 부르는 테스트(`test_live_agent_reviews_experimental_candidate`)는
+`RUN_LIVE_NAT=1`일 때만 돈다(과금 호출이라 기본은 스킵):
+
+```bash
+RUN_LIVE_NAT=1 python -m pytest logic/tests/test_nat_agent.py -q
+```
+
+정해진 시나리오 5개로 규칙/에이전트 모드를 비교 측정하려면(이것도 과금 호출):
+
+```bash
+UV_LINK_MODE=copy uv run python -m logic.measure_agent --repeat 3
+```
+
 ## 구성
 
 | 파일 | 역할 |
@@ -58,6 +80,12 @@ python -m pytest logic/tests -q
 - **기존 구조 확보** — 중쇄·경쇄 서열이 공개 구조의 사슬과 **정확히** 일치하고 같은 구조에 표적 사슬이 있을 때만. 한쪽 사슬만 맞으면 같은 후보로 보지 않고 예측 경로로 보낸다.
 - **예측** — 표적·중쇄·경쇄가 모두 `MIN_CHAIN_LENGTH`(50) 이상일 때만 호출한다. 형식 오류를 예측 호출로 넘기지 않기 위한 하한이며 과학적 기준이 아니다.
 - **자료 부족 보류** — 위 조건을 못 채우면 호출하지 않고 `held`로 남긴다.
+
+`nat` 모드에서는 위 단계를 고정 순서로 실행하지 않고, Nemotron이 도구 7개
+(`check_input`·`lookup_public_structure`·`use_experimental_structure`·
+`predict_structure`·`compare_structure`·`submit_opinion`·`hold_candidate`)
+중 하나씩 골라 진행한다. 각 도구의 허용 조건·하는 일·종료 여부는
+[nat-agent-loop.md §5 도구와 관문](../docs/topics/her2/nat-agent-loop.md#5-도구와-관문)의 표를 따른다.
 
 ## 실행으로 확인한 것
 

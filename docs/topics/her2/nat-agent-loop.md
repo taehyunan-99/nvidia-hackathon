@@ -1,6 +1,7 @@
 # NAT 에이전트 루프 설계 — 로직 B
 
-작성일 2026-09-26. 상태: **설계. 구현·측정 전.** 담당 로직 B.
+작성일 2026-09-26. 상태: **구현·측정 완료. 기본 모드 `nat`로 전환.** 담당 로직 B.
+재측정 결과(§7 재측정)는 기준 1·2·3 모두 비해당으로 A(기본 에이전트) 유지, B(상태별 도구 노출)로 넘어가지 않았다. `max_empty_response_retries`(NAT 기본값 0)를 2로 올려 빈 응답 예외로 인한 규칙 마무리를 줄였다(재측정 15회 중 4회가 이 원인). 이 변경은 아직 재측정하지 않았다.
 판단 흐름의 원 설계는 [agent-design.md](agent-design.md), 현재 실행부 상태는 [logic-b-handoff.md](logic-b-handoff.md)를 따른다.
 
 ## 1. 왜 바꾸는가
@@ -53,7 +54,7 @@ service/app.py ── run_flow(request)            # 시그니처·결과 계약
 - **세션 전달**: NAT 도구는 설정으로 생성되므로 인자로 세션을 넘길 수 없다. 실행 직전 `contextvars`에 현재 세션을 넣고 도구가 꺼내 쓴다.
 - **후보 단위 실행**: 에이전트 한 번 = 후보 하나. 도구에 `candidate_id` 인자를 두지 않는다. 잘못된 후보를 가리키는 호출을 없애기 위해서다.
 - **동기 진입점**: NAT는 async다. `run_flow`는 동기를 유지하고 내부에서 이벤트 루프를 돌린다. 이미 루프가 도는 스레드에서 불리면 별도 스레드에서 실행한다.
-- **모드 선택**: 환경변수 `LOGIC_AGENT_MODE=nat|rule`. 기본은 0–2단계 검증 후 `nat`으로 바꾼다. 그 전까지 기본 `rule`.
+- **모드 선택**: 환경변수 `LOGIC_AGENT_MODE=nat|rule`. Task 7(인계)부터 기본 `nat`. `LOGIC_AGENT_MODE=rule`로 이전 동작(고정 규칙 경로)을 그대로 되돌릴 수 있다.
 
 ## 5. 도구와 관문
 
@@ -86,6 +87,7 @@ service/app.py ── run_flow(request)            # 시그니처·결과 계약
 | 모델 호출 실패(503·timeout) | NAT 호출 오류 → 같은 방식으로 규칙 마무리, 사유에 오류 요약 |
 | 종료 도구 없이 최종 답변만 냄 | 규칙 마무리 |
 | NAT import 실패 | 실행 시작 시 `rule` 모드로 전환하고 결과 경고에 기록 |
+| Nemotron 빈 응답("no content, no tool calls") | NAT 기본값 `max_empty_response_retries: 0`은 즉시 예외 → 규칙 마무리. §7 재측정 15회 중 4회가 이 원인이었다. `logic/nat_workflow.yml`의 `workflow.max_empty_response_retries`를 2로 올려 재시도하게 했다(이 변경 자체는 아직 재측정하지 않음) |
 
 "규칙으로 이어서 마무리"는 새 함수 `_continue_by_rule(session)`이다. 세션 상태를 보고 남은 단계만 기존 규칙 경로로 실행한다. 이미 끝난 Boltz-2 호출을 다시 보내지 않는다.
 
@@ -153,7 +155,7 @@ A 유지 또는 B 전환 결정은 하지 않는다 — 사용자 확인 사항�
 | 3 측정 | 7절 시나리오 실행, 결과를 이 문서에 기록 | 표 채움. 실행하지 않은 값은 비워 둠 |
 | 4 판단 | A 유지 또는 B 전환 결정 | 사용자 확인 |
 | 4B (조건부) | `ToolCallAgentGraph` 하위 클래스로 허용 도구만 노출, 커스텀 워크플로 등록. 3단계 재측정 | 거부 0, 기준 재확인 |
-| 5 인계 | `logic/README.md`, `logic-b-handoff.md`, D6(의존성·이미지 크기), ADR NAT 상태 갱신. 기본 모드를 `nat`으로 | 서비스 담당이 읽고 실행 가능한 상태 |
+| 5 인계 | `logic/README.md`, `logic-b-handoff.md`, D6(의존성·이미지 크기), ADR NAT 상태 갱신. 기본 모드를 `nat`으로 | **완료** — 서비스 담당이 읽고 실행 가능한 상태 |
 
 ## 9. 범위 밖
 

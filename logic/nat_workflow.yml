@@ -20,6 +20,8 @@ workflow:
   tool_names: [check_input, lookup_public_structure, use_experimental_structure,
                predict_structure, compare_structure, submit_opinion, hold_candidate]
   max_iterations: 10
+  # NAT 기본값 0은 빈 응답에서 바로 예외 → 재측정 15회 중 4회가 이 때문에 규칙 마무리.
+  max_empty_response_retries: 2
   system_prompt: |
     너는 HER2 항체 후보 하나를 검토하는 에이전트다. 도구를 불러서만 진행한다.
     규칙:

@@ -11,6 +11,8 @@ HER2와 항체 후보를 비교·검토하는 현재 프로젝트의 기능·판
 - [validation.md](validation.md) — 전체 데모·첫 기술 검증·미정 항목
 - [a01-reference-inputs.md](a01-reference-inputs.md) — A-01 공개 구조·서열·assembly·잔기 대응 조사와 D1/D2 인계, Q04/G1 검토 대기
 - [logic-b-handoff.md](logic-b-handoff.md) — 로직 B 실행부의 현재 동작 범위와 D3–D6 인계 초안
+- [nat-agent-loop.md](nat-agent-loop.md) — 로직 B를 NAT tool-calling 루프로 바꾸는 설계, A→B 전환 기준과 로드맵. 구현·측정 완료, 기본 모드 `nat`로 전환
+- [nat-agent-loop-plan.md](nat-agent-loop-plan.md) — 위 설계의 태스크별 구현 계획 (Task 1–7, 6B 조건부)
 
 형식: Markdown 중심. 웹 서비스 기술 선택·잠정안은 [ARCHITECTURE](../../ARCHITECTURE.md)와 [ADR](../../ADR.md)을 따른다. 구현·배포는 미검증이다.
 

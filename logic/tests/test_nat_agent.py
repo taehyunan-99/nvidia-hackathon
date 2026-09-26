@@ -26,12 +26,13 @@ def _opinion_for(output, candidate_id):
     raise AssertionError(f"no opinion for {candidate_id}")
 
 
-def test_rule_mode_is_default(tmp_path, monkeypatch):
+def test_nat_mode_is_default(tmp_path, monkeypatch):
     monkeypatch.delenv("LOGIC_AGENT_MODE", raising=False)
     called = []
-    monkeypatch.setattr(nat_agent, "run_candidate", lambda *a, **k: called.append(1))
+    monkeypatch.setattr(nat_agent, "NAT_AVAILABLE", True)
+    monkeypatch.setattr(nat_agent, "run_candidate", lambda *a, **k: called.append(1) or "완료")
     output, _ = run_flow(_request(tmp_path), client=ScriptedClient())
-    assert called == []
+    assert called  # nat_agent.run_candidate가 최소 한 번은 불렸다
     validate(output, "LogicOutput")
 
 
@@ -85,6 +86,7 @@ def test_workflow_config_loads_with_registered_tools():
     from nat.runtime.loader import load_config
     config = load_config(nat_agent.CONFIG_PATH)
     assert set(config.functions) == set(nat_agent.TOOL_NAMES)
+    assert config.workflow.max_empty_response_retries == 2
 
 
 @pytest.mark.skipif(os.getenv("RUN_LIVE_NAT") != "1", reason="실제 Nemotron 호출은 RUN_LIVE_NAT=1에서만")
