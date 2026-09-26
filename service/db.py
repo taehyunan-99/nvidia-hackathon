@@ -8,7 +8,7 @@ import os
 import psycopg
 from psycopg.rows import dict_row
 
-MIGRATION = Path(__file__).parent / "migrations" / "001_initial.sql"
+MIGRATIONS = sorted((Path(__file__).parent / "migrations").glob("[0-9]*.sql"))
 
 
 def connect(dsn: str) -> psycopg.Connection:
@@ -18,14 +18,15 @@ def connect(dsn: str) -> psycopg.Connection:
 def migrate(dsn: str) -> None:
     with connect(dsn) as conn:
         with conn.cursor() as cur:
-            cur.execute(MIGRATION.read_text(encoding="utf-8"))
+            for migration in MIGRATIONS:
+                cur.execute(migration.read_text(encoding="utf-8"))
 
 
 def require_schema(dsn: str) -> None:
     with connect(dsn) as conn:
-        row = conn.execute("SELECT version FROM schema_migrations WHERE version = 1").fetchone()
+        row = conn.execute("SELECT version FROM schema_migrations WHERE version = 2").fetchone()
         if not row:
-            raise RuntimeError("서비스 DB migration 001을 먼저 실행하세요.")
+            raise RuntimeError("서비스 DB migration 002를 먼저 실행하세요.")
 
 
 if __name__ == "__main__":
