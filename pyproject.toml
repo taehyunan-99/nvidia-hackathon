@@ -1,0 +1,19 @@
+[project]
+name = "her2-review"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "uvicorn>=0.34,<1",
+  "jsonschema>=4.23,<5",
+  "python-multipart>=0.0.20,<1",
+  "psycopg[binary]>=3.2,<4",
+  "gemmi>=0.7,<1",
+  "requests>=2.32,<3",
+]
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "httpx>=0.28,<1"]
+
+[tool.pytest.ini_options]
+testpaths = ["service/tests", "logic/tests"]

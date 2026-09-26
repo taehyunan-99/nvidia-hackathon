@@ -1,5 +1,39 @@
 # 시연용 실행부
 
+## 영속 접수 API 준비
+
+`service.operational`은 임시 계약 v0.1.0의 세션·입력·실행 **접수와 조회**를
+PostgreSQL에 저장한다. 별도 worker가 아직 없어 실행은 `queued`에 머문다.
+시연용 `service.app`의 동기식 `/api/review`와 경로·저장소를 공유하지 않는다.
+
+로컬 PostgreSQL을 준비한 뒤 `DATABASE_URL`과 `SERVICE_DATA_ROOT`를 설정한다.
+비밀값은 `.env.example`에 넣지 않는다. 운영 API는 다음 순서로 실행한다.
+
+```bash
+uv sync
+uv run python -m service.db
+uv run uvicorn service.operational:from_environment --factory --port 8011
+```
+
+현재는 `DATA_MODE=mock`만 허용한다. `/api/session`으로 받은 HttpOnly cookie로
+검토와 실행을 접수한다. `ALLOWED_ORIGINS`에는 브라우저의 정확한 출처를
+쉼표로 구분해 넣는다. HTTPS에서는 `SECURE_COOKIE=true`로 설정한다.
+`MAX_UPLOAD_BYTES` 기본값은 파일당 20 MiB의 **개발용 제한**이며 대표 입력과
+호스팅 용량을 측정한 뒤 다시 정한다. 파일은 서버가 정한 경로에 저장한다.
+
+PostgreSQL 연동 검사는 별도의 임시 DB를 가리키는 `TEST_DATABASE_URL`이
+필요하며, 검사 중 해당 DB의 서비스 테이블을 비운다.
+
+```bash
+TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:55432/postgres uv run pytest service/tests/test_operational.py -q
+```
+
+이 API는 로컬 접수 단계다. worker 점유·결과 등록·만료 자료의 물리적 정리,
+Compose·HTTPS·공개 접수 제한은 다음 단계에서 구현·검증한다. 공개 서비스에
+연결해서는 안 된다.
+
+## 기존 시연용 실행부
+
 프런트가 **실제 분석 결과**를 화면에 띄우게 하는 얇은 층이다.
 계획서 [S-02](../docs/plan.md)의 전체 범위가 아니다 — DB·작업 점유·재접속·worker는 없다.
 본선에서 정식 운영부로 옮길 때 이 파일을 늘리지 말고 자리를 옮긴다.
