@@ -6,6 +6,7 @@
 *.toml text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
+frontend/public/structures/*.cif text eol=lf
 *.pdf binary
 *.png binary
 *.jpg binary
