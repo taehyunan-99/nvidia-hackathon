@@ -134,10 +134,16 @@ def create_app(
     allowed_origins: tuple[str, ...] = (),
     max_upload_bytes: int = 20 * 1024 * 1024,
 ) -> FastAPI:
-    if mode != "mock" or max_upload_bytes <= 0 or not dsn:
+    if mode not in {"mock", "live"} or max_upload_bytes <= 0 or not dsn:
         raise ValueError("DATABASE_URL, DATA_MODE, MAX_UPLOAD_BYTES 설정을 확인하세요.")
     api = FastAPI(title="HER2 후보 검토 서비스", version=SCHEMA_VERSION)
     data_root = Path(data_root).resolve()
+
+    @api.get("/api/config")
+    def config():
+        body = {"schema_version": SCHEMA_VERSION, "data_mode": mode}
+        validate(body, "ServiceConfig")
+        return body
 
     @api.exception_handler(HTTPException)
     async def http_error(_request: Request, exc: HTTPException) -> JSONResponse:
@@ -358,18 +364,19 @@ def create_app(
             _fail(409, "RESULT_NOT_READY", "결과가 아직 없습니다.", "check_run")
         return JSONResponse(row["result_json"], headers={"Cache-Control": "no-store"})
 
-    @api.get("/api/artifacts/{artifact_id}")
-    def get_artifact(artifact_id: str, request: Request):
+    def artifact_response(artifact_id: str, request: Request, run_id: str | None = None):
         session = current_session(request)
         with connect(dsn) as conn:
-            row = conn.execute(
+            rows = conn.execute(
                 """SELECT f.relative_path, r.result_json FROM artifact_files f
                    JOIN runs r ON r.id = f.run_id
-                   WHERE f.artifact_id = %s AND r.session_id = %s""",
-                (artifact_id, session["id"]),
-            ).fetchone()
-        if not row or not row["result_json"]:
+                   WHERE f.artifact_id = %s AND r.session_id = %s
+                     AND (%s::text IS NULL OR r.id = %s) LIMIT 2""",
+                (artifact_id, session["id"], run_id, run_id),
+            ).fetchall()
+        if len(rows) != 1 or not rows[0]["result_json"]:
             _fail(404, "NOT_FOUND", "산출물을 찾을 수 없습니다.")
+        row = rows[0]
         matches = [item for item in row["result_json"].get("artifacts", []) if item.get("artifact_id") == artifact_id]
         if len(matches) != 1 or matches[0].get("status") != "ready":
             _fail(404, "NOT_FOUND", "준비된 산출물이 없습니다.")
@@ -387,6 +394,14 @@ def create_app(
             _fail(404, "NOT_FOUND", "산출물 형식을 확인할 수 없습니다.")
         filename = Path(artifact["file_name"]).name
         return Response(content, media_type=media, headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff", "Content-Disposition": f"attachment; filename*=UTF-8''{quote(filename)}"})
+
+    @api.get("/api/artifacts/{artifact_id}")
+    def get_artifact(artifact_id: str, request: Request):
+        return artifact_response(artifact_id, request)
+
+    @api.get("/api/runs/{run_id}/artifacts/{artifact_id}")
+    def get_run_artifact(run_id: str, artifact_id: str, request: Request):
+        return artifact_response(artifact_id, request, run_id)
 
     return api
 

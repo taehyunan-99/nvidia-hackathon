@@ -55,7 +55,7 @@ export function ReportView({ result, input, run, persistedMock, apiBase }: {
   const relatedCondition = (opinion: Opinion) => result.conditions.find((item) => item.condition_id === opinion.condition_id);
   const artifactUrl = (artifact: Result["artifacts"][number]) => {
     if (artifact.status !== "ready") return null;
-    if (persistedMock) return `${apiBase}/api/artifacts/${encodeURIComponent(artifact.artifact_id)}`;
+    if (persistedMock) return `${apiBase}/api/runs/${encodeURIComponent(result.run_id)}/artifacts/${encodeURIComponent(artifact.artifact_id)}`;
     const predicted = structures.some((structure) => structure.artifact_id === artifact.artifact_id && structure.kind === "predicted");
     return result.data_mode === "live" && predicted ? `${apiBase}/api/runs/${encodeURIComponent(result.run_id)}/artifacts/${encodeURIComponent(artifact.artifact_id)}` : null;
   };
@@ -66,14 +66,14 @@ export function ReportView({ result, input, run, persistedMock, apiBase }: {
         <span className="eyebrow">검토 범위</span>
         <h2>{result.data_mode === "mock" ? "화면 확인용 모의 결과" : "이번 실행의 결과"}</h2>
         <p>{result.data_mode === "mock" ? "입력과 상태 표시를 확인하는 자료입니다. 구조 계산·측정·실제 항체 판정은 수행하지 않았습니다." : "아래 판단은 이 실행에 기록된 조건과 근거에만 적용됩니다. 결합력이나 치료 효과를 뜻하지 않습니다."}</p>
-        {incomplete && <p className="report-alert" role="status">{run?.status === "partial" ? "일부 후보의 실행이 실패했습니다. 유효한 기록만 아래에 표시합니다." : "실행이 완료되지 않았습니다. 저장된 결과의 범위만 확인하세요."}</p>}
+        {incomplete && <p className="report-alert" role="status">{run?.status === "partial" ? "일부 후보의 검토가 보류되거나 실패했습니다. 확인된 기록만 아래에 표시합니다." : "실행이 완료되지 않았습니다. 저장된 결과의 범위만 확인하세요."}</p>}
         <p className="report-key-gap"><strong>자료 공백</strong>{mainGap}</p>
         <p className="report-record-count">구조 기록 {structures.length}건 · 측정 근거 {measuredCount}건</p>
       </div>
       <dl className="report-facts">
         <div><dt>비교 판단</dt><dd>{comparisonStatus}</dd></div>
         <div><dt>추가 확인 의견</dt><dd>{pendingOpinions}건</dd></div>
-        <div><dt>실행 문제 후보</dt><dd>{failedCandidates}개</dd></div>
+        <div><dt>보류·실패 후보</dt><dd>{failedCandidates}개</dd></div>
       </dl>
     </section>
 

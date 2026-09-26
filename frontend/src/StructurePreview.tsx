@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { PluginContext } from "molstar/lib/mol-plugin/context";
 import type { ViewOptions } from "./molecular-viewer";
+import { OpacityControl } from "./OpacityControl";
 import { Vec3 } from "molstar/lib/mol-math/linear-algebra/3d/vec3";
 import "./structure-preview.css";
 type ViewerActions = Awaited<
@@ -21,7 +22,6 @@ export default function StructurePreview() {
     [retry, setRetry] = useState(0);
   const [options, setOptions] = useState<ViewOptions>(defaults),
     optionsRef = useRef(options);
-  const [showNames, setShowNames] = useState(false);
   const [status, setStatus] = useState("loading"),
     [count, setCount] = useState(0),
     [hasContext, setHasContext] = useState(false),
@@ -54,14 +54,6 @@ export default function StructurePreview() {
     } catch {
       setMessage("표시 변경에 실패했습니다. 다시 불러와 주세요.");
     }
-  }
-  function keepSettingsVisible() {
-    window.requestAnimationFrame(() => {
-      const popup = document.getElementById("structure-settings");
-      if (!popup?.matches(":popover-open")) return;
-      const overflow = popup.getBoundingClientRect().bottom - window.innerHeight + 16;
-      if (overflow > 0) window.scrollBy({ top: overflow, behavior: "auto" });
-    });
   }
   useEffect(() => {
     let cancelled = false,
@@ -198,19 +190,16 @@ export default function StructurePreview() {
         </div>
         <div className="structure-control-group">
           <strong>구조 성분</strong>
-          <button
-            className="structure-context-toggle"
-            disabled={!ready || !hasContext}
-            aria-pressed={options.context}
-            onClick={() => void change({ context: !options.context, view: options.context ? "overview" : "context" }, true)}
-          >
-            {options.context ? "당·기타 성분 표시 중" : "당·기타 성분 보기"}
-          </button>
+          <div className="structure-components" role="group" aria-label="구조 성분 선택">
+            <button className="structure-context-toggle" disabled={!ready || !hasContext} aria-pressed={options.context}
+              aria-label={options.context ? "당·기타 성분 표시 중" : "당·기타 성분 보기"}
+              onClick={() => void change({ context: !options.context, view: options.context ? "overview" : "context" }, true)}>
+              {options.context ? "성분 표시 중" : "당·기타 성분"}
+            </button>
+            <button className="structure-hide-toggle" disabled={!ready} aria-pressed={options.hideAntibody} onClick={() => void change({ hideAntibody: !options.hideAntibody })}>항체 숨기기</button>
+          </div>
         </div>
         <div className="structure-controls">
-          <button className="viewer-button structure-settings-trigger" popoverTarget="structure-settings" popoverTargetAction="toggle" onClick={keepSettingsVisible}>
-            표시 세부 조정
-          </button>
           <div className="structure-camera-controls">
             <button className="rotation-toggle" disabled={!ready || options.view !== "overview"} aria-pressed={spinning} onClick={() => rotate(!spinning)}>
               {options.view !== "overview" ? "회전 정지" : spinning ? "회전 정지" : "회전 재개"}
@@ -221,26 +210,13 @@ export default function StructurePreview() {
           </div>
         </div>
       </div>
-      <div id="structure-settings" className="structure-settings-popover" popover="auto" role="dialog" aria-modal="false" aria-label="표시 세부 조정">
-        <div className="structure-settings-heading">
-          <strong>표시 세부 조정</strong>
-        </div>
-        <div className="structure-adjustments">
-          {options.context && (
-            <button className="viewer-button" disabled={!ready} onClick={() => void change({ view: "context" }, true)}>
-              성분 위치 다시 보기 ↗
-            </button>
-          )}
-          <label>
-            <input type="checkbox" disabled={!ready} checked={options.hideAntibody} onChange={(e) => void change({ hideAntibody: e.target.checked })} /> 항체 숨기기
-          </label>
-          <label>
-            <input type="checkbox" checked={showNames} onChange={(e) => setShowNames(e.target.checked)} /> 구조 이름을 범례로 보기
-          </label>
-          <label className="opacity-control">
-            HER2 표면 불투명도 <output>{Math.round(options.opacity * 100)}%</output>
-            <input aria-label="HER2 표면 불투명도" type="range" min=".1" max="1" step=".05" disabled={!ready || mode === "cartoon" || options.view !== "overview"} value={options.opacity} onChange={(e) => void change({ opacity: Number(e.target.value) })} />
-          </label>
+      <div className="structure-canvas-heading">
+        <OpacityControl value={options.opacity} adjustable={ready && mode !== "cartoon" && options.view === "overview"} onChange={(value) => void change({ opacity: value })} />
+        <div className="structure-legend" aria-label="구조 색상 범례">
+          <span>● HER2</span>
+          <span>● 항체 중쇄{options.hideAntibody ? " · 숨김" : ""}</span>
+          <span>● 항체 경쇄{options.hideAntibody ? " · 숨김" : ""}</span>
+          {options.context && <span>● 당·기타 성분</span>}
         </div>
       </div>
       <div
@@ -259,19 +235,6 @@ export default function StructurePreview() {
             )}
           </div>
         )}
-        <span className="canvas-mode">
-          {options.view === "contacts"
-            ? "접촉 부위 · 나머지 구조 흐리게"
-            : options.view === "context"
-              ? "당·기타 성분 · 자홍색 강조"
-              : "전체 구조"}
-        </span>
-      </div>
-      <div className={`structure-legend ${showNames ? "structure-legend-expanded" : ""}`} aria-label="구조 색상 범례">
-        <span>● {showNames ? "HER2 세포외 영역" : "HER2"}</span>
-        <span>● {showNames ? "항체 Fab 중쇄" : "항체 중쇄"}{showNames && options.hideAntibody ? " · 숨김" : ""}</span>
-        <span>● {showNames ? "항체 Fab 경쇄" : "항체 경쇄"}{showNames && options.hideAntibody ? " · 숨김" : ""}</span>
-        {options.context && <span>● 당·기타 성분</span>}
       </div>
       <p className="view-explanation" aria-live="polite">
         {options.view === "contacts"

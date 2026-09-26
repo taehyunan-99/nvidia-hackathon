@@ -22,7 +22,7 @@ services:
     environment: &api_environment
       DATABASE_URL: postgresql://her2:${POSTGRES_PASSWORD}@db:5432/her2
       SERVICE_DATA_ROOT: /data
-      DATA_MODE: mock
+      DATA_MODE: ${DATA_MODE:-mock}
       SECURE_COOKIE: "false"
       ALLOWED_ORIGINS: http://127.0.0.1:${WEB_PORT:-8080}
       MAX_UPLOAD_BYTES: "20971520"
@@ -53,7 +53,10 @@ services:
       context: .
       dockerfile: Dockerfile.api
     command: ["python", "-m", "service.worker", "--scenario", "scientific-hold"]
-    environment: *api_environment
+    environment:
+      <<: *api_environment
+      NVIDIA_API_KEY: ${NVIDIA_API_KEY:-}
+      LOGIC_AGENT_MODE: ${LOGIC_AGENT_MODE:-nat}
     volumes:
       - uploads:/data
     depends_on:

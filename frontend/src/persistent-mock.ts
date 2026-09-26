@@ -27,7 +27,13 @@ export function isSessionExpired(error: unknown): boolean {
   return error instanceof Error && (error as Error & { code?: string }).code === "SESSION_EXPIRED";
 }
 
-export async function startMockRun(input: ReviewInput, files: Map<string, File>): Promise<{ session: Session; run: Run }> {
+export async function serviceMode(): Promise<"mock" | "live"> {
+  const config = await request<{ data_mode: "mock" | "live" }>("/api/config");
+  if (config.data_mode !== "mock" && config.data_mode !== "live") throw new Error("서비스 실행 모드를 확인할 수 없습니다.");
+  return config.data_mode;
+}
+
+export async function startSavedRun(input: ReviewInput, files: Map<string, File>): Promise<{ session: Session; run: Run }> {
   let session: Session;
   try {
     session = await request<Session>("/api/session/heartbeat", { method: "POST" });
@@ -50,34 +56,35 @@ export async function startMockRun(input: ReviewInput, files: Map<string, File>)
   return { session, run };
 }
 
-export async function readMockRun(runId: string): Promise<ScenarioFile> {
+export async function readSavedRun(runId: string): Promise<ScenarioFile> {
   const run = await request<Run>(`/api/runs/${runId}`);
-  if (run.run_id !== runId || run.data_mode !== "mock") throw new Error("모의 실행 ID가 일치하지 않습니다.");
+  if (run.run_id !== runId || !["mock", "live"].includes(run.data_mode)) throw new Error("저장된 실행 ID가 일치하지 않습니다.");
   const input = await request<ReviewInput>(`/api/reviews/${run.review_id}`);
   const result = run.result_available ? await request<Result>(`/api/runs/${runId}/result`) : null;
-  if (result && (result.run_id !== runId || result.data_mode !== "mock")) throw new Error("모의 결과 ID가 일치하지 않습니다.");
+  if (result && (result.run_id !== runId || result.data_mode !== run.data_mode)) throw new Error("저장된 결과 ID가 일치하지 않습니다.");
   if (!cachedSession || Date.now() - lastHeartbeat >= 60_000) {
     cachedSession = await request<Session>("/api/session/heartbeat", { method: "POST" });
     lastHeartbeat = Date.now();
   }
   const session = cachedSession;
-  return mockFrame(input, session, run, result);
+  return savedFrame(input, session, run, result);
 }
 
-export function mockFrame(input: ReviewInput, session: Session, run: Run, result: Result | null): ScenarioFile {
+export function savedFrame(input: ReviewInput, session: Session, run: Run, result: Result | null): ScenarioFile {
+  if (session.data_mode !== run.data_mode) throw new Error("세션과 실행 모드가 일치하지 않습니다.");
   return parseScenarioFile({
     schema_version: "0.1.0",
-    data_mode: "mock",
+    data_mode: run.data_mode,
     input,
-    scenarios: [{ name: run.status, description: "서버에 저장된 모의 실행입니다. 실제 분석은 수행하지 않습니다.", session, run, result, error: null }],
+    scenarios: [{ name: run.status, description: run.data_mode === "live" ? "서버에 저장된 실제 분석 실행입니다." : "서버에 저장된 모의 실행입니다. 실제 분석은 수행하지 않습니다.", session, run, result, error: null }],
   });
 }
 
-export function expiredFrame(input: ReviewInput = fixture.input): ScenarioFile {
+export function expiredFrame(input: ReviewInput = fixture.input, mode: "mock" | "live" = "mock"): ScenarioFile {
   return parseScenarioFile({
     schema_version: "0.1.0",
-    data_mode: "mock",
+    data_mode: mode,
     input,
-    scenarios: [{ name: "session-expired", description: "조회 기간이 끝났습니다.", session: { schema_version: "0.1.0", data_mode: "mock", session_id: "expired", status: "expired", expires_at: new Date().toISOString() }, run: null, result: null, error: null }],
+    scenarios: [{ name: "session-expired", description: "조회 기간이 끝났습니다.", session: { schema_version: "0.1.0", data_mode: mode, session_id: "expired", status: "expired", expires_at: new Date().toISOString() }, run: null, result: null, error: null }],
   });
 }

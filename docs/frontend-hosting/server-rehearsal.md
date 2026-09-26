@@ -1,6 +1,6 @@
 # 서버 구성의 로컬 검증
 
-목적: AWS 자원을 만들기 전에 동일 이미지로 HTTPS·DB·파일 보존·복구를 검증한다. 기본값은 loopback 전용이며 실제 분석이 연결되지 않은 mock worker다. 공개 접수·실제 에이전트 worker·AWS 배포 성공을 뜻하지 않는다.
+목적: AWS 자원을 만들기 전에 동일 이미지로 HTTPS·DB·파일 보존·복구를 검증한다. 기본값은 loopback 전용 mock worker다. `DATA_MODE=live`를 별도 격리 구성에 설정하면 영속 worker가 실제 분석 로직을 실행한다. 공개 접수·AWS 배포 성공을 뜻하지 않는다.
 
 ## 이미지와 설정 준비
 
@@ -30,6 +30,8 @@ python3 scripts/check_server_flow.py create --ca tmp/server-check/root.crt --sta
 최초 인증서 생성이 끝난 뒤 CA 파일을 복사한다. localhost 인증서는 로컬 CA가 발급하며 검사 스크립트에만 CA 파일을 전달한다. OS 신뢰 저장소를 바꾸거나 인증서 검증을 끄지 않는다. 브라우저에서 공개적으로 신뢰되는 인증서와는 다르다. [Caddy HTTPS](https://caddyserver.com/docs/automatic-https)
 
 사전 검사는 잘못된 origin·취약한 비밀번호 형식·공개 포트 바인딩을 거부한다. 검증 단계에서 공개 노출은 막혀 있다. API·DB·worker는 외부 포트를 열지 않고 웹만 localhost의 8081/8443을 사용한다. 로그는 서비스별 10MB × 3개로 제한하고 서버 상주 컨테이너의 메모리 제한 합계는 2.75GiB, migration 포함 3.25GiB다. swap은 추가로 허용하지 않는다. 한도는 준비용 값이며 실제 분석 통합 후 재측정한다.
+
+실제 연결은 별도 로컬 프로젝트의 비공개 env에 `DATA_MODE=live`를 설정해 확인한다. 공개 구조 입력은 `REQUESTS_CA_BUNDLE=<그 프로젝트의 root.crt> BASE_URL=https://localhost:<HTTPS 포트> uv run python -m scripts.check_live_flow`로 입력→진행→결과·파일 무결성·소유권을 검사한다. Nemotron·Boltz-2를 호출하려면 worker에만 비공개 `NVIDIA_API_KEY`를 전달하고 호출량·결과를 따로 기록한다. 기존 `check_server_flow.py`는 mock 전용 검사다.
 
 ## 재시작과 파일 보존
 
@@ -75,7 +77,7 @@ tar 복원은 파일 소유권을 복구하기 위해 일회성 root 컨테이�
 
 ## 공개 배포 전 남은 조건
 
-- 최신 로직의 영속 worker 연결, 실제 결과 파일 등록, 활성 분석 1건과 대기열·호출량 제한.
+- 영속 worker의 모델 호출량·예측 파일과 보류/실패/중단 경로를 실제 서버 규격에서 재검증하고 공개 접수 제한을 정한다.
 - 실제 도메인과 DNS·80/443·HTTPS origin·공개 접수 정책 확정. 현재 localhost 구성을 그대로 외부 공개하지 않는다.
 - 서울 4GB 서버에서 실제 NVIDIA 경로와 전체 서비스를 재검증하고, 정확한 운영 날짜·계정 플랜·예산 알림·총비용 확인.
 - 검증한 이미지 digest·설정·migration 버전을 기록하고 수동 배포·복귀 절차의 AWS 실행 확인.
