@@ -213,6 +213,15 @@ def test_the_rule_agrees_with_the_model_instead_of_contradicting_it(tmp_path):
     assert opinion["limitations"], "무엇이 모자란지 남아 있어야 한다"
 
 
+def test_model_cannot_approve_unmeasured_evidence_in_the_non_nat_path(tmp_path):
+    client = ScriptedClient("use_experimental", "reviewable")
+    output, _ = run_flow(make_request(_matched_candidate(), tmp_path), client=client,
+                         decider=Decider(client, model="test-model"))
+    opinion = _mine(output, "trastuzumab")[0]
+    assert opinion["decision"] == "needs_confirmation"
+    assert opinion["limitations"]
+
+
 def test_the_model_is_told_whether_prediction_is_even_possible(tmp_path):
     """구조 검색 결과만 주면 "일치 없음"을 "자료 부족"으로 읽는다.
 

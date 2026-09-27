@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import argparse
+import collections
 import datetime
 import json
 import os
@@ -48,6 +49,15 @@ SCENARIOS = {
 }
 
 
+def _take_http_attempts() -> list[dict]:
+    """전송 계층의 시도 기록을 가져온다. NAT가 없는 환경에서는 빈 목록이다."""
+    try:
+        from . import nat_model
+    except ImportError:
+        return []
+    return nat_model.take_attempts()
+
+
 def _one(name: str, mode: str) -> dict:
     os.environ["LOGIC_AGENT_MODE"] = mode
     with tempfile.TemporaryDirectory() as tmp:
@@ -56,6 +66,7 @@ def _one(name: str, mode: str) -> dict:
         # 측정 대상 시나리오 후보의 판단 순서에 영향을 주지 않는다.
         candidates = [cand, _filler()]
         t = time.time()
+        _take_http_attempts()  # 이전 회차 기록을 이 행에 섞지 않는다
         output, flow = run_flow(make_request(candidates, Path(tmp), target_fasta=TARGET))
         elapsed = round(time.time() - t, 1)
     cid = cand["candidate_id"]
@@ -63,6 +74,12 @@ def _one(name: str, mode: str) -> dict:
     opinion = next((o for o in output["result"]["opinions"] if o["candidate_id"] == cid), {})
     notes = [c["note"] for c in trace if not c.get("accepted") and c.get("note")]
     reason = opinion.get("reason") or ""
+    # 오류는 후보 단위로 본다. 같은 흐름의 대조용 후보가 받은 429를 이 행의
+    # 실패로 세면 측정이 오염된다.
+    error = flow.agent_errors.get(cid)
+    attempts = _take_http_attempts()
+    statuses = collections.Counter(str(a["status"]) for a in attempts)
+    fatal_429 = any("429" in text or "Too Many Requests" in text for text in (reason, error or ""))
     return {
         # 기록 파일은 이어붙이므로, 어느 실행의 줄인지 나중에 구분할 수 있게 시각을 남긴다.
         "at": datetime.datetime.now().isoformat(timespec="seconds"),
@@ -72,7 +89,15 @@ def _one(name: str, mode: str) -> dict:
         # calls=0, rule_finish=True). 2026-09-26에 그 구분이 안 돼 무효 자료
         # 세 벌을 만들었다 — 원인 판정이 stderr 로그에만 있었다.
         "reason": reason,
-        "rate_limited": ("429" in reason) or ("Too Many Requests" in reason),
+        "agent_error": error,
+        # 복구된 429는 agent_errors까지 올라오지 않는다. 전송 계층 기록으로
+        # 복구된 한도·빈 200 응답·미처리 오류를 각각 센다.
+        "rate_limited": fatal_429,
+        "http_statuses": dict(statuses),
+        "http_429_recovered": statuses.get("429", 0) > 0 and not fatal_429,
+        "http_empty_responses": sum(1 for a in attempts if a["status"] == 200 and not a["emitted"]),
+        "http_attempts": attempts,
+        "code_calls": sum(c.get("executed_by") == "code" for c in trace),
         "calls": len(trace), "refused": sum(1 for c in trace if not c["accepted"]),
         "rule_finish": "판단: 규칙" in (opinion.get("reason") or ""),
         "hit_limit": "반복 상한" in (opinion.get("reason") or ""),

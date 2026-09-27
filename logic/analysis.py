@@ -18,7 +18,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from . import contacts
+from . import contacts, structures
 from .contract import REPO_ROOT
 
 CONTACTS_PATH = REPO_ROOT / "frontend" / "public" / "structures" / "contacts.json"
@@ -28,6 +28,11 @@ CONTACT_NUMBERING = "label"
 
 # 실험 구조와 예측 구조가 같은 문장을 쓴다. 화면에서 둘을 나란히 놓고
 # 비교하므로, 기준 설명이 다르면 같은 기준이라는 것을 알 수 없다.
+# 예측 구조에서 계산한 접촉에만 붙인다. 실험 좌표에는 해당하지 않는다.
+_PREDICTED_CONTACT_LIMIT = (
+    " 이 값은 예측 구조에서 계산한 것이다. 개발에 쓰지 않은 항체 2건(8JYR·3N85)에서는 "
+    "예측 접촉과 실험 접촉의 겹침이 0이었다. 에피토프 근거로 확정해 쓰지 말고 사람이 확인한다."
+)
 _CONTACT_DEFINITION = (
     "표적·항체 중원자 간 거리 {cutoff} Å 이내로 선택한 잔기 수. "
     f"잔기 번호는 {CONTACT_NUMBERING} 기준이며 결합력·효능 판정이 아니다."
@@ -163,7 +168,7 @@ def predicted_contact_measurement(
             state="measured",
             value=0.0,
             unit="residue",
-            definition=_CONTACT_DEFINITION.format(cutoff=contacts.CUTOFF_ANGSTROM),
+            definition=_CONTACT_DEFINITION.format(cutoff=contacts.CUTOFF_ANGSTROM) + _PREDICTED_CONTACT_LIMIT,
             sources=[source],
         )
     return Measurement(
@@ -172,8 +177,88 @@ def predicted_contact_measurement(
         state="measured",
         value=float(len(found)),
         unit="residue",
-        definition=_CONTACT_DEFINITION.format(cutoff=contacts.CUTOFF_ANGSTROM),
+        definition=_CONTACT_DEFINITION.format(cutoff=contacts.CUTOFF_ANGSTROM) + _PREDICTED_CONTACT_LIMIT,
         residues=[residue(label_asym_id=c, label_seq_id=s) for c, s in found],
+        sources=[source],
+    )
+
+
+# 예측 에피토프를 견주는 기준 복합체. 이 항체-표적 계면은 공개 실험 구조로 확정돼 있다.
+REFERENCE_COMPLEX = "1N8Z"
+_REFERENCE_TARGET_CHAIN = "C"
+_OVERLAP_TOPIC = "predicted_epitope_overlap_with_reference"
+
+
+@lru_cache(maxsize=1)
+def _reference_epitope() -> tuple[frozenset[int], str]:
+    """기준 복합체의 표적 쪽 접촉 잔기와 그 표적 서열."""
+    entry = _contacts().get(REFERENCE_COMPLEX) or {}
+    positions = frozenset(r["seq"] for r in entry.get("residues", [])
+                          if r["chain"] == _REFERENCE_TARGET_CHAIN)
+    path = structures.STRUCTURE_DIR / f"{REFERENCE_COMPLEX}.cif"
+    try:
+        entities, _ = structures.parse_entities(path.read_text(encoding="utf-8"))
+    except OSError:
+        return positions, ""
+    sequence = next((e.sequence for e in entities
+                     if _REFERENCE_TARGET_CHAIN in e.strand_ids), "")
+    return positions, structures.normalize_sequence(sequence or "")
+
+
+def reference_epitope_overlap_measurement(
+    path: Path, chain_mapping: list[dict[str, Any]], target_sequence: str, source: dict[str, Any]
+) -> Measurement:
+    """예측 에피토프가 기준 복합체의 계면과 같은 자리인지 잰다.
+
+    왜 재는가: 개발에 쓰지 않은 항체 2건(8JYR·3N85)에서 예측 접촉과 실험 접촉의
+    겹침이 0이었다. 그런데 3N85는 예측 접촉 22개 중 12개가, 퍼투주맙(1S78)은
+    23개 중 10개가 1N8Z 실험 에피토프와 같은 자리였다. 새 항체를 이미 본
+    트라스투주맙 자리에 붙인 것이다. 그 비율을 근거로 남겨 사람이 보게 한다.
+
+    이 값은 예측이 틀렸다는 판정이 아니다. 실제로 그 자리에 붙는 항체도 있다.
+    후보가 트라스투주맙과 다른데 비율이 높으면 의심하라는 뜻이다.
+    """
+    roles = {c["role"]: c.get("label_asym_id") for c in chain_mapping}
+    target = roles.get("target")
+    antibody = {roles.get("heavy"), roles.get("light")} - {None}
+    if not target or len(antibody) != 2:
+        return Measurement.not_run(
+            _OVERLAP_TOPIC,
+            "예측 응답에서 표적·중쇄·경쇄 사슬을 모두 대응시키지 못해 기준 계면과 견주지 않았다.",
+        )
+    sequence = structures.normalize_sequence(target_sequence or "")
+    if not sequence:
+        return Measurement.not_run(
+            _OVERLAP_TOPIC, "표적 서열이 없어 예측 좌표를 기준 구조의 잔기 번호로 옮길 수 없다.")
+    reference, reference_sequence = _reference_epitope()
+    if not reference or not reference_sequence:
+        return Measurement.not_run(
+            _OVERLAP_TOPIC,
+            f"{REFERENCE_COMPLEX}의 실험 접촉 잔기나 표적 서열을 찾지 못해 견주지 않았다.")
+    try:
+        atoms = contacts.parse_atoms(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError) as exc:
+        return Measurement(topic=_OVERLAP_TOPIC, kind="computed", state="failed",
+                           reason=f"예측 구조 파일을 읽지 못했다: {exc}")
+    own = sorted(n for c, n in contacts.contact_residues(atoms, {target}, antibody) if c == target)
+    if not own:
+        return Measurement.not_run(
+            _OVERLAP_TOPIC, "예측 구조에서 표적 쪽 접촉 잔기를 찾지 못해 견줄 대상이 없다.")
+    to_reference = contacts.sequence_position_map(sequence, reference_sequence)
+    hits = [n for n in own if to_reference.get(n) in reference]
+    return Measurement(
+        topic=_OVERLAP_TOPIC,
+        kind="computed",
+        state="measured",
+        value=round(len(hits) / len(own), 3),
+        unit="fraction",
+        definition=(
+            f"예측 구조의 표적 쪽 접촉 잔기 {len(own)}개 중 {len(hits)}개가 "
+            f"{REFERENCE_COMPLEX}(트라스투주맙-HER2) 실험 계면과 같은 자리다. "
+            "서열 정렬로 번호를 맞춰 셌다. 후보가 트라스투주맙과 다른데 이 비율이 높으면 "
+            "학습에서 본 계면을 재현한 예측일 수 있다. 결합력·효능 지표가 아니다."
+        ),
+        residues=[residue(label_asym_id=target, label_seq_id=n) for n in hits],
         sources=[source],
     )
 

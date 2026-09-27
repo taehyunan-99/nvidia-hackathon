@@ -40,6 +40,18 @@ def test_the_cutoff_is_the_one_the_public_file_used():
         assert entry["cutoff_angstrom"] == contacts.CUTOFF_ANGSTROM
 
 
+def test_multiline_atom_rows_preserve_the_experimental_contacts():
+    """실제 PDB의 원자 행을 여러 줄로 나눠도 원자·접촉 집합이 같아야 한다."""
+    text = (structures.STRUCTURE_DIR / "1N8Z.cif").read_text()
+    wrapped = "\n".join(line.replace(" ", "\n") if line.startswith(("ATOM ", "HETATM "))
+                        else line for line in text.splitlines())
+    original = contacts.parse_atoms(text)
+    reparsed = contacts.parse_atoms(wrapped)
+    assert original and reparsed == original
+    assert contacts.contact_residues(reparsed, {"C"}, {"A", "B"}) == sorted(
+        (r["chain"], r["seq"]) for r in _known()["1N8Z"]["residues"])
+
+
 def test_both_sides_of_the_interface_are_collected():
     """표적 쪽 잔기만 모으면 항체의 어느 자리가 닿는지 알 수 없다."""
     target, antibody = CHAINS["1N8Z"]
@@ -201,3 +213,85 @@ def test_predicted_and_experimental_state_the_same_criterion():
     assert experimental.definition == analysis._CONTACT_DEFINITION.format(
         cutoff=contacts.CUTOFF_ANGSTROM
     )
+
+
+def test_a_quoted_model_number_does_not_drop_every_atom():
+    """CIF는 값을 따옴표로 감쌀 수 있다. model 번호도 토큰이 아니라 값으로 비교해야 한다."""
+    header = "\n".join(["data_test", "loop_"] + [
+        "_atom_site." + n for n in ("group_PDB", "label_asym_id", "label_seq_id", "type_symbol",
+                                    "Cartn_x", "Cartn_y", "Cartn_z", "pdbx_PDB_model_num")])
+    rows = '\nATOM A 1 C 0.0 0.0 0.0 "1"\nATOM B 1 C 1.0 0.0 0.0 "1"\n'
+    assert len(contacts.parse_atoms(header + rows)) == 2
+
+
+def _synthetic_prediction(seqs: dict[str, list[int]]) -> str:
+    """사슬별 접촉 잔기 번호를 주면 그 자리만 닿는 최소 mmCIF를 만든다."""
+    header = "\n".join(["data_pred", "loop_"] + [
+        "_atom_site." + n for n in ("group_PDB", "label_asym_id", "label_seq_id", "type_symbol",
+                                    "Cartn_x", "Cartn_y", "Cartn_z", "pdbx_PDB_model_num")])
+    rows = []
+    for chain, positions in seqs.items():
+        for seq in positions:
+            # 표적은 x=0, 항체는 x=2 줄에 두고 y로 잔기를 떼어 놓는다.
+            # 같은 번호끼리만 4.5 Å 안에서 만난다.
+            x = 0.0 if chain == "A" else 2.0
+            rows.append(f"ATOM {chain} {seq} C {x} {float(seq * 10)} 0.0 1")
+    return header + "\n" + "\n".join(rows) + "\n"
+
+
+def _trastuzumab_target_sequence() -> str:
+    text = (structures.STRUCTURE_DIR / "1N8Z.cif").read_text()
+    ents, _ = structures.parse_entities(text)
+    return next(e.sequence for e in ents if "C" in e.strand_ids)
+
+
+def test_a_prediction_landing_on_the_trastuzumab_interface_is_measured_as_such(tmp_path):
+    """새 항체를 이미 본 트라스투주맙 자리에 붙인 예측을 수치로 드러낸다.
+
+    실측 근거: 개발 미사용 8JYR·3N85는 예측 접촉과 실험 접촉의 겹침이 0이었고,
+    3N85는 예측 접촉 22개 중 12개가 1N8Z 실험 에피토프와 같은 자리였다.
+    """
+    epitope = sorted(r["seq"] for r in _known()["1N8Z"]["residues"] if r["chain"] == "C")[:3]
+    mapping = [{"role": "target", "label_asym_id": "A"},
+               {"role": "heavy", "label_asym_id": "H"},
+               {"role": "light", "label_asym_id": "L"}]
+    source = {"title": "t", "url": "https://example.invalid", "record_id": "r"}
+    target_seq = _trastuzumab_target_sequence()
+
+    on = tmp_path / "on.cif"
+    on.write_text(_synthetic_prediction({"A": epitope, "H": epitope[:2], "L": epitope[2:3]}))
+    hit = analysis.reference_epitope_overlap_measurement(on, mapping, target_seq, source)
+    assert hit.state == "measured" and hit.value == 1.0
+    assert sorted(r["label_seq_id"] for r in hit.residues) == epitope
+
+    off = tmp_path / "off.cif"
+    elsewhere = [n for n in range(20, 40) if n not in epitope][:3]
+    off.write_text(_synthetic_prediction({"A": elsewhere, "H": elsewhere[:2], "L": elsewhere[2:3]}))
+    miss = analysis.reference_epitope_overlap_measurement(off, mapping, target_seq, source)
+    assert miss.state == "measured" and miss.value == 0.0 and not miss.residues
+
+
+def test_the_overlap_is_not_invented_without_a_target_sequence(tmp_path):
+    """표적 서열이 없으면 좌표를 공통 번호로 옮길 수 없다. 값을 만들지 않는다."""
+    path = tmp_path / "p.cif"
+    path.write_text(_synthetic_prediction({"A": [1, 2], "H": [1], "L": [2]}))
+    m = analysis.reference_epitope_overlap_measurement(
+        path, [{"role": "target", "label_asym_id": "A"}, {"role": "heavy", "label_asym_id": "H"},
+               {"role": "light", "label_asym_id": "L"}], "", {"title": "t", "url": "u", "record_id": "r"})
+    assert m.state == "not_run" and m.reason
+
+
+def test_predicted_contacts_carry_the_held_out_result_in_their_definition(tmp_path):
+    """예측 구조의 접촉 잔기는 실험 구조와 같은 권위로 읽히면 안 된다.
+
+    실측: 개발에 쓰지 않은 8JYR·3N85에서 예측 접촉과 실험 접촉의 겹침이 0이었다.
+    그 사실이 근거 정의에 붙어 보고서·화면까지 따라가야 한다.
+    """
+    path = tmp_path / "p.cif"
+    path.write_text(_synthetic_prediction({"A": [10, 11], "H": [10], "L": [11]}))
+    m = analysis.predicted_contact_measurement(
+        path, [{"role": "target", "label_asym_id": "A"}, {"role": "heavy", "label_asym_id": "H"},
+               {"role": "light", "label_asym_id": "L"}], {"title": "t", "url": "u", "record_id": "r"})
+    # contact_residues는 가까운 쌍의 양쪽 잔기를 모두 담는다(표적 2 + 항체 2).
+    assert m.state == "measured" and m.value == 4.0
+    assert "개발에 쓰지 않은" in m.definition and "겹침" in m.definition

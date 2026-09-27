@@ -26,6 +26,8 @@ try:
     from nat.data_models.function import FunctionBaseConfig
     from nat.runtime.loader import load_workflow
 
+    from . import nat_model  # registers the paced NIM adapter
+
     NAT_AVAILABLE = True
 except ImportError:  # 로컬 테스트·규칙 모드는 NAT 없이도 돈다
     NAT_AVAILABLE = False
@@ -111,7 +113,8 @@ if NAT_AVAILABLE:
 def _prompt(session: CandidateSession) -> str:
     c = session.candidate
     return (f"후보 {c['candidate_id']}({c.get('display_name') or c['candidate_id']})의 검토를 진행해라. "
-            "check_input부터 시작한다.")
+            + ("입력 검사는 통과했다. lookup_public_structure부터 시작한다."
+               if session.input_checked else "check_input부터 시작한다."))
 
 
 def _run_sync(coro) -> Any:
@@ -165,6 +168,12 @@ def run_candidate(flow, session: CandidateSession, *, config_path: Path = CONFIG
     """후보 하나를 NAT 에이전트로 돌린다. 끝내지 못했으면 규칙 마무리 사유를 돌려준다."""
     load_env()  # NAT의 nim LLM이 os.environ의 NVIDIA_API_KEY를 읽는다.
     tools = CandidateTools(flow, session)
+    # ponytail: 결정론적 입력 검사는 모델 호출 전에 끝낸다. 오류 후보는 LLM을 쓰지 않는다.
+    if not session.input_checked:
+        tools.check_input()
+        session.calls[-1]["executed_by"] = "code"
+    if session.terminal:
+        return None
 
     async def _go() -> str:
         token = _CURRENT.set(tools)

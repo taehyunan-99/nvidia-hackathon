@@ -173,8 +173,21 @@ def test_opinion_reason_may_cite_a_number_shown_earlier_by_lookup(tmp_path):
     assert "1N8Z" in lookup_out
     tools.use_experimental_structure("일치한다.")
     tools.compare_structure()
-    out = tools.submit_opinion("reviewable", "1N8Z 구조와 접촉 잔기 39개로 충분하다.")
+    out = tools.submit_opinion("needs_confirmation", "1N8Z 접촉 잔기 39개를 확인했으나 미계산 항목을 확인해야 한다.")
     assert not out.startswith("거부:")
+    assert session.terminal == "completed"
+
+
+def test_unmeasured_evidence_cannot_be_submitted_as_reviewable(tmp_path):
+    _, flow, session, tools = _setup(tmp_path, _trastuzumab())
+    tools.check_input()
+    tools.lookup_public_structure()
+    tools.use_experimental_structure("일치한다.")
+    tools.compare_structure()
+    assert tools.submit_opinion("reviewable", "추가 검증이 필요 없다.").startswith("거부:")
+    assert session.terminal is None
+    assert not flow.opinions
+    assert not tools.submit_opinion("needs_confirmation", "미계산 항목을 확인해야 한다.").startswith("거부:")
     assert session.terminal == "completed"
 
 
@@ -189,3 +202,94 @@ def test_opinion_reason_with_a_truly_invented_number_is_still_refused(tmp_path):
     assert out.startswith("거부:")
     assert "9999" in out
     assert session.terminal is None
+
+
+def _break_recording(flow):
+    """Boltz-2 호출은 성공하고, 그 뒤 기록 단계가 중간에서 터지게 한다.
+
+    구조 목록에 한 건을 넣은 뒤 터져서, 반쯤 쌓인 기록이 남는 상황을 만든다.
+    """
+    def _record(cid, response, sequences=None):
+        flow.structures.append({"structure_id": f"st-{cid}-boltz2", "candidate_id": cid})
+        raise OSError("디스크에 쓰지 못했다")
+    flow._record_predicted = _record
+
+
+def test_predict_failure_after_paid_call_ends_candidate_without_repredicting(tmp_path):
+    """M1: 예측 호출이 성공한 뒤 도구가 터지면 후보를 실패로 끝내고 다시 예측하지 않는다.
+
+    NAT의 ToolNode는 도구 예외를 모델에게 오류 메시지로 돌려준다
+    (tool_calling_agent의 handle_tool_errors 기본값 True). 예외를 그대로 두면
+    structure_id가 비어 있어 관문이 predict_structure를 다시 허용하고, 모델이
+    다시 부르면 유료 Boltz-2가 한 번 더 나간다.
+    """
+    client, flow, session, tools = _setup(tmp_path, _variant())
+    tools.check_input()
+    tools.lookup_public_structure()
+    _break_recording(flow)
+
+    out = tools.predict_structure("일치하는 공개 구조가 없어 새로 만든다.")
+
+    assert client.predictions == 1
+    assert "OSError" in out
+    assert session.terminal == "failed"
+    assert flow.states[session.cid].status == "failed"
+    assert flow.structures == []  # 반쯤 쌓인 기록은 되돌린다
+    again = tools.predict_structure("다시 만든다.")
+    assert again.startswith("거부:")
+    assert client.predictions == 1
+
+
+def test_rule_finish_after_predict_failure_does_not_repredict(tmp_path, monkeypatch):
+    """M1: 에이전트가 그 뒤 종료 도구 없이 끝나도 규칙 마무리가 다시 예측하지 않는다."""
+    from logic import nat_agent
+    from logic.contract import validate
+    from logic.flow import run_flow
+
+    def _agent(flow, session, **kwargs):
+        tools = CandidateTools(flow, session)
+        tools.check_input()
+        tools.lookup_public_structure()
+        _break_recording(flow)
+        tools.predict_structure("일치하는 공개 구조가 없어 새로 만든다.")
+        return nat_agent._fallback_reason(session, "")
+
+    monkeypatch.setenv("LOGIC_AGENT_MODE", "nat")
+    monkeypatch.setattr(nat_agent, "NAT_AVAILABLE", True)
+    monkeypatch.setattr(nat_agent, "run_candidate", _agent)
+    client = ScriptedClient()
+    output, flow = run_flow(make_request([_variant(), _filler()], tmp_path, target_fasta=TARGET),
+                            client=client)
+
+    validate(output, "LogicOutput")
+    assert client.predictions == 1
+    assert flow.states["cand-v"].status == "failed"
+
+
+def test_prediction_step_is_never_reported_completed_when_recording_fails(tmp_path, monkeypatch):
+    """M2: 기록이 터진 예측 단계를 completed로 먼저 알리면 화면이 성공으로 보인다.
+
+    되돌리기는 기록 리스트만 자르므로, 이미 나간 진행 이벤트와 단계 상태는
+    복구되지 않는다. 그러니 기록이 끝난 뒤에 완료를 알려야 한다.
+    """
+    def _boom(*_args, **_kwargs):
+        raise OSError("근거를 쓰지 못했다")
+
+    updates = []
+    client = ScriptedClient()
+    flow = Flow(make_request([_variant(), _filler()], tmp_path, target_fasta=TARGET),
+                client=client, progress=updates.append)
+    session = CandidateSession(_variant())
+    tools = CandidateTools(flow, session)
+    tools.check_input()
+    tools.lookup_public_structure()
+    monkeypatch.setattr(flow, "_record_confidence", _boom)
+
+    out = tools.predict_structure("일치하는 공개 구조가 없어 새로 만든다.")
+
+    assert client.predictions == 1
+    assert "OSError" in out and session.terminal == "failed"
+    steps = [(u["step_id"], u["status"]) for u in updates]
+    assert ("prediction", "completed") not in steps
+    assert ("prediction", "failed") in steps
+    assert flow.states[session.cid].steps["prediction"]["status"] == "failed"
