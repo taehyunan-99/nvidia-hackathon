@@ -1,0 +1,128 @@
+{
+  "dataset_version": "hackathon-v1",
+  "mode": "offline",
+  "reviewer": null,
+  "evaluated_commit": null,
+  "results": [
+    {
+      "check_id": "I1",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    },
+    {
+      "check_id": "I2",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    },
+    {
+      "check_id": "I3",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    },
+    {
+      "check_id": "I4",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    },
+    {
+      "check_id": "T1",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    },
+    {
+      "check_id": "T2",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    },
+    {
+      "check_id": "T3",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    },
+    {
+      "check_id": "T4",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    },
+    {
+      "check_id": "S1",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    },
+    {
+      "check_id": "S2",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    },
+    {
+      "check_id": "S3",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    },
+    {
+      "check_id": "S4",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    },
+    {
+      "check_id": "E1",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    },
+    {
+      "check_id": "E2",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    },
+    {
+      "check_id": "E3",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    },
+    {
+      "check_id": "E4",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    },
+    {
+      "check_id": "R1",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    },
+    {
+      "check_id": "R2",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    },
+    {
+      "check_id": "R3",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    },
+    {
+      "check_id": "R4",
+      "status": "not_run",
+      "evidence": [],
+      "note": ""
+    }
+  ]
+}

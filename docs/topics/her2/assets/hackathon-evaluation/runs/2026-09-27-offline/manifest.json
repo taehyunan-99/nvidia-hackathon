@@ -1,0 +1,27 @@
+{
+  "created_at": "2026-09-27T01:28:54Z",
+  "dataset_version": "hackathon-v1",
+  "commit": "7c5cf2dfcaf2e9be5f10f1da7ea57e89fd3a8f48",
+  "mode": "offline",
+  "dataset_lock_sha256": "563aa818d9b7e80a5ddb7f855aadb1664d6d8c8e31fdf6975a3009127cc01d54",
+  "code_sha256": {
+    "logic/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "logic/agent.py": "95e05a8b05cb592f96f00fc0b4e7eee5476f13cda37ec9ccc2b008734bc34777",
+    "logic/agent_session.py": "d537f424485cd7fad82ba38dd221d1af9a9f891dd849f0a76628c1520c3866d5",
+    "logic/analysis.py": "3145a78555afda286c3b1305a074e9b32c71c88029ae62dde6070732b6c4d420",
+    "logic/check_key.py": "b0fd944486b45547d979123bc888460c5b44b8a28875aa5a24522c112d4706b0",
+    "logic/contacts.py": "1e05f0793cc5370ea08e39b0f3e7c5edff821ef858c4738fd5bfabef113483e3",
+    "logic/contract.py": "883b4ccc6cb0b566903737b7aa84e2ce3e714705ef8bc64245cfd25ac92fb22a",
+    "logic/env.py": "30cdf1d1fbffd2f2e0a1b9c393fa9ef02ec4f7e0476e646207d70f0123e5c36a",
+    "logic/flow.py": "b4d65d83cfa8e5f0ff0465063c1bbab59a3ebcf26fb65835e22d60cb4d77b4d7",
+    "logic/measure_agent.py": "51417a7a6b08910b71c4252d300c802d2b15873b7e3d2f7ce0d7e6b30a7a5f3f",
+    "logic/nat_agent.py": "eced57c19d7a3b2cbeb7d749c802b6dbd0532455837461ca6d7e8446ddf788f7",
+    "logic/nvidia_client.py": "59e29326a1732e55edcd17f1bd90e73114062f4e745897baca7813df0fc44ffd",
+    "logic/run.py": "a40ff589278e9113e8e7606755e99c5deee625f3b8a07bee33a9afc1669b668e",
+    "logic/structures.py": "e4be9a1c768cc3296d983f56334a63e68ee4855450f5501bcae3d4c2d189fec4",
+    "logic/nat_workflow.yml": "a206b42b3e952b1315fd0ff40b79e688df55ebcd9da150a83dd343756c4f590b",
+    "docs/topics/her2/assets/hackathon-evaluation/run.py": "8f05cd9d48c3402f075c1df54d8cbf696010834777a6ecb45bd8aaa69b8b4848",
+    "docs/topics/her2/assets/hackathon-evaluation/cases.json": "fef1892b9f3161e2510314d54e31407012715af02af303af243b4db4288e58fc"
+  },
+  "raw_output_note": "contract data_mode=live does not mean real API calls; consult this mode"
+}

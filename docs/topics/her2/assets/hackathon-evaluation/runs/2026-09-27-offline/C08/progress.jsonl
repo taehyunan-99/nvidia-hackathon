@@ -1,0 +1,16 @@
+{"schema_version": "0.1.0", "run_id": "run-eval-c08", "candidate_id": "trastuzumab", "step_id": "input_mapping", "status": "running", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c08", "candidate_id": "trastuzumab", "step_id": "input_mapping", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c08", "candidate_id": "trastuzumab", "step_id": "evidence_review", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c08", "candidate_id": "trastuzumab", "step_id": "prediction", "status": "skipped", "reason": "일치하는 공개 실험 구조를 사용한다. (판단: offline-no-model)", "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c08", "candidate_id": "trastuzumab", "step_id": "structure_comparison", "status": "running", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c08", "candidate_id": "trastuzumab", "step_id": "structure_comparison", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c08", "candidate_id": "trastuzumab", "step_id": "reporting", "status": "running", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c08", "candidate_id": "trastuzumab", "step_id": "reporting", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c08", "candidate_id": "trastuzumab", "step_id": "input_mapping", "status": "running", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c08", "candidate_id": "trastuzumab", "step_id": "input_mapping", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c08", "candidate_id": "trastuzumab", "step_id": "evidence_review", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c08", "candidate_id": "trastuzumab", "step_id": "prediction", "status": "skipped", "reason": "일치하는 공개 실험 구조를 사용한다. (판단: offline-no-model)", "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c08", "candidate_id": "trastuzumab", "step_id": "structure_comparison", "status": "running", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c08", "candidate_id": "trastuzumab", "step_id": "structure_comparison", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c08", "candidate_id": "trastuzumab", "step_id": "reporting", "status": "running", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c08", "candidate_id": "trastuzumab", "step_id": "reporting", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}

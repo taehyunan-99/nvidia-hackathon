@@ -1,0 +1,16 @@
+{"schema_version": "0.1.0", "run_id": "run-eval-c01", "candidate_id": "trastuzumab", "step_id": "input_mapping", "status": "running", "reason": null, "updated_at": "2026-09-27T01:29:07Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c01", "candidate_id": "trastuzumab", "step_id": "input_mapping", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:29:09Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c01", "candidate_id": "trastuzumab", "step_id": "evidence_review", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:29:12Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c01", "candidate_id": "trastuzumab", "step_id": "prediction", "status": "skipped", "reason": "중쇄와 경쇄 서열이 공개 구조 1N8Z와 정확히 일치하므로 실험 구조를 사용합니다. (판단: nvidia/nemotron-3-super-120b-a12b)", "updated_at": "2026-09-27T01:29:12Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c01", "candidate_id": "trastuzumab", "step_id": "structure_comparison", "status": "running", "reason": null, "updated_at": "2026-09-27T01:29:13Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c01", "candidate_id": "trastuzumab", "step_id": "structure_comparison", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:29:13Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c01", "candidate_id": "trastuzumab", "step_id": "reporting", "status": "running", "reason": null, "updated_at": "2026-09-27T01:29:15Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c01", "candidate_id": "trastuzumab", "step_id": "reporting", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:29:15Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c01", "candidate_id": "pertuzumab", "step_id": "input_mapping", "status": "running", "reason": null, "updated_at": "2026-09-27T01:29:18Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c01", "candidate_id": "pertuzumab", "step_id": "input_mapping", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:29:18Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c01", "candidate_id": "pertuzumab", "step_id": "evidence_review", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:29:23Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c01", "candidate_id": "pertuzumab", "step_id": "prediction", "status": "skipped", "reason": "공개 구조 1S78이 중쇄·경쇄와 정확히 일치하고 표적 사슬도 포함되어 있어 실험 구조를 사용한다. (판단: nvidia/nemotron-3-super-120b-a12b)", "updated_at": "2026-09-27T01:29:23Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c01", "candidate_id": "pertuzumab", "step_id": "structure_comparison", "status": "running", "reason": null, "updated_at": "2026-09-27T01:29:23Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c01", "candidate_id": "pertuzumab", "step_id": "structure_comparison", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:29:23Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c01", "candidate_id": "pertuzumab", "step_id": "reporting", "status": "running", "reason": null, "updated_at": "2026-09-27T01:29:25Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c01", "candidate_id": "pertuzumab", "step_id": "reporting", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:29:25Z"}

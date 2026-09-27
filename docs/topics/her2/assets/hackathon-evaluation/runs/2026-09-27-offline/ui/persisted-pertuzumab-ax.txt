@@ -1,0 +1,165 @@
+Browser tab: 1, Title: "HER2 · 항체 후보 검토", URL: "http://127.0.0.1:5188/".
+1 AXWebArea HER2 · 항체 후보 검토, URL: 127.0.0.1:5188/
+	2 container root
+		3 link Description: 본문으로 이동, Value: 127.0.0.1:5188/#main
+		4 container
+			5 button 검토 입력으로
+				6 text ✳
+				7 text HER2
+				8 text 항체 후보 검토
+			9 container 주 메뉴
+				10 button 분석
+				11 button 소개
+				12 button 팀
+			13 text NVIDIA HACKATHON · TEAM PROJECT 실제 실행
+			14 container 화면 테마
+				15 checkbox 라이트, Value: 1
+				16 checkbox 다크, Value: 0
+		60 container 검토 단계
+			61 button 01검토 입력
+				62 text 0
+				63 text 1
+				64 text 검토 입력
+			65 button 02분석 진행
+				66 text 0
+				67 text 2
+				68 text 분석 진행
+			69 button 03구조 비교
+				70 text 0
+				105 text 3
+				106 text 구조 비교
+			71 button 04결과 보고
+				72 text 0
+				107 text 4
+				108 text 결과 보고
+		73 container main
+			74 text 실제 실행
+			75 text 저장형 실제 실행
+			76 text 실제 분석 결과
+			77 container
+				78 text HER2 REVIEW / 0 3
+			79 heading 구조와 근거 살펴보기, Value: 1
+				80 text 구조와 근거 살펴보기
+			81 text 후보·조건을 바꾸며 확인 가능한 근거와 부족한 자료를 살펴보세요.
+			82 text 기록  1  /  1  · 실제 실행 실제 실행  ·  종료 서버에 저장된 실제 분석 실행입니다.
+			109 container 시각 중심 검토 요약
+				110 text 현재 이 결과에서 알 수 있는 것
+				111 heading 이 화면만으로 후보 우열을 단정할 수 없습니다, Value: 2
+					112 text 이 화면만으로 후보 우열을 단정할 수 없습니다
+				113 container
+					114 text 선택한 후보와 조건의 구조 파일을 왼쪽에서 확인할 수 있습니다.  기록된 측정 근거는 오른쪽에서 확인해 주세요.
+				115 text 조건 기록  4 건 후보 구조  2건 기록 근거  측정 기록 있음
+				116 container 3D와 근거 탐색 작업대
+					117 text 01 / EXPLORE
+					118 heading 구조를 보며 근거 확인하기, Value: 2
+						119 text 구조를 보며 근거 확인하기
+					120 text 이번 실행의 구조
+					121 container 검토 결과 선택
+						122 text 검토 결과 선택
+						123 text 후보와 조건에 연결된 구조·근거가 함께 바뀝니다. 검토 후보
+						124 container 검토 후보 선택
+							125 checkbox Description: Trastuzumab Fab, Value: 0
+							126 checkbox Description: Pertuzumab Fab, Value: 1
+						127 container
+							128 text 검토 조건
+							129 pop up button (collapsed, settable) 검토 조건, Value: HER2–항체 중심, Secondary Actions: Expand
+								130 menu
+									131 (selected) HER2–항체 중심
+									132 당쇄·주변 구조 포함
+						133 text 확인할 근거 선택
+						134 container 확인할 근거 선택
+							231 checkbox 접촉 잔기, Help: 접촉 잔기 · 측정됨, Value: 1
+							232 checkbox 원자 간 충돌, Help: 원자 간 충돌 · 미실행, Value: 0
+							233 checkbox 표면 노출, Help: 표면 노출 · 미실행, Value: 0
+					234 container Pertuzumab Fab 실험 구조
+						235 heading Pertuzumab Fab, Value: 3
+							236 text Pertuzumab Fab
+						237 text 이번 실행에서 대응한 공개 실험 구조
+						238 container 3D 구조 조작
+							239 text 관찰 위치
+							240 container 3D 보기 선택
+								241 checkbox 전체 보기, Value: 0
+								242 checkbox 접촉 부위 보기, Value: 1
+							243 text 표현 방식
+							244 container 구조 표현
+								245 checkbox 혼합, Value: 1
+								246 checkbox 리본, Value: 0
+								247 checkbox 표면, Value: 0
+							248 text 구조 성분
+							249 container 구조 성분 선택
+								250 checkbox Description: 당·기타 성분 보기, Value: 0
+								251 checkbox 항체 숨기기, Value: 0
+							252 text 시점 조작
+							253 checkbox (disabled) 회전 정지, Value: 0
+							254 button 시점 초기화
+						255 button (collapsed) 불투명도 100%, Secondary Actions: Expand
+							256 text 불투명도
+							257 text 100
+							258 text %
+						259 container 구조 색상 범례
+							260 text ● HER2 ● 항체 중쇄 ● 항체 경쇄
+						276 image Pertuzumab Fab 공개 실험 복합체 구조
+						264 text 4.5 Å 이내 접촉 잔기 56개를 강조했습니다. 결합력·효능 판정은 아닙니다.
+						265 container
+							266 text 공개 실험 구조를 이번 후보 서열과 대응했습니다.  파일을 받은 뒤 sha256으로 실행 기록과 대조했습니다.
+						267 container 표현·출처·표시 범위
+							268 heading 표현·출처·표시 범위, Value: 4
+								269 text 표현·출처·표시 범위
+							270 container
+								271 link Description: RCSB PDB 1S78, Value: files.rcsb.org/download/1S78.cif
+								272 text  · 1S78  ·  실험 구조
+							273 container
+								274 text 당·기타 성분은 숨겨져 있습니다. 없다는 뜻은 아닙니다.  전체 IgG·세포막·완전한 당쇄를 표현하지 않습니다.
+							275 text 이번 실행의 파일과 잔기 대응을 표시합니다. 구조 간 정렬 비교는 제공하지 않습니다.
+					180 container 선택 근거 상세
+						181 heading 접촉 잔기 근거, Value: 3
+							182 text 접촉 잔기  근거
+						183 text 측정됨 현재 확인 결과
+						184 text 측정 기록이 있습니다
+						185 text 검토 의견
+						186 text 추가 확인
+						187 text 코드에 정해 둔 규칙대로 진행했다. (판단: 규칙 — 모델 호출이 실패했다: NVIDIA_API_KEY가 없어 호출하지 않았다. build.nvidia.com에서 키를 발급해 환경변수로 넣어야 예측…)
+						188 definition list
+							189 container 측정값
+								190 text 측정값
+							191 container
+								192 text 56  residue
+							193 container 출처
+								194 text 출처
+							195 text 1개
+							196 container 위치 대응
+								197 text 위치 대응
+							198 text 56개
+						199 text 판단의 한계
+						200 content list
+							201 container
+								202 AXListMarker •
+								203 text 예측·실험 구조 공통으로 충돌 판정 기준(A-02의 거리·제외 규칙)이 합의 전이라 계산하지 않았다.
+							204 container
+								205 AXListMarker •
+								206 text 예측·실험 구조 공통으로 표면 노출 계산은 FreeSASA 설치와 당쇄 포함 여부 검증(A-03) 이후에 한다.
+						227 container
+							228 button (expanded) 정의·출처·실행 정보, Secondary Actions: Collapse
+								229 text 정의·출처·실행 정보
+							230 text 정의:  표적·항체 중원자 간 거리 4.5 Å 이내로 선택한 잔기 수. 잔기 번호는 label 기준이며 결합력·효능 판정이 아니다. 근거 종류:  computed 출처: {"url":"https://files.rcsb.org/download/1S78.cif","title":"RCSB PDB 1S78","record_id":"1S78"} 실행:  run-90be4f57bb5f4bd5ae63ab1145c6d84d 근거:  ev-pertuzumab-interface_contact_residues
+				209 button (collapsed) 두 후보의 자료 준비 상태 비교, Secondary Actions: Expand
+					210 text 두 후보의 자료 준비 상태 비교
+				211 container
+					212 text 03 / NEXT CHECK
+					213 heading 다음 확인, Value: 2
+						214 text 다음 확인
+					215 content list
+						216 container
+							217 AXListMarker •
+							218 text 접촉 잔기 선택 기준(4.5 Å)을 이 비교의 판정 기준으로 쓸 것인지 확정이 필요하다.
+						219 container
+							220 AXListMarker •
+							221 text 충돌·표면 노출 계산의 정의와 제외 규칙을 A-02에서 확정해야 한다.
+						222 container
+							223 AXListMarker •
+							224 text 구조에 포함된 당쇄를 표면 노출 계산에 넣을지, 넣는다면 원자 반지름을 어떻게 둘지 정해야 한다.
+			225 button 검토 보고 보기 ↗
+		58 container
+			59 text HER2 · Evidence-led antibody review 독립 해커톤 프로젝트 ·  실제 분석 결과  · NVIDIA 공식 제품 아님
+
+The focused UI element is 242 checkbox 접촉 부위 보기, Value: 1

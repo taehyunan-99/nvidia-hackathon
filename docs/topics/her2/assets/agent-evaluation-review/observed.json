@@ -1,0 +1,58 @@
+{
+  "base_commit": "7c5cf2dfcaf2e9be5f10f1da7ea57e89fd3a8f48",
+  "mode": "offline_direct_tools_with_scripted_client",
+  "findings": {
+    "target_mismatch": {
+      "input_check": "입력 검사 통과. 다음은 lookup_public_structure로 공개 구조를 조회한다.",
+      "complete": true,
+      "selected": "공개 실험 구조를 검토 구조로 정했다(st-audit-candidate-1n8z). 다음은 compare_structure."
+    },
+    "unsupported_claim": {
+      "response": "검토 의견을 기록했다(reviewable). 검토를 끝냈다.",
+      "stored_reason": "치료 효능이 입증되었고 부작용이 없다. (판단: nvidia/nemotron-3-super-120b-a12b)"
+    },
+    "wrong_unit": {
+      "response": "검토 의견을 기록했다(reviewable). 검토를 끝냈다.",
+      "stored_reason": "결합 친화도는 39 nM이다. (판단: nvidia/nemotron-3-super-120b-a12b)"
+    },
+    "malformed_prediction": {
+      "terminal": "completed",
+      "structure_kind": "predicted",
+      "contact_state": "not_run",
+      "contact_value": null,
+      "contact_sources": []
+    },
+    "prediction_with_public_match": {
+      "terminal": "completed",
+      "structure_kind": "predicted",
+      "contact_state": "measured",
+      "contact_value": 39.0,
+      "contact_sources": [
+        {
+          "title": "RCSB PDB 1N8Z",
+          "url": "https://files.rcsb.org/download/1N8Z.cif",
+          "record_id": "1N8Z"
+        }
+      ]
+    },
+    "unmapped_contact_dropped": {
+      "input_positions": [
+        1,
+        2,
+        3
+      ],
+      "mapped_positions": [
+        1,
+        3
+      ],
+      "score_after_drop": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 2,
+        "pred_n": 2,
+        "gold_n": 2
+      }
+    }
+  }
+}

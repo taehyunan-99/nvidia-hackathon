@@ -9,6 +9,9 @@ HER2와 항체 후보를 비교·검토하는 현재 프로젝트의 기능·판
 - [overview.md](overview.md) — 프로젝트 목적·입력·산출물·분석 경계
 - [agent-design.md](agent-design.md) — 상태에 따른 판단 분기·도구
 - [validation.md](validation.md) — 전체 데모·첫 기술 검증·미정 항목
+- [agent-evaluation-review.md](agent-evaluation-review.md) — main 기준 에이전트·기존 평가셋 리뷰, 오프라인 실패 재현과 평가 도구·데이터 조사 방향
+- [hackathon-evaluation.md](hackathon-evaluation.md) — 해커톤용 20점 루브릭·10개 평가 사례·출처 고정 입력과 채점 방법
+- [hackathon-evaluation-results.md](hackathon-evaluation-results.md) — 7c5cf2d 기준 첫 평가 결과·13/20점·실제 모델 1회와 영속 화면 검증 근거
 - [a01-reference-inputs.md](a01-reference-inputs.md) — A-01 공개 구조·서열·assembly·잔기 대응 조사와 D1/D2 인계, Q04/G1 검토 대기
 - [a02-structure-metrics.md](a02-structure-metrics.md) — 승인 공개 구조의 접촉·표면적·정렬 계산, 누락 처리와 기하학적 겹침의 해석 한계
 - [a03-glycan-context.md](a03-glycan-context.md) — 동일 단백질에서 관측 당 포함·제외 표면 비교, 당 identity·공유결합·누락 검증과 B 인계
