@@ -2,50 +2,8 @@ import { useState } from "react";
 import publicReferenceInput from "../../docs/frontend-hosting/fixtures/public-reference-input.json";
 import type { ReviewInput } from "./scenario-file";
 import { PersistentInput } from "./PersistentInput";
-export function BioSymbol({ large = false }: { large?: boolean }) {
-  return (
-    <svg
-      className={large ? "bio-symbol bio-symbol-large" : "bio-symbol"}
-      viewBox="0 0 240 180"
-      fill="none"
-      aria-hidden="true"
-    >
-      <defs>
-        <linearGradient
-          id={large ? "bio-large" : "bio-small"}
-          x1="30"
-          y1="20"
-          x2="210"
-          y2="160"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop stopColor="#b4e958" />
-          <stop offset="1" stopColor="#76b900" />
-        </linearGradient>
-      </defs>
-      <g
-        stroke={`url(#${large ? "bio-large" : "bio-small"})`}
-        strokeWidth="9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M36 32C107 13 42 92 110 74S58 151 123 145" />
-        <path d="M62 28C127 22 63 99 128 84S84 156 145 146" opacity=".45" />
-        <path
-          d="M39 46L68 52M47 73L78 76M83 92L111 100M87 121L115 126"
-          strokeWidth="4"
-        />
-        <path d="M166 125V88L143 65M166 88L194 60" />
-        <path d="M176 131V93L206 66M153 58L177 81" strokeWidth="6" />
-      </g>
-      <g stroke="currentColor" strokeWidth="1.5" opacity=".3">
-        <path d="M119 54L142 52M128 68L144 77" strokeDasharray="3 5" />
-        <circle cx="36" cy="32" r="13" />
-        <circle cx="194" cy="60" r="13" />
-      </g>
-    </svg>
-  );
-}
+import "./about-page.css";
+import "./team-page.css";
 export function AgentStart({
   onRunLive,
   onRunMock,
@@ -116,105 +74,122 @@ export function AgentStart({
 export function About({ onStart }: { onStart: () => void }) {
   return (
     <div className="about-page">
-      <section className="hero">
-        <div className="hero-copy">
-          <div className="eyebrow">BIOLOGY × AGENTIC AI</div>
-          <h1>
-            더 명확한 근거.
-            <br />더 나은 다음 질문.
-          </h1>
-          <p>
-            HER2 항체 후보를 구조와 근거로 검토하는
-            <br />
-            해커톤 연구 에이전트 프로젝트입니다.
-          </p>
-          <div className="actions">
-            <button className="primary" onClick={onStart}>
-              분석 화면 열기 →
-            </button>
+      <section className="about-hero" aria-labelledby="about-title">
+        <div className="about-hero-copy">
+          <span className="about-label">HER2 항체 후보 검토 에이전트 · 해커톤 데모</span>
+          <h1 id="about-title"><span>HER2 항체 후보를</span><span><em>근거부터 검토합니다</em></span></h1>
+          <p>서열과 구조가 같은 후보를 가리키는지 확인하고, 자료에 맞는 분석 도구를 선택합니다. 3D 비교에서 확인한 근거와 보류 이유를 다음 확인 질문까지 연결합니다.</p>
+          <button type="button" className="primary" onClick={onStart}>공개 구조 예제로 시작 <span aria-hidden="true">↗</span></button>
+        </div>
+        <div className="about-summary" aria-label="서비스 흐름 요약">
+          <div><span>입력</span><strong>HER2 · 항체 후보 서열</strong></div>
+          <span className="about-summary-arrow" aria-hidden="true">→</span>
+          <div><span>에이전트 판단</span><strong>구조 확인 · 필요한 도구 선택</strong></div>
+          <span className="about-summary-arrow" aria-hidden="true">→</span>
+          <div><span>결과</span><strong>3D 근거 · 보류 · 다음 질문</strong></div>
+        </div>
+      </section>
+      <section className="about-section about-problem" aria-labelledby="about-problem-title">
+        <div className="about-section-heading"><span className="about-label">01 / 해결하려는 문제</span><h2 id="about-problem-title"><span>흩어진 근거는</span><span><em>다음 질문을 흐립니다</em></span></h2><p>서열·구조·출처와 빠진 정보를 같은 후보의 검토 기록으로 연결하는 것이 이 프로젝트의 출발점입니다.</p></div>
+        <div className="about-problem-grid">
+          <article><span>01 / 대응</span><h3>이 구조가 해당 후보의 것인가?</h3><p>표적·항체 서열, 사슬과 분석 구간이 맞지 않으면 같은 조건의 비교가 아닙니다.</p></article>
+          <article><span>02 / 근거</span><h3>관측과 예측이 섞이지 않았나?</h3><p>실험 구조에서 확인한 사실과 모델이 만든 구조의 계산 결과를 구분해야 합니다.</p></article>
+          <article><span>03 / 공백</span><h3>어느 판단을 보류해야 하나?</h3><p>관측되지 않은 당쇄·주변 환경과 미계산 항목을 0이나 ‘문제없음’으로 채우지 않습니다.</p></article>
+        </div>
+        <div className="about-reference-case">
+          <div><span className="about-label">공개 실험 구조 예제</span><strong>같은 HER2, 다른 결합 위치</strong></div>
+          <a href="https://www.rcsb.org/structure/1N8Z" target="_blank" rel="noreferrer"><span>Trastuzumab Fab</span><strong>막 인접 부위</strong><small>실험 구조 · 1N8Z ↗</small></a>
+          <a href="https://www.rcsb.org/structure/1S78" target="_blank" rel="noreferrer"><span>Pertuzumab Fab</span><strong>도메인 II</strong><small>실험 구조 · 1S78 ↗</small></a>
+        </div>
+        <p className="about-research-note">관련 연구 <a href="https://arxiv.org/html/1907.04112" target="_blank" rel="noreferrer">복합체 시각 탐색 ↗</a> <a href="https://pubmed.ncbi.nlm.nih.gov/38073135/" target="_blank" rel="noreferrer">항체–항원 구조 예측 평가 ↗</a></p>
+      </section>
+      <section className="about-section about-workflow" aria-labelledby="about-workflow-title">
+        <div className="about-section-heading"><span className="about-label">02 / 에이전트의 역할</span><h2 id="about-workflow-title"><span>자료에 맞는</span><span><em>도구를 선택합니다</em></span></h2></div>
+        <div className="about-agent-core"><span className="about-label">Nemotron 3 Super + NeMo Agent Toolkit</span><strong>후보별로 다음 행동을 고르는 에이전트</strong><p>모델은 허용된 도구 중 다음 행동을 고릅니다. 코드는 입력·도구 순서를 확인하고 좌표 근거를 계산합니다.</p></div>
+        <div className="about-flow" aria-label="후보 검토의 판단 분기">
+          <div className="about-flow-step"><span>01</span><div><strong>입력과 출처 확인</strong><p>HER2·항체 서열과 사슬·구간이 맞는지 확인</p></div></div>
+          <p className="about-flow-branch-label">자료 상태에 따라 후보마다 한 경로를 선택</p>
+          <div className="about-flow-paths">
+            <div><span>일치하는 실험 구조</span><strong>RCSB 구조 재사용</strong><small>새 예측을 생략한 이유를 기록</small></div>
+            <div><span>새 구조가 필요함</span><strong>Boltz-2 예측</strong><small>실험 구조와 다른 근거로 표시</small></div>
+            <div><span>자료가 불충분함</span><strong>판단 보류</strong><small>빠진 입력과 이유를 기록</small></div>
           </div>
+          <div className="about-flow-step about-flow-result"><span>02</span><div><strong>근거와 다음 질문 제시</strong><p>확보한 좌표의 접촉·표면·관측 당 근거를 3D와 연결하고, 부족한 정보는 보류 이유로 표시</p></div></div>
         </div>
-        <div className="about-bio">
-          <BioSymbol large />
-          <p>단백질·항체 상호작용 개념 그래픽 · 실제 구조 아님</p>
+        <p className="about-flow-footnote">검토 의견은 해당 구조와 계산 항목에 한정됩니다. 결합력·치료 효능의 순위가 아닙니다.</p>
+      </section>
+      <section className="about-section about-validation" aria-labelledby="about-validation-title">
+        <div className="about-section-heading"><span className="about-label">03 / 내부 검증</span><h2 id="about-validation-title"><span>완주와 정확도를</span><span><em>구분해 검증합니다</em></span></h2></div>
+        <div className="about-validation-grid">
+          <article className="about-validation-run"><span className="about-label">에이전트 실행 경로</span><div className="about-validation-value"><strong>6/6</strong><span>고정 사례 완료</span></div><div className="about-case-dots" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div><p>실제 Nemotron 호출의 재시도 후, 여섯 사례 모두 규칙 대체 없이 정해진 종료 상태에 도달했습니다. HTTP 429 일곱 건은 복구했습니다.</p></article>
+          <article className="about-validation-prediction"><span className="about-label">새 항체 구조 예측</span><strong>예측 접촉 위치 불일치</strong><div className="about-prediction-cases"><span>8JYR <b>F1 0</b></span><span>3N85 <b>F1 0</b></span></div><p>실제 Boltz-2 예측을 에이전트에 주지 않은 공개 실험 구조와 대조한 두 사례입니다. 모델 신뢰도만으로 정확도를 판단하지 않습니다.</p></article>
         </div>
+        <p className="about-validation-source">2026.09.27 소규모 내부 평가. 실행 경로 검사는 기존 Boltz-2 응답을 재사용했습니다. 이 결과로 연구자 효용이나 새 항체의 일반화 성능을 주장하지 않습니다.</p>
       </section>
-      <section className="intro-grid">
-        {[
-          [
-            "01",
-            "자료를 연결하고",
-            "공개 서열·구조·출처를 같은 후보와 조건에 연결합니다.",
-          ],
-          [
-            "02",
-            "필요한 분석을 선택하고",
-            "기존 구조를 먼저 확인하고, 부족한 근거와 보류 이유를 남깁니다.",
-          ],
-          [
-            "03",
-            "다음 검토로 이어갑니다",
-            "근거·검토 의견·후속 질문을 함께 살펴봅니다.",
-          ],
-        ].map(([n, title, desc]) => (
-          <article key={n}>
-            <span className="index">{n}</span>
-            <h3>{title}</h3>
-            <p>{desc}</p>
-          </article>
-        ))}
-      </section>
-      <section className="about-scope">
-        <div>
-          <span className="eyebrow">RESEARCH, WITH CONTEXT</span>
-          <h2>
-            무엇을 알고 있는지,
-            <br />
-            무엇이 아직 부족한지.
-          </h2>
-        </div>
-        <p>
-          후보의 결합 부위·구조 조건·미확인 근거를 비교하는 것이 목표입니다.
-          구조 신뢰도를 실제 결합력이나 치료 효과로 해석하지 않습니다.
-          NVIDIA Boltz-2 호출과 공개 구조 분석은 실제로 실행되며, 충돌·표면
-          노출 지표는 아직 계산하지 않습니다.
-        </p>
-      </section>
+      <section className="about-closing"><div><span className="about-label">공개 구조 예제</span><h2><span>두 HER2 항체의 근거를</span><span>직접 살펴보세요</span></h2></div><button type="button" className="primary" onClick={onStart}>분석 화면 열기 <span aria-hidden="true">↗</span></button></section>
     </div>
   );
 }
 
 export function Team() {
+  const members = [
+    {
+      name: "안태현",
+      handle: "taehyunan-99",
+      role: "서비스 개발",
+      summary: "화면과 백엔드 흐름을 만들고, 분석 결과 연결과 배포 준비를 맡았습니다.",
+      avatar: "https://avatars.githubusercontent.com/u/219608216?v=4",
+    },
+    {
+      name: "김희태",
+      handle: "kimheetae0104",
+      role: "에이전트 개발",
+      summary: "NAT 에이전트와 NVIDIA 모델 호출을 구현하고, 오류 복구와 성능을 검증했습니다.",
+      avatar: "https://avatars.githubusercontent.com/u/79716614?v=4",
+    },
+    {
+      name: "조수빈",
+      handle: "kongbeankong",
+      role: "구조 분석",
+      summary: "공개 구조의 서열·잔기 대응을 확인하고, 접촉·표면·관측 당 분석을 구현했습니다.",
+      avatar: "https://avatars.githubusercontent.com/u/242176701?v=4",
+    },
+  ];
   return (
-    <section className="about-team">
-      <div className="section-heading">
-        <div>
-          <span className="eyebrow">THE PEOPLE & THE PROJECT</span>
-          <h2>함께 만드는 연구 도구</h2>
-        </div>
-        <span className="tag">3인 팀 프로젝트</span>
+    <section className="team-page" aria-labelledby="team-title">
+      <div className="team-heading">
+        <span className="team-eyebrow">THE TEAM / HER2 RESEARCH AGENT</span>
+        <h1 id="team-title">HER2 항체 검토 에이전트를 만든 세 사람</h1>
+        <p>서비스와 분석 로직을 나누어 개발하고 하나의 검토 흐름으로 연결했습니다.</p>
       </div>
-      <div className="team-grid">
-        {["01", "02", "03"].map((n) => (
-          <article key={n}>
-            <span className="team-avatar">{n}</span>
-            <h3>팀원 {n}</h3>
-            <p>프로필 준비 중</p>
-            <small>함께하는 사람들을 곧 소개합니다.</small>
+      <div className="team-member-grid">
+        {members.map((member, index) => (
+          <article className="team-member" key={member.handle}>
+            <div className="team-member-top">
+              <img src={member.avatar} alt={`${member.name}의 GitHub 프로필 사진`} width="88" height="88" referrerPolicy="no-referrer" />
+              <span>{String(index + 1).padStart(2, "0")}</span>
+            </div>
+            <div className="team-member-copy">
+              <span className="team-member-role">{member.role}</span>
+              <h2>{member.name}</h2>
+              <p>{member.summary}</p>
+            </div>
+            <a className="team-member-profile" href={`https://github.com/${member.handle}`} target="_blank" rel="noreferrer">@{member.handle} <span aria-hidden="true">↗</span></a>
           </article>
         ))}
       </div>
-      <div className="repository-link">
+      <div className="team-repository">
         <div>
-          <strong>프로젝트 GitHub</strong>
-          <p>코드와 개발 기록을 확인하세요.</p>
+          <span className="team-eyebrow">PROJECT REPOSITORY</span>
+          <h2>프로젝트 코드와 개발 기록</h2>
         </div>
         <a
+          className="team-repository-button"
           href="https://github.com/taehyunan-99/nvidia-hackathon"
           target="_blank"
           rel="noreferrer"
         >
-          taehyunan-99/nvidia-hackathon ↗
+          프로젝트 GitHub <span aria-hidden="true">↗</span>
         </a>
       </div>
     </section>
