@@ -271,6 +271,34 @@ def test_a_prediction_landing_on_the_trastuzumab_interface_is_measured_as_such(t
     assert miss.state == "measured" and miss.value == 0.0 and not miss.residues
 
 
+def test_the_overlap_is_not_reported_when_the_target_cannot_contain_the_reference_epitope(tmp_path):
+    """기준 계면이 들어 있지 않은 표적에서는 0.000이 아니라 미실행으로 낸다.
+
+    실측 근거: 8JYR은 HER2 도메인 I 202잔기만 제출한다. 기준 계면(1N8Z) 잔기 19개는
+    도메인 IV(557~605)에 있어 서열 정렬로 대응되는 자리가 0개다. 그 입력에서 0.000을
+    내보내면 "다른 자리에 붙었다"로 읽힌다. 3N85는 624잔기라 19개가 모두 대응된다.
+    """
+    full = structures.normalize_sequence(_trastuzumab_target_sequence())
+    epitope = sorted(r["seq"] for r in _known()["1N8Z"]["residues"] if r["chain"] == "C")
+    # 기준 계면보다 앞쪽만 잘라 낸 construct. 도메인 I만 보내는 8JYR과 같은 모양이다.
+    head = full[:min(epitope) - 50]
+    assert len(head) > 100
+    mapping = [{"role": "target", "label_asym_id": "A"}, {"role": "heavy", "label_asym_id": "H"},
+               {"role": "light", "label_asym_id": "L"}]
+    source = {"title": "t", "url": "https://example.invalid", "record_id": "r"}
+    path = tmp_path / "head.cif"
+    path.write_text(_synthetic_prediction({"A": [10, 11, 12], "H": [10, 11], "L": [12]}))
+
+    m = analysis.reference_epitope_overlap_measurement(path, mapping, head, source)
+    assert m.state == "not_run"
+    assert m.value is None
+    assert "잴 대상이 없다" in m.reason
+
+    # 같은 예측이라도 표적이 온전하면 값을 낸다. 미실행이 되는 조건은 표적 쪽이다.
+    whole = analysis.reference_epitope_overlap_measurement(path, mapping, full, source)
+    assert whole.state == "measured" and whole.value == 0.0
+
+
 def test_the_overlap_is_not_invented_without_a_target_sequence(tmp_path):
     """표적 서열이 없으면 좌표를 공통 번호로 옮길 수 없다. 값을 만들지 않는다."""
     path = tmp_path / "p.cif"
