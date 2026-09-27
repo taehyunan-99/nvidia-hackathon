@@ -1,4 +1,4 @@
-# ADR — HER2 웹 서비스의 주요 결정
+# ADR — Bio-3 웹 서비스의 주요 결정
 
 작성일: 2026-09-25. [INTENT](intent/INTENT.md)와 [PRD](PRD.md)를 바탕으로 선택의 배경·대안·영향을 기록한다. 최종 구성은 [ARCHITECTURE](ARCHITECTURE.md)에 둔다.
 

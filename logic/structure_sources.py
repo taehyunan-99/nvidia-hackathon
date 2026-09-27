@@ -146,10 +146,6 @@ def match_public(public, heavy, light, target):
                       (bool(expected) and seq.find(expected) >= 0 and seq.find(expected, seq.find(expected) + 1) < 0
                        if role == 'target' else seq == expected)]
                 for role, expected in [('target', target), ('heavy', heavy), ('light', light)]}
-    if not entities['target']:
-        raise SequenceMismatch('입력 HER2 구간과 구조 표적 서열이 일치하지 않는다.')
-    if len(entities['target']) != 1:
-        raise ValueError('입력 HER2 구간과 구조 표적 서열의 유일한 대응을 확인하지 못했다.')
     def entity(role):
         found = entities[role]
         if len(found) != 1:
@@ -160,6 +156,16 @@ def match_public(public, heavy, light, target):
     match = structures.StructureMatch(public.pdb_id, h, l, t, h is not None, l is not None, public=public)
     if len(entities['heavy']) > 1 or len(entities['light']) > 1:
         raise ValueError('후보 서열에 일치하는 entity가 여러 개여서 자동 선택할 수 없다.')
+    if not entities['target']:
+        # Exact H/L sequences and no other polymer establish antibody-only
+        # provenance. Repeated copies need no coordinate selection here.
+        if h and l and h.entity_id != l.entity_id and set(polymers) == {h.entity_id, l.entity_id}:
+            return replace(match, notes=(
+                f'{public.pdb_id}: 중쇄·경쇄 기탁 서열이 모두 일치하는 항체 단독 구조다. '
+                'HER2 복합체 좌표는 없으므로 서열 출처로만 사용하며, 복합체는 별도 예측이 필요하다.',))
+        raise SequenceMismatch('입력 HER2 구간과 구조 표적 서열이 일치하지 않는다. 항체 단독 출처로도 확인되지 않았다.')
+    if len(entities['target']) != 1:
+        raise ValueError('입력 HER2 구간과 구조 표적 서열의 유일한 대응을 확인하지 못했다.')
     if not match.complete:
         return replace(match, notes=(f'{public.pdb_id}: 후보 서열 불일치. 부모 서열 출처일 수 있으나 후보의 실험 구조로 재사용하지 않는다.',))
     # Preserve the already reviewed local catalog's chain choice. Newly retrieved

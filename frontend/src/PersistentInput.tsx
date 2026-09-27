@@ -61,12 +61,12 @@ export function PersistentInput({ busy, error, mode, onStart }: { busy: boolean;
         </div>
       </fieldset>)}
       <div className="review-add-row">
-        {candidates.length < 4 && <button type="button" className="secondary" onClick={() => setCandidates((old) => [...old, emptyCandidate()])}>+ {candidates.length + 1}번째 후보 추가</button>}
-        {candidates.length > 2 && <button type="button" className="secondary" onClick={() => setCandidates((old) => old.slice(0, -1))}>마지막 후보 제거</button>}
+        {candidates.length < 4 && <button type="button" className="secondary" disabled={busy} onClick={() => setCandidates((old) => [...old, emptyCandidate()])}>+ {candidates.length + 1}번째 후보 추가</button>}
+        {candidates.length > 2 && <button type="button" className="secondary" disabled={busy} onClick={() => setCandidates((old) => old.slice(0, -1))}>마지막 후보 제거</button>}
       </div>
       <div className="review-submit">
-        <label className="review-confirm"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />입력 자료를 사용할 권한과 공개 자료 여부를 확인했습니다.</label>
         {(fieldError || error) && <p role="alert" className="notice">{fieldError || error}</p>}
+        <label className="review-confirm"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />입력 자료를 사용할 권한과 공개 자료 여부를 확인했습니다.</label>
         <button className="primary" type="submit" disabled={busy || mode === null}>{busy ? "접수 중…" : mode === "live" ? "실제 검토 시작 →" : "모의 검토 시작 →"}</button>
       </div>
     </form>

@@ -7,8 +7,6 @@
 .motion-legend-item > .legend-state { color: var(--text-secondary); font-size: 11px; }
 .motion-controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .motion-status { font-size: 12px; color: var(--text-secondary); }
-.motion-controls button { padding: 8px 12px; border: 1px solid var(--border); background: var(--bg-secondary); font-size: 12px; }
-.motion-controls button:hover { border-color: var(--motion-accent); }
 .agent-map { display: block; width: 100%; max-height: 560px; color: var(--text-primary); }
 .motion-grid { opacity: .09; }
 .motion-orbit { fill: none; stroke: var(--border); stroke-dasharray: 2 9; opacity: .6; }

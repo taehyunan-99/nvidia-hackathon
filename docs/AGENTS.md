@@ -2,11 +2,11 @@
 
 ## 1. WHAT — 역할
 
-해커톤 운영, 현재 HER2 프로젝트, 도구와 협업 규칙을 찾는 문서 지도.
+해커톤 운영, 현재 Bio-3 프로젝트, 도구와 협업 규칙을 찾는 문서 지도.
 
 ## 2. CONTENTS — 파일과 형식
 
-- [intent/INTENT.md](intent/INTENT.md) — HER2 프로젝트의 목적·사용자 문제·기능적 범위와 경계
+- [intent/INTENT.md](intent/INTENT.md) — Bio-3 프로젝트의 목적·사용자 문제·기능적 범위와 경계
 - [PRD.md](PRD.md) — 웹 서비스 요구사항·완료 조건·미결정 항목
 - [ARCHITECTURE.md](ARCHITECTURE.md) — 구성요소·데이터·실행 흐름·Docker와 AWS 배치안
 - [ADR.md](ADR.md) — 기술 선택의 배경·대안·결정 상태

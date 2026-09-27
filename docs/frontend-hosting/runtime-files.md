@@ -24,13 +24,13 @@
 | [logic/review_policy.py](../../logic/review_policy.py) | evidence-specific bounded opinions | flow | static path review; product tests; persisted public image run (reachable branch only) |
 | [logic/run.py](../../logic/run.py) | subprocess CLI | service.live | static path review; product tests; persisted public image run (reachable branch only) |
 | [logic/runtime_skill.py](../../logic/runtime_skill.py) | pinned skill integrity and content | nat_agent / flow | static path review; product tests; persisted public image run (reachable branch only) |
-| [logic/structure_sources.py](../../logic/structure_sources.py) | explicit source and bounded automatic search | flow | static path review; product tests; persisted public image run (reachable branch only) |
+| [logic/structure_sources.py](../../logic/structure_sources.py) | explicit source and bounded automatic search; exact antibody-only provenance vs reusable complex vs mismatch | flow | static path review; product tests; persisted public image run (reachable branch only) |
 | [logic/structures.py](../../logic/structures.py) | local public catalog and sequence match | flow / analysis / demo_input | static path review; product tests; persisted public image run (reachable branch only) |
 | [logic/surface_analysis.py](../../logic/surface_analysis.py) | shared coordinate surface/glycan calculation | flow; dynamic A-02 metrics | static path review; product tests; persisted public image run (reachable branch only) |
 | [service/__init__.py](../../service/__init__.py) | package | Python package | static path review; product tests; persisted public image run (reachable branch only) |
 | [service/app.py](../../service/app.py) | nonpersistent development demo API | manual uvicorn only | development only |
 | [service/db.py](../../service/db.py) | connection and explicit migration CLI | operational / worker / Compose migrate | static path review; product tests; persisted public image run (reachable branch only) |
-| [service/demo_input.py](../../service/demo_input.py) | public input and labeled synthetic variant | demo API / verification scripts | static path review; product tests; persisted public image run (reachable branch only) |
+| [service/demo_input.py](../../service/demo_input.py) | three public scenarios from deposited sequences; labeled synthetic variant retained | demo API / verification scripts | static path review; product tests; persisted public image run (reachable branch only) |
 | [service/live.py](../../service/live.py) | analysis subprocess, timeout and artifact boundary | worker | static path review; product tests; persisted public image run (reachable branch only) |
 | [service/operational.py](../../service/operational.py) | persistent session/input/run/report/file API | Docker CMD / Caddy | static path review; product tests; persisted public image run (reachable branch only) |
 | [service/reports.py](../../service/reports.py) | same-snapshot JSON and CSV export | operational / app | static path review; product tests; persisted public image run (reachable branch only) |
@@ -42,10 +42,10 @@
 | [scripts/check_server_storage.py](../../scripts/check_server_storage.py) | restored DB/file checksum check | rehearsal container CLI | development only |
 | [scripts/check_surface_examples.py](../../scripts/check_surface_examples.py) | coordinate diagnostic export | explicit development CLI | development only |
 | [scripts/compare_review_outputs.py](../../scripts/compare_review_outputs.py) | before/after evidence-topic comparison | explicit development CLI | development only |
-| [frontend/src/AgentActivity.tsx](../../frontend/src/AgentActivity.tsx) | actual events and explicitly initiated replay; activity-state tests | main/component imports | type build; selected UI paths in browser; no exhaustive visual certification |
-| [frontend/src/AgentStart.tsx](../../frontend/src/AgentStart.tsx) | public input/direct entry and mock/live notice | main/component imports | type build; selected UI paths in browser; no exhaustive visual certification |
+| [frontend/src/AgentActivity.tsx](../../frontend/src/AgentActivity.tsx) | actual events and progress display; activity-state tests | main/component imports | type build; selected UI paths in browser; no exhaustive visual certification |
+| [frontend/src/AgentStart.tsx](../../frontend/src/AgentStart.tsx) | three-scenario selector/direct entry and mock/live notice | main/component imports | type build; selected UI paths in browser; no exhaustive visual certification |
 | [frontend/src/OpacityControl.tsx](../../frontend/src/OpacityControl.tsx) | viewer opacity input | main/component imports | type build; selected UI paths in browser; no exhaustive visual certification |
-| [frontend/src/PersistentInput.tsx](../../frontend/src/PersistentInput.tsx) | fixed HER2 and 2-4 candidates; source entry | main/component imports | type build; selected UI paths in browser; no exhaustive visual certification |
+| [frontend/src/PersistentInput.tsx](../../frontend/src/PersistentInput.tsx) | fixed HER2 and 2–4 direct-input candidates; source entry | main/component imports | type build; selected UI paths in browser; no exhaustive visual certification |
 | [frontend/src/PredictedStructure.tsx](../../frontend/src/PredictedStructure.tsx) | per-run structure/hash validation and selected evidence highlighting | main/component imports | type build; selected UI paths in browser; no exhaustive visual certification |
 | [frontend/src/ReportView.tsx](../../frontend/src/ReportView.tsx) | same result opinions/sources and authenticated downloads | main/component imports | type build; selected UI paths in browser; no exhaustive visual certification |
 | [frontend/src/ReviewOverview.tsx](../../frontend/src/ReviewOverview.tsx) | candidate/condition/evidence selection; selected residues forwarded to 3D | main/component imports | type build; selected UI paths in browser; no exhaustive visual certification |

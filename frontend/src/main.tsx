@@ -18,10 +18,7 @@ import "./nvidia-theme.css";
 import "./agent-experience.css";
 
 /**
- * 이번 실행이 만든 예측 구조만 골라 화면에 넘길 모양으로 맞춘다.
- *
- * 공개 실험 구조는 여기서 다루지 않는다. 프런트가 이미 파일을 가지고
- * 있어서 받아올 필요가 없다.
+ * 이번 실행에 연결된 실험·예측 구조를 검증된 파일 참조로 표시한다.
  *
  * 사슬 대응이나 파일 해시가 없으면 그 구조는 건너뛴다. 3D로 띄울 때
  * 무엇을 어느 색으로 칠할지 정할 수 없기 때문이다. 짐작해서 칠하면
@@ -68,33 +65,6 @@ function resultViews(result: any, candidates: any[]): PredictedView[] {
 }
 
 const pages = ["검토 입력", "분석 진행", "구조 비교", "결과 보고"];
-const labels: Record<string, string> = {
-  queued: "대기",
-  running: "진행 중",
-  completed: "종료",
-  partial: "부분 결과",
-  failed: "실행 실패",
-  interrupted: "실행 중단",
-  pending: "대기",
-  skipped: "생략",
-  held: "판단 보류",
-  "scientific-hold": "판단 보류",
-  "session-expired": "세션 만료",
-  "input-invalid": "입력 오류",
-  input_mapping: "입력·자료 대응",
-  evidence_review: "근거 검토",
-  prediction: "필요한 구조 예측",
-  structure_comparison: "구조 비교",
-  reporting: "보고서 정리",
-  not_assessed: "미검토",
-  hold: "보류",
-  needs_confirmation: "추가 확인",
-  reviewable: "후속 실험 검토 가능",
-  unknown: "미확인",
-  not_run: "미실행",
-  measured: "측정됨",
-  not_applicable: "해당 없음",
-};
 function ThemeSelector() {
   const [theme, setTheme] = useState(document.documentElement.dataset.theme);
   function chooseTheme(next: string) {
@@ -125,7 +95,11 @@ function App() {
   const [section, setSection] = useState<"analysis" | "about" | "team">(
     "analysis",
   );
-  const [page, setPage] = useState(0),
+  const [savedRunId, setSavedRunId] = useState(() => {
+    const fromUrl = runFromSearch(location.search);
+    return new URLSearchParams(location.search).has("run") ? fromUrl.runId : localStorage.getItem(SAVED_RUN_KEY);
+  });
+  const [page, setPage] = useState(savedRunId ? 1 : 0),
     [scenarioFile, setScenarioFile] = useState<ScenarioFile | null>(null),
     [fileName, setFileName] = useState(""),
     [liveBusy, setLiveBusy] = useState(""),
@@ -133,15 +107,12 @@ function App() {
     [mockBusy, setMockBusy] = useState(false),
     [mockError, setMockError] = useState(() => runFromSearch(location.search).error),
     [savedMode, setSavedMode] = useState<"mock" | "live" | null>(null),
-    [savedRunId, setSavedRunId] = useState(() => {
-      const fromUrl = runFromSearch(location.search);
-      return new URLSearchParams(location.search).has("run") ? fromUrl.runId : localStorage.getItem(SAVED_RUN_KEY);
-    }),
     [candidate, setCandidate] = useState(""),
     [conditionKind, setConditionKind] = useState("core"),
     [expanded, setExpanded] = useState<string | null>(null);
   const scenario = scenarioFile?.scenarios[0];
   const live = scenarioFile?.data_mode === "live" || (!scenarioFile && savedMode === "live" && import.meta.env.VITE_PERSISTENT_SERVICE === "1");
+  const connecting = import.meta.env.VITE_PERSISTENT_SERVICE === "1" && !scenarioFile && savedMode === null;
   const persistedRun = fileName.startsWith("저장형 ");
   const result = scenario?.result;
   const expired = scenario?.session.status === "expired";
@@ -227,7 +198,6 @@ function App() {
     if (!savedRunId) return;
     history.replaceState(null, "", runUrl(location.href, savedRunId));
     let active = true;
-    let first = true;
     async function refresh() {
       try {
         const current = await readSavedRun(savedRunId!);
@@ -237,8 +207,6 @@ function App() {
         setSavedMode(current.data_mode as "mock" | "live");
         setFileName(current.data_mode === "live" ? "저장형 실제 실행" : "저장형 모의 실행");
         setCandidate((previous) => previous || current.input.candidates[0].candidate_id);
-        if (first) setPage(1);
-        first = false;
       } catch (error) {
         if (!active) return;
         if (isSessionExpired(error)) {
@@ -281,7 +249,7 @@ function App() {
           onClick={() => go(0)}
           aria-label="검토 입력으로"
         >
-          <span className="brand-symbol">✳</span> HER2
+          <span className="brand-symbol">✳</span> Bio-3
           <span className="brand-divider" />{" "}
           <span className="brand-sub">항체 후보 검토</span>
         </button>
@@ -306,7 +274,7 @@ function App() {
           </button>
         </nav>
         <span className="prototype">
-          NVIDIA HACKATHON · TEAM PROJECT <span>{live ? "실제 실행" : "모의 데이터"}</span>
+          NVIDIA HACKATHON · TEAM PROJECT <span>{connecting ? "연결 확인 중" : live ? "실제 실행" : "모의 데이터"}</span>
         </span>
         <ThemeSelector />
       </header>
@@ -355,7 +323,7 @@ function App() {
                   {persistedRun && mockError && <p role="alert" className="notice">{mockError}</p>}
                   <div className="workspace-title">
                     <div>
-                      <div className="eyebrow">HER2 REVIEW / 0{page + 1}</div>
+                      <div className="eyebrow">Bio-3 REVIEW / 0{page + 1}</div>
                       <h1>
                         {page === 1
                           ? "분석 진행 현황"
@@ -372,10 +340,6 @@ function App() {
                       </p>
                     </div>
                     <span className="tag">기록 {1} / {scenarioFile.scenarios.length}{live ? " · 실제 실행" : persistedRun ? " · 저장형 모의 실행" : ""}</span>
-                  </div>
-                  <div className="notice">
-                    <span className="tag">{live ? "실제 실행" : persistedRun ? "저장형 모의 실행" : "모의 재생"} · {labels[scenario.name] ?? scenario.name}</span>{" "}
-                    {scenario.description}
                   </div>
                   {expired ? (
                     <section className="empty panel">
@@ -490,13 +454,13 @@ function App() {
                     </>
                   )}
                 </>
-              ) : null}
+              ) : <p className="notice" role="status">저장된 검토를 불러오는 중입니다.</p>}
             </>
           )}
         </main>
         <footer>
-          <span>HER2 · Evidence-led antibody review</span>
-          <span>독립 해커톤 프로젝트 · {live ? "실제 분석 결과" : "모의 화면"} · NVIDIA 공식 제품 아님</span>
+          <span>Bio-3 · Evidence-led antibody review</span>
+          <span>독립 해커톤 프로젝트 · {connecting ? "연결 확인 중" : live ? "실제 분석 결과" : "모의 화면"} · NVIDIA 공식 제품 아님</span>
         </footer>
       </div>
     </>

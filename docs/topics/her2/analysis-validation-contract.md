@@ -92,3 +92,9 @@ MolProbity의 심각한 비결합 겹침 기준은 약 0.4 Å이며 clashscore�
 이번에 재현한 코드 문제는 수정했고 해당 입력의 전체 실모델 경로도 확인했으므로 사용자 직접 로컬 E2E로 진행할 수 있다. 이 한 번의 성공을 임의 후보의 정확도나 모든 외부 모델 응답의 무오류 보장으로 해석하지 않는다. 전체 접근성의 사유 있는 미확인과 공개 배포 제외는 그대로 유지한다.
 
 개인 근거: `tmp/agent-rejection-fix/`의 `probe.log`, `workflow-messages.json`, `agent-regression.log`, `all-tests.log`, `single-live-result.json`, `full-live.log`, `live/prediction-contract-summary.json`, `server-run/agent-trace.json`, `source-hashes.json`, `final-budget.sqlite3`. 최초 실패 기록도 그대로 보존했다.
+
+## 실제 공개 후보 시나리오 후속 검증 — 2026-09-27
+
+기존 가상 Pertuzumab 변이의 배선 검증과 별도로, 사용자 승인으로 WT 1N8Z + 실제 Trastuzumab Fab D185A 6BHZ, 여기에 Fab37 3N85를 더한 두 영속 실행을 검증했다. 원본 서열·항체 단독 출처 분기·선택 구간의 좌표 보류 기준과 실제 결과는 [사이트 테스트 데이터](../../frontend-hosting/test-data.md#이번-검증-상태)에 기록했다. 두 실행 모두 실제 모델로 종료했고 거부·규칙 복구가 없었다. 6BHZ의 예측 두 구조는 607/225/214잔기와 대응했고, 3N85는 실험 구조를 사용하되 부분 점유율·대체 좌표 때문에 계산을 보류했다.
+
+새 승인 합계 한도 Nemotron 60·Boltz 4에서 24·2를 사용했다. 이전 소진 예산과 별개이며 추가 정확도 실험을 자동 승인하지 않는다. 두 실행의 예측 파일 쌍은 같은 해시라 독립 반복 성공이나 정확도 향상으로 집계하지 않는다. 정렬 수치는 계산 결과이며 현재 3D는 개별 구조 표시다. 관측 당 비교와 unknown 접근성의 기존 계약을 유지한다. MSA는 현재 미연결·기본 실행 제외, 다른 실제 후보의 통제된 비교에서 필요성과 개선이 확인되면 도입 검토다.

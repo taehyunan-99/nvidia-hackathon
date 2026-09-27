@@ -38,7 +38,7 @@ from .reports import report_response
 DATA_MODE = "live"
 WORK_ROOT = Path(tempfile.gettempdir()) / "her2-review-runs"
 
-app = FastAPI(title="HER2 후보 검토 — 시연용 운영부", version=SCHEMA_VERSION)
+app = FastAPI(title="Bio-3 후보 검토 — 시연용 운영부", version=SCHEMA_VERSION)
 app.add_middleware(
     CORSMiddleware,
     # 개발 중 프런트(vite)만 허용한다. 배포 시 실제 출처로 좁힌다.

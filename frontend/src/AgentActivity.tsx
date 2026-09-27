@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type CSSProperties } from "react";
+import { useId, type CSSProperties } from "react";
 import type { ReviewInput, Scenario } from "./scenario-file";
 import "./agent-activity.css";
 
@@ -47,32 +47,16 @@ function routePath(x: number, y: number, lane = 0): string {
 function Pulse({ radius, active }: { radius: number; active: boolean }) {
   return <g className="motion-pulse" data-active={active} aria-hidden="true"><circle r={radius} className="motion-ripple" /><circle r={radius} className="motion-ripple echo" /></g>;
 }
-type Replay = { events: ActivityEvent[]; count: number };
-
 export function AgentActivity({ run, input, readError }: { run: Run; input: ReviewInput; readError: string }) {
   const gridId = useId();
   const events = displayEvents(run.activity_events ?? []);
-  const [replay, setReplay] = useState<Replay | null>(null);
-  useEffect(() => {
-    if (!replay) return;
-    const current = replay.events[replay.count - 1]?.activity;
-    const delay = current?.phase === "running" ? 1400 : current?.kind === "agent" ? 700 : 450;
-    const timer = window.setTimeout(() => setReplay((snapshot) => {
-      if (!snapshot) return null;
-      return snapshot.count < snapshot.events.length ? { ...snapshot, count: snapshot.count + 1 } : null;
-    }), delay);
-    return () => window.clearTimeout(timer);
-  }, [replay]);
-  const visible = replay ? replay.events.slice(0, replay.count) : events;
   const activeRun = ["queued", "running"].includes(run.status);
   const candidates = input.candidates.map((candidate, index) => {
     const progress = run.candidates.find((c) => c.candidate_id === candidate.candidate_id);
-    const mine = visible.filter((event) => event.candidate_id === candidate.candidate_id);
+    const mine = events.filter((event) => event.candidate_id === candidate.candidate_id);
     const latest = mine.at(-1);
     const activity = latest?.activity;
-    const frameIsCurrent = visible.at(-1)?.candidate_id === candidate.candidate_id;
-    const moving = replay ? frameIsCurrent && replay.count < replay.events.length
-      : !readError && activeRun && progress?.status === "running";
+    const moving = !readError && activeRun && progress?.status === "running";
     const last = (predicate: (event: ActivityEvent) => boolean) => mine.slice().reverse().find(predicate);
     const decision = last((e) => e.activity.kind === "skill" && ["selected", "skipped", "held"].includes(e.activity.phase));
     const execution = last((e) => e.activity.kind === "skill" && ["running", "completed", "failed"].includes(e.activity.phase));
@@ -80,19 +64,17 @@ export function AgentActivity({ run, input, readError }: { run: Run; input: Revi
     const next = followUp(mine, tools.map((tool) => tool.id));
     const actor = actorLabel(latest);
     const liveStatus = statuses[progress?.status ?? "queued"];
-    const state = replay ? latest ? `${actionLabel(activity!.name)} · ${phases[activity!.phase] ?? "대기"}` : "재생 대기"
-      : activeRun && latest && progress?.status === "running" ? actionLabel(activity!.name) : liveStatus;
+    const state = activeRun && latest && progress?.status === "running" ? actionLabel(activity!.name) : liveStatus;
     return { ...candidate, index, color: colorFor(index), progress, mine, latest, activity, moving, decision, execution, verification, next, state, actor };
   });
   const moving = candidates.some((c) => c.moving);
-  const focused = candidates.find((c) => c.latest?.activity.event_id === visible.at(-1)?.activity.event_id);
-  const startReplay = () => setReplay({ events: structuredClone(events), count: 0 });
+  const focused = candidates.find((c) => c.latest?.activity.event_id === events.at(-1)?.activity.event_id);
   return <section className="agent-activity" aria-label="에이전트 동작">
     <div className="motion-toolbar">
       <div className="motion-legend" aria-label="후보별 진행과 색상 범례">{candidates.map((candidate) => <div className="motion-legend-item" key={candidate.candidate_id} style={colorStyle(candidate.color)}>
         <span className="candidate-dot">{candidate.index + 1}</span><strong>{candidate.name}</strong><span className="legend-state">{candidate.state} · {candidate.actor}</span>
       </div>)}</div>
-      <div className="motion-controls"><span className="motion-status">후보 순차 처리</span><span className="motion-status" role="status">{replay ? "기록 재생 · 분석 호출 없음" : readError ? "연결 확인 필요" : statuses[run.status]}</span><button onClick={startReplay} disabled={!events.length}>애니메이션 다시 보기 ↻</button></div>
+      <div className="motion-controls"><span className="motion-status">후보 순차 처리</span><span className="motion-status" role="status">{readError ? "연결 확인 필요" : statuses[run.status]}</span></div>
     </div>
     <svg className="agent-map" viewBox="0 0 920 640" role="img" aria-label="모든 후보의 도구 선택과 실행 경로">
       <defs><pattern id={gridId} width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".8" fill="currentColor" /></pattern></defs>
@@ -132,13 +114,13 @@ export function AgentActivity({ run, input, readError }: { run: Run; input: Revi
         {candidates.map((candidate) => <g key={candidate.candidate_id} style={colorStyle(candidate.color)}><circle r={78 + candidate.index * 7} className="motion-core-ring" /><Pulse radius={78 + candidate.index * 7} active={candidate.moving && (candidate.activity?.kind === "agent" || candidate.activity?.kind === "stage" && candidate.activity?.actor === "rule" && candidate.activity?.phase === "running")} /></g>)}
         <circle r="67" className="motion-core-body" />
         <g className="motion-neural" transform="translate(0 -17)"><path d="M-24 0L0 -16L24 0L0 16ZM-24 0H24M0 -16V16" /><circle cx="-24" r="4" /><circle cy="-16" r="4" /><circle cx="24" r="4" /><circle cy="16" r="4" /><circle r="5" /></g>
-        <text y="21" className="motion-core-title">HER2 AGENT</text><text y="41" className="motion-core-caption">{readError && !replay ? "연결 대기" : moving && focused ? focused.actor : replay ? "기록 재생" : statuses[run.status]}</text>
+        <text y="21" className="motion-core-title">Bio-3 AGENT</text><text y="41" className="motion-core-caption">{readError ? "연결 대기" : moving && focused ? focused.actor : statuses[run.status]}</text>
       </g>
     </svg>
     <div className="motion-evidence" aria-label="스킬 선택과 검증">{candidates.map((candidate) => {
       const skipped = candidate.decision?.activity.phase === "skipped";
-      const terminal = !replay && !["queued", "running"].includes(candidate.progress?.status ?? "queued");
-      const reason = candidate.decision?.activity.reason ?? (!replay ? candidate.progress?.reason ?? candidate.progress?.steps.find((step) => ["failed", "held"].includes(step.status))?.reason : null);
+      const terminal = !["queued", "running"].includes(candidate.progress?.status ?? "queued");
+      const reason = candidate.decision?.activity.reason ?? candidate.progress?.reason ?? candidate.progress?.steps.find((step) => ["failed", "held"].includes(step.status))?.reason;
       const check = candidate.verification?.activity.verification;
       return <article className="motion-evidence-card" key={candidate.candidate_id} style={colorStyle(candidate.color)}>
         <div className="motion-card-heading"><span className="candidate-dot">{candidate.index + 1}</span><h3>{candidate.name}</h3><span className="motion-decision">{candidate.decision ? `Boltz-2 ${phases[candidate.decision.activity.phase]}` : terminal ? "스킬 선택 없음" : "선택 대기"}</span></div>
@@ -148,10 +130,10 @@ export function AgentActivity({ run, input, readError }: { run: Run; input: Revi
           <div><dt>{candidate.next.label}</dt><dd>{candidate.next.actions.length ? candidate.next.actions.map(actionLabel).join(" · ") : "대기"}</dd></div></dl>
       </article>;
     })}</div>
-    <details className="motion-details"><summary>상세 동작 기록 · {visible.length}건</summary><ol>{visible.slice().reverse().map((event) => {
+    <details className="motion-details"><summary>상세 동작 기록 · {events.length}건</summary><ol>{events.slice().reverse().map((event) => {
       const candidate = candidates.find((c) => c.candidate_id === event.candidate_id);
       const eventReason = event.activity.reason ?? event.reason;
       return <li key={event.activity.event_id} style={colorStyle(candidate?.color ?? colors[0])}><span className="motion-event-name">{candidate?.name} · {actorLabel(event)} · {actionLabel(event.activity.name)}</span><span>{phases[event.activity.phase] ?? event.activity.phase}</span>{eventReason && <p>{eventReason}</p>}{event.activity.skill && <small>NVIDIA {event.activity.skill.id} · {event.activity.skill.revision.slice(0, 8)}</small>}{event.activity.verification && <ul>{event.activity.verification.checks.map((check) => <li key={check.name}>{check.name} · {({passed: "통과", failed: "실패", unverified: "미확인"}[check.status])}</li>)}</ul>}</li>;
-    })}</ol>{!visible.length && <p>{replay ? "재생 시작 전입니다." : "이 실행에 저장된 도구 호출 기록이 없습니다."}</p>}</details>
+    })}</ol>{!events.length && <p>이 실행에 저장된 도구 호출 기록이 없습니다.</p>}</details>
   </section>;
 }

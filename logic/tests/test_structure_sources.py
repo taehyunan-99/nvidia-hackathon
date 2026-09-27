@@ -71,6 +71,27 @@ def test_parent_reference_does_not_become_variant_structure(monkeypatch,tmp_path
     assert '부모' in result.notes[0]
 
 
+def test_antibody_only_source_allows_prediction_without_reusing_coordinates(monkeypatch,tmp_path):
+    monkeypatch.setattr(sources,'download',lambda pdb:cif([('H','FGHI'),('L','KLMN')]).encode())
+    match=sources.lookup(input_candidate(),'ACD',tmp_path)
+    assert match.heavy_exact and match.light_exact and not match.target_entity
+    assert not match.complete and not match.blocked_reason and not match.chain_mapping
+    assert '항체 단독' in match.notes[0]
+    session=CandidateSession(input_candidate(),input_checked=True,match=match,lengths={'target':607,'heavy':225,'light':214})
+    assert allowed_tools(session)=={'predict_structure','hold_candidate'}
+
+
+@pytest.mark.parametrize('chains',[
+    [('H','AGHI'),('L','KLMN')],
+    [('H','FGHI'),('L','KLMN'),('T','VVVV')],
+    [('H','FGHI'),('L','KLMN'),('J','FGHI')],
+])
+def test_unverified_antibody_or_other_polymer_is_not_antibody_only(monkeypatch,tmp_path,chains):
+    monkeypatch.setattr(sources,'download',lambda pdb:cif(chains).encode())
+    match=sources.lookup(input_candidate(),'ACD',tmp_path)
+    assert match.blocked_reason and not match.complete
+
+
 @pytest.mark.parametrize('content,reason',[
     (cif(pdb='2ABC'),'식별자'),
     (cif().replace("'X-RAY DIFFRACTION'","'THEORETICAL MODEL'"),'실험 구조'),
