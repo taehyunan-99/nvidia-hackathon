@@ -117,6 +117,42 @@ Boltz-2 호출은 0회다. 두 사례 모두 모델이 충돌·표면 노출 미
 원문 로그는 `work/final-gate-live.log`, `work/final-gate-pertuzumab.log`이며,
 [결과·검증 코드 SHA256](assets/goldset/generated/final-gate-live.json)을 함께 남겼다.
 
+## 샘플 간 에피토프 일치도 — 지표로 쓸 수 없다 (2026-09-27)
+
+8JYR의 실패 원인을 항체 CDR 위치로는 못 가렸다. 그래서 정답을 몰라도 잴 수 있는
+신호를 찾아 **샘플 간 에피토프 일치도**를 시험했다. 같은 입력으로 나온 구조들이
+서로 다른 자리에 붙으면 그 예측을 의심하자는 가설이었다.
+
+**가설은 틀렸다.** 맞은 사례와 틀린 사례가 갈리지 않는다.
+
+| 사례 | 후보=트라스투주맙 | 평균 짝 일치도 | 최대 | 모든 샘플 공통 잔기 |
+|---|---|---:|---:|---:|
+| 1N8Z (맞음) | 예 | 0.050 | 0.500 | 0개 |
+| 1S78 (틀림) | 아니오 | 0.005 | 0.027 | 0개 |
+
+둘 다 바닥이라 임계값을 그을 자리가 없다. 지표 후보에서 내린다.
+
+재는 과정에서 나온 사실은 남긴다.
+
+- **5개 샘플은 서로 완전히 다른 자리에 붙는다.** 1N8Z에서 신뢰도 1위는 실험
+  에피토프 19개를 19개 모두 복원했는데, 나머지 4개는 복원 0개였고 접촉 자리가
+  도메인 I·II 쪽(잔기 11~241, 101~104 등)으로 흩어졌다. 모든 샘플에 공통인 잔기는
+  두 사례 다 0개다. 예측이 붙을 자리를 정하지 못한다는 뜻이다.
+- **신뢰도 순위는 에피토프 정확도를 따라가지 않는다.** 1N8Z는 1위가 정답이었지만,
+  1S78은 1위(`model_0`, conf 0.8221)가 실험 에피토프와 겹침 0이고, 실험에 제일
+  가까운 샘플은 4위(`model_2`, conf 0.7933, 26개 중 7개 복원)였다. 사례 2건이라
+  규칙으로 세우지 않고 관측으로 적는다.
+- **샘플을 늘리면 다른 틀린 답이 뽑힐 수 있다.** 1N8Z는 1샘플 실행과 5샘플의
+  선택이 같은 구조였지만, 1S78은 달랐다. 1샘플 실행은 트라스투주맙 계면
+  (잔기 555~593)을 재현했고, 5샘플에서는 그것이 2위로 밀리고 잔기 141~196에
+  붙은 `model_0`이 뽑혔다. `diffusion_samples`를 올려도 정확도가 오르지 않는다는
+  기존 결론과 같은 방향이다.
+
+측정은 캐시된 응답만 썼고 **새 API 호출은 0회**다. 5샘플 응답이 있는 사례가
+1N8Z·1S78뿐이라 **8JYR·3N85는 이 지표를 재지 못했다.** 8JYR의 겹침 0 원인은
+여전히 미해결이다. 산출물은
+[샘플 간 일치도 측정 결과](assets/goldset/generated/sample-agreement-check.json)다.
+
 ## 재실행
 
 저장소 루트에서 실행한다. 캐시가 있으면 새 API 호출은 없다.
@@ -128,6 +164,7 @@ python docs/topics/her2/assets/goldset/verify_prediction.py --case 1N8Z --sample
 python docs/topics/her2/assets/goldset/verify_prediction.py --case 1S78 --samples 1
 python docs/topics/her2/assets/goldset/verify_prediction.py --case 1S78 --samples 5
 python docs/topics/her2/assets/goldset/score_saved_predictions.py
+python docs/topics/her2/assets/goldset/check_sample_agreement.py
 git diff --check
 ```
 
