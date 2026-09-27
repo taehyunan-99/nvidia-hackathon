@@ -107,7 +107,8 @@
   background: var(--bg-secondary);
   padding: var(--space-2) var(--space-3);
   text-align: left;
-  height: 56px;
+  min-height: 56px;
+  overflow-wrap: anywhere;
 }
 .review-candidate-options button {
   flex: 1 1 0;

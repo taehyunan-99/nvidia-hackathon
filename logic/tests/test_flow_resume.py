@@ -49,7 +49,7 @@ def test_continue_after_prediction_does_not_predict_again(tmp_path):
 
     assert client.predictions == 1  # 규칙 마무리가 예측을 다시 부르지 않는다
     assert session.terminal is not None
-    assert any("판단: 규칙 — 모델 호출이 503으로 실패했다" in (o["reason"] or "")
+    assert any("진행: 규칙 — 모델 호출이 503으로 실패했다" in (o["reason"] or "")
                for o in flow.opinions if o["candidate_id"] == "cand-v")
 
 

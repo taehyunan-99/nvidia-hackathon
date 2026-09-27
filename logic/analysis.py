@@ -126,7 +126,8 @@ def contact_measurement(pdb_id: str, source: dict[str, Any], expected_sha256: st
 
 
 def predicted_contact_measurement(
-    path: Path, chain_mapping: list[dict[str, Any]], source: dict[str, Any], *, predicted: bool = True
+    path: Path, chain_mapping: list[dict[str, Any]], source: dict[str, Any], *, predicted: bool = True,
+    residue_ranges: dict[str, tuple[int, int]] | None = None,
 ) -> Measurement:
     """예측 구조의 접촉 잔기. 좌표에서 직접 고른다.
 
@@ -153,6 +154,9 @@ def predicted_contact_measurement(
             state="failed",
             reason=f"예측 구조 파일을 읽지 못했다: {exc}",
         )
+    if residue_ranges:
+        atoms = [atom for atom in atoms if atom.label_asym_id in residue_ranges and
+                 residue_ranges[atom.label_asym_id][0] <= atom.label_seq_id <= residue_ranges[atom.label_asym_id][1]]
     if not atoms:
         return Measurement.not_run(
             "interface_contact_residues",

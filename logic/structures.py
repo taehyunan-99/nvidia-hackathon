@@ -211,11 +211,17 @@ class StructureMatch:
     target_entity: PolymerEntity | None
     heavy_exact: bool
     light_exact: bool
+    public: PublicStructure | None = None
+    chain_mapping: tuple[dict, ...] = ()
+    residue_ranges: tuple[tuple[str, int, int], ...] = ()
+    notes: tuple[str, ...] = ()
+    blocked_reason: str | None = None
+    calculation_hold_reason: str | None = None
 
     @property
     def complete(self) -> bool:
         """중쇄·경쇄 모두 서열이 정확히 일치하고 표적 사슬도 같은 구조에 있다."""
-        return self.heavy_exact and self.light_exact and self.target_entity is not None
+        return self.heavy_exact and self.light_exact and self.target_entity is not None and not self.blocked_reason
 
 
 def find_structure(heavy_fasta: str, light_fasta: str) -> StructureMatch:

@@ -44,7 +44,7 @@ def test_nat_failure_falls_back_to_rule_with_reason(tmp_path, monkeypatch):
     validate(output, "LogicOutput")
     assert flow.states["cand-t"].status == "completed"
     opinion = _opinion_for(output, "cand-t")
-    assert "판단: 규칙 — 에이전트 반복 상한" in opinion["reason"]
+    assert "진행: 규칙 — 에이전트 반복 상한" in opinion["reason"]
 
 
 def test_missing_nat_falls_back_to_rule(tmp_path, monkeypatch):
@@ -175,13 +175,17 @@ def test_error_after_submission_is_retained_without_replacing_the_opinion(tmp_pa
     output, flow = run_flow(_request(tmp_path), client=ScriptedClient())
     assert "429" in flow.agent_errors["cand-t"]
     assert flow.states["cand-t"].status == "completed"
-    assert "판단: 모델" in _opinion_for(output, "cand-t")["reason"]
+    assert "진행: 모델" in _opinion_for(output, "cand-t")["reason"]
+    assert "판단: 규칙 — 항목별 근거" in _opinion_for(output, "cand-t")["reason"]
     assert "429" not in _opinion_for(output, "cand-t")["reason"]
     from logic import measure_agent
     monkeypatch.setattr(measure_agent, "run_flow", lambda request: (output, flow))
     row = measure_agent._one("trastuzumab", "nat")
     assert row["rate_limited"] is True
     assert row["rule_finish"] is False
+    assert row["decision"] == "needs_confirmation"
+    assert any(o["topic"] == "contact" and o["decision"] == "reviewable" for o in row["topic_decisions"])
+    assert any(o["topic"] == "accessibility" and o["decision"] == "needs_confirmation" for o in row["topic_decisions"])
 
 
 @pytest.mark.live

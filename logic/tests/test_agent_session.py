@@ -72,8 +72,9 @@ def test_experimental_path_end_to_end(tmp_path):
     assert session.terminal == "completed"
     assert client.predictions == 0
     assert flow.states["cand-t"].status == "completed"
-    opinion = next(o for o in flow.opinions if o["candidate_id"] == "cand-t")
-    assert opinion["decision"] == "needs_confirmation"
+    opinion = next(o for o in flow.opinions if o["candidate_id"] == "cand-t" and o["topic"] == "contact")
+    assert opinion["decision"] == "reviewable"
+    assert all(o["decision"] == "needs_confirmation" for o in flow.opinions if o["topic"] in {"clash", "accessibility"})
     assert "(판단: " in opinion["reason"]
 
 

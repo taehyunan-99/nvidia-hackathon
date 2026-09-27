@@ -122,8 +122,10 @@ export async function loadMolecule(
     : undefined;
   const contactComponents = [];
   const contactReps: Representation[] = [];
+  const contactChainIndices: number[] = [];
   for (let i = 0; i < chains.length; i++) {
     const rs = residues.filter((r) => r.chain === chains[i]);
+    if (!rs.length) continue;
     const expression = Q.struct.combinator.merge(
       rs.map((r) =>
         Q.struct.generator.atomGroups({
@@ -146,6 +148,7 @@ export async function loadMolecule(
     if (!c?.obj || c.obj.data.polymerResidueCount !== rs.length)
       throw new Error("근접 잔기 대응 수가 일치하지 않습니다.");
     contactComponents.push(c);
+    contactChainIndices.push(i);
     contactReps.push(
       await plugin.builders.structure.representation.addRepresentation(c, {
         type: "ball-and-stick",
@@ -188,7 +191,7 @@ export async function loadMolecule(
       contactReps.forEach((r, i) =>
         state.to(r).update((old) => {
           old.type.params.alpha =
-            next.view === "contacts" && (i === 0 || !next.hideAntibody) ? 1 : 0;
+            next.view === "contacts" && (contactChainIndices[i] === 0 || !next.hideAntibody) ? 1 : 0;
         }),
       );
       if (contextRep)
@@ -206,7 +209,7 @@ export async function loadMolecule(
             ? contextLoci
             : next.view === "contacts"
               ? next.hideAntibody
-                ? contactLoci.slice(0, 1)
+                ? contactLoci.filter((_, i) => contactChainIndices[i] === 0)
                 : contactLoci
               : next.hideAntibody
                 ? fullLoci.slice(0, 1)

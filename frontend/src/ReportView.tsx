@@ -6,7 +6,7 @@ type Opinion = Result["opinions"][number];
 type Source = { title: string; url: string; record_id: string | null };
 
 const decisions: Record<string, string> = {
-  reviewable: "후속 실험 검토 가능", needs_confirmation: "추가 확인", hold: "판단 보류", not_assessed: "미검토",
+  reviewable: "해당 항목 검토 가능", needs_confirmation: "추가 확인", hold: "판단 보류", not_assessed: "미검토",
 };
 const measurements: Record<string, string> = {
   measured: "측정됨", unknown: "미확인", not_run: "미실행", failed: "실행 실패", not_applicable: "해당 없음",
@@ -14,6 +14,7 @@ const measurements: Record<string, string> = {
 const evidenceKinds: Record<string, string> = { experimental: "실험 자료", computed: "계산 결과", unknown: "근거 종류 미확인" };
 const topics: Record<string, string> = {
   contact: "접촉", accessibility: "접근성", clash: "충돌", confidence: "구조 신뢰도",
+  surface: "관측 단백질 표면", glycan: "관측 당의 표면 영향",
   interface_contact_residues: "접촉 잔기", atom_clash: "원자 간 충돌", surface_exposure: "관측 단백질 표면적",
   buried_sasa_sum: "양쪽 매몰 면적 합",
   observed_glycan_protein_sasa_reduction: "관측 당의 표면 감소량",
