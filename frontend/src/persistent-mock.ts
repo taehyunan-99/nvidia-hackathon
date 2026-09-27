@@ -7,6 +7,11 @@ type Run = NonNullable<ScenarioFile["scenarios"][number]["run"]>;
 type Result = NonNullable<ScenarioFile["scenarios"][number]["result"]>;
 let cachedSession: Session | null = null;
 let lastHeartbeat = 0;
+const finishedStatuses = new Set(["completed", "partial", "failed", "interrupted"]);
+
+export function isSavedRunFinished(frame?: ScenarioFile): boolean {
+  return finishedStatuses.has(frame?.scenarios[0].run?.status ?? "");
+}
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8010"}${path}`, {
@@ -55,17 +60,22 @@ export async function startSavedRun(input: ReviewInput, files: Map<string, File>
   return { session, run };
 }
 
-export async function readSavedRun(runId: string): Promise<ScenarioFile> {
-  const run = await request<Run>(`/api/runs/${runId}`);
+export async function readSavedRun(runId: string, previous?: ScenarioFile): Promise<ScenarioFile> {
+  const cached = previous?.scenarios[0].run?.run_id === runId ? previous : undefined;
+  const finished = cached && isSavedRunFinished(cached);
+  const run = finished ? cached.scenarios[0].run! : await request<Run>(`/api/runs/${runId}`);
   if (run.run_id !== runId || !["mock", "live"].includes(run.data_mode)) throw new Error("저장된 실행 ID가 일치하지 않습니다.");
-  const input = await request<ReviewInput>(`/api/reviews/${run.review_id}`);
-  const result = run.result_available ? await request<Result>(`/api/runs/${runId}/result`) : null;
+  const input = cached?.input ?? await request<ReviewInput>(`/api/reviews/${run.review_id}`);
+  const result = finished ? cached.scenarios[0].result : run.result_available ? await request<Result>(`/api/runs/${runId}/result`) : null;
   if (result && (result.run_id !== runId || result.data_mode !== run.data_mode)) throw new Error("저장된 결과 ID가 일치하지 않습니다.");
   if (!cachedSession || Date.now() - lastHeartbeat >= 60_000) {
     cachedSession = await request<Session>("/api/session/heartbeat", { method: "POST" });
     lastHeartbeat = Date.now();
   }
   const session = cachedSession;
+  if (cached && cached.scenarios[0].session.session_id !== session.session_id) {
+    throw Object.assign(new Error("이 실행을 조회하려면 원래 브라우저 세션이 필요합니다."), { status: 401 });
+  }
   return savedFrame(input, session, run, result);
 }
 

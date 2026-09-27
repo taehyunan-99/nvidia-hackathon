@@ -58,6 +58,19 @@ def test_retries_past_a_rate_limit(client, monkeypatch):
     assert len(calls) == 3
 
 
+def test_daily_limit_counts_retries_and_blocks_before_the_next_http_request(client, monkeypatch, tmp_path):
+    import sqlite3
+    path = tmp_path / 'daily.sqlite3'
+    monkeypatch.setenv('MODEL_DAILY_BUDGET_PATH', str(path))
+    monkeypatch.setenv('BOLTZ2_DAILY_REQUEST_LIMIT', '2')
+    calls = _responses(client, monkeypatch, [FakeResponse(429), FakeResponse(429), FakeResponse(200)])
+    with pytest.raises(CallFailed, match='일일'):
+        client._post('http://x', {}, 'boltz2.predict', {})
+    assert len(calls) == 2
+    with sqlite3.connect(path) as conn:
+        assert conn.execute('SELECT used FROM daily_requests').fetchone()[0] == 2
+
+
 def test_the_rate_limit_is_still_recorded_after_a_successful_retry(client, monkeypatch):
     """429를 지우면 시연이 왜 느렸는지 나중에 알 수 없다."""
     _responses(client, monkeypatch, [FakeResponse(429), FakeResponse(200)])

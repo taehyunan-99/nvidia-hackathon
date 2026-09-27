@@ -20,6 +20,7 @@ Bio-3 서비스의 입력·진행·비교·보고 화면, 백엔드 접수·저�
 - [hosting-requirements.md](hosting-requirements.md) — 실행·저장·외부 호출·배포 조건과 실측 인계
 - [hosting-guide.md](hosting-guide.md) — AWS·Docker 입문 설명, 호스팅 비교·공식 가격·선택 조건 조사
 - [server-rehearsal.md](server-rehearsal.md) — 배포 전 HTTPS·이미지·재시작·격리 복구 검증 절차
+- [aws-deployment.md](aws-deployment.md) — 무료 플랜·CloudFront 설정, 현재 AWS 준비 상태와 main 병합 후 배포·복구 절차
 - [local-e2e.md](local-e2e.md) — 사용자 로컬 실제 E2E 절차·모델 호출 구분·확인 항목
 - [runtime-files.md](runtime-files.md) — 실행 파일별 용도·호출 경로·검증 경계
 - [runtime-audit.md](runtime-audit.md) — 실행·모의 경로, 코드 용도, 설계 차이와 운영 준비를 막는 문제의 재현·수정 우선순위

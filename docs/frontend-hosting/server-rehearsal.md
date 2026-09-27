@@ -96,3 +96,18 @@ tar 복원은 파일 소유권을 복구하기 위해 일회성 root 컨테이�
 - 잘못된 HTTP origin·약한 비밀번호 형식·공개 바인딩의 사전 검사 실패 확인. Python 구문·변경 문서 상대 경로·공백 검사 통과.
 
 실제 서울 EC2·공개 CA·DNS·AWS 복구·원격 CD는 미검증이다. 로컬 테스트용 프로젝트만 종료했고 기존 개발 서비스는 유지했다. 검증용 체크포인트와 백업은 Git 제외 `tmp/server-check/`에 보관한다.
+
+
+## 2026-09-27 재검증과 AWS 접근 확인
+
+`1665688`에서 다시 만든 이미지로 격리 localhost HTTPS mock 흐름, Secure/HttpOnly 쿠키, 익명 차단, 컨테이너 강제 재생성 후 재조회, 일관된 DB·파일 백업과 별도 프로젝트 복원·파일 해시를 확인했다. CI의 mock 흐름 검사도 복원 환경에서 통과했다. 실제 모델 기본 시나리오의 새 실행은 [로컬 E2E 기록](local-e2e.md#2026-09-27-최종-기본-시나리오-리허설)에 구분했다.
+
+사용자는 AWS 제공 도메인의 HTTPS 공개 배포를 요청했고, 유료 서버가 필요하면 기존 서울 리전·약 30일·크레딧 차감 전 총 10만 원 예산으로 진행하도록 확인했다. `her2-dev`의 만료된 로그인을 갱신해 EC2 인스턴스 0개를 확인했으나, IAM 사용자 `her2-cli`에는 CloudFront 목록 조회·계정 플랜 조회·EC2 보안그룹 생성 권한이 없었다. 보안그룹 생성은 dry-run으로만 확인했고 AWS 자원은 생성하지 않았다. 이후 사용자가 Bio3Deployment 정책을 생성했고, 연결 승인을 받아 her2-cli에 연결했다. CloudFront 목록 조회와 EC2 보안그룹 생성 dry-run이 통과했다. 처음에는 t3.medium만 허용했으나 사용자 승인으로 정책 v2를 저장해 무료 대상 c7i-flex.large로 변경하고 잘못된 CloudFront 작업명을 제거했다. 예산 자동 중지 역할 초안은 개인 검증 폴더에 준비했으나 역할·예산은 생성하지 않았다.
+
+CloudFront 기본 `*.cloudfront.net` 주소에는 기본 HTTPS 인증서를 사용할 수 있다. 도메인 구매 비용이 없다는 뜻이며 EC2·디스크·전송 비용 전체가 무료라는 뜻은 아니다. [AWS 기본 인증서](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/DownloadDistValuesGeneral.html)
+
+예산 알림·EC2 자동 중지는 아직 설정하지 않았다. Budgets는 비용 집계 지연이 있으며 EC2 중지 후에도 EBS 비용은 남으므로 원화 10만 원의 절대 청구 상한으로 설명하지 않는다. 5만·7만 원 상당 알림과 8만 원 상당 자동 중지를 제안했으며, 실제 설정에는 수신 주소·중지 역할·달러 기준액과 운영 종료일 확인이 필요하다. [AWS Budgets 집계 주기](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-best-practices.html), [예산 동작](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-controls.html), [EC2 중지 후 비용](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html)
+
+권한 연결 후 계정 플랜 조회에서 무료 플랜 ACTIVE·잔여 크레딧 $100·만료 예정 2027-03-26을 확인했다. 무료 플랜을 유료로 전환하기 전에는 카드 청구가 없고, 크레딧 소진 또는 만료 시 계정이 닫히는 조건이다. 서울 무료 플랜 대상 중 4GB인 c7i-flex.large는 시간당 $0.09576이며 30일 720시간·gp3 30GB·IPv4 한 개의 기본 합계는 $75.2832다. 기존 환율·세금 예산 가정(1,500원/USD·10%)에서는 약 124,217원으로 크레딧 차감 전 10만 원 기준을 초과하므로, 무료 플랜·크레딧 운영과 기존 총원가 기준 유지 중 사용자 선택을 확인한다. 실제 월별 청구·트래픽·추가 사용량의 확정 견적은 아니다. [AWS Free Tier FAQ](https://aws.amazon.com/free/free-tier-faqs/), [AWS 서울 EC2 가격표](https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/ap-northeast-2/index.csv)
+
+사용자가 AWS 준비를 계속하도록 요청한 뒤 무료 플랜용 c7i-flex.large 기준으로 준비했다. 운영자 접속 키와 CloudFront 전용 원본 포트·운영자 /32 SSH의 보안그룹을 생성하고 EC2 생성 dry-run을 통과했다. 실제 인스턴스·배포 주소는 main 병합 후 생성한다. 운영에 검증용 공유 누적 60/4 한도를 적용하려던 제안은 철회했으며 기존 분석 실행별 Nemotron 40·Boltz-2 4와 동시 분석 1건을 유지한다. [배포 설정·준비 상태·main 기준 절차](aws-deployment.md)를 따른다.
