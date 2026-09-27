@@ -9,8 +9,11 @@
 > `verify_prediction.py`를 사용한다. `generated/verified-*.json`이 수정 후 결과다.
 >
 > [샘플 간 일치도](../../agent-performance-validation.md): `check_sample_agreement.py`가 캐시된
-> 5샘플 응답 2건으로 샘플끼리 같은 자리에 붙는지 잰다. API를 부르지 않는다. 맞은 사례와
-> 틀린 사례가 갈리지 않아 **지표로 쓰지 않는다**. 결과는 `generated/sample-agreement-check.json`이다.
+> 5샘플 응답 3건(1N8Z·1S78·8JYR)으로 샘플끼리 같은 자리에 붙는지 잰다. API를 부르지 않는다.
+> 맞은 사례와 틀린 사례가 갈리지 않아 **지표로 쓰지 않는다**. 대신 신뢰도 1위가 실험 계면에
+> 제일 가까운 경우가 3건 중 1건뿐이라는 관측이 나왔다. 결과는
+> `generated/sample-agreement-check.json`이다. 새 5샘플 응답은 `fetch_benchmark_samples.py`로
+> 받는다(유료 1회).
 
 에이전트가 내리는 판단을 **실제 결정 구조에 대고 채점**하기 위한 자료와 도구다.
 만든 날 2026-09-26. 배경과 결과 해석은 [judgment-scoring.md](../../judgment-scoring.md)에 있다.
@@ -99,6 +102,7 @@ Boltz-2는 스텁으로 막으므로 유료 예측 호출은 0회다. Nemotron�
 | `gate_run.py` | 도구·관문을 실제 10건으로 끝까지 구동(모델 없음, 예측 스텁) |
 | `score_hold_vs_predict.py` | 보류 대 예측 갈림길을 실제 에이전트로 채점 |
 | `check_sample_agreement.py` | 같은 입력 5샘플의 에피토프가 서로 일치하는지 잰다(캐시만 사용) |
+| `fetch_benchmark_samples.py` | 고정 평가 사례를 지정한 샘플 수로 한 번 부른다(유료) |
 | `generated/*.json` | 위 스크립트들의 결과 |
 
 ## 돌리는 법
