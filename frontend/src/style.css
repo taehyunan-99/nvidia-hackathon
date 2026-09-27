@@ -13,6 +13,7 @@
 }
 body {
   margin: 0;
+  overflow-x: clip;
   background: var(--bg-primary);
   color: var(--text-primary);
   font: var(--text-body)/var(--leading-body) var(--font-ko);

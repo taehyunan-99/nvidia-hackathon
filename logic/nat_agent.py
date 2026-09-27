@@ -146,16 +146,33 @@ def _last_refusal_note(session: CandidateSession) -> str | None:
     return None
 
 
-def _fallback_reason(session: CandidateSession, final: str | None) -> str | None:
+def _max_iterations(config_path: Path) -> int | None:
+    import yaml
+
+    try:
+        return int(yaml.safe_load(config_path.read_text(encoding="utf-8"))["workflow"]["max_iterations"])
+    except (OSError, KeyError, TypeError, ValueError, yaml.YAMLError):
+        return None
+
+
+def _fallback_reason(session: CandidateSession, final: str | None,
+                     max_iterations: int | None = None) -> str | None:
     """세션과 에이전트의 최종 답변으로 규칙 마무리 사유를 만든다.
 
     끝난 세션(종료 도구가 받아들여졌다)이면 None — run_candidate가 그대로 성공 처리한다.
     아니면 짧은 일반 사유를 앞에 두고, 마지막 거부가 있었으면 그 내용을 뒤에 붙인다.
     (`_explain`이 80자에서 자르므로 일반 사유가 먼저 있어야 잘려도 뜻이 남는다.)
+
+    반복 상한은 두 가지로 알아본다. NAT는 상한에 닿으면 GraphRecursionError를
+    삼키고 영어 문장을 돌려주는데, 그 문구는 NAT 버전에 따라 바뀔 수 있다. 그래서
+    도구 호출 수가 max_iterations에 닿았는지도 함께 본다. 도구 단계가 한 번 돌 때
+    호출이 한 건 이상 기록되므로, 상한까지 돌았다면 기록도 그만큼 쌓여 있다.
     """
     if session.terminal:
         return None
     if "could not produce a final answer" in (final or ""):
+        return "에이전트 반복 상한"
+    if max_iterations and len(session.calls) >= max_iterations:
         return "에이전트 반복 상한"
     reason = "에이전트가 종료 도구 없이 끝났다"
     note = _last_refusal_note(session)
@@ -188,4 +205,4 @@ def run_candidate(flow, session: CandidateSession, *, config_path: Path = CONFIG
         final = _run_sync(_go())
     except Exception as exc:
         return f"에이전트 실행 오류: {type(exc).__name__}: {exc}"[:200]
-    return _fallback_reason(session, final)
+    return _fallback_reason(session, final, _max_iterations(config_path))

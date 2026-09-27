@@ -1,4 +1,4 @@
-# Standalone server rehearsal; real analysis and public admission are not connected yet.
+# Standalone server rehearsal; public admission is not connected yet.
 x-runtime: &runtime
   restart: unless-stopped
   logging:
@@ -9,7 +9,7 @@ x-runtime: &runtime
 x-environment: &environment
   DATABASE_URL: postgresql://her2:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@db:5432/her2
   SERVICE_DATA_ROOT: /data
-  DATA_MODE: mock
+  DATA_MODE: ${DATA_MODE:-mock}
   SECURE_COOKIE: "true"
   ALLOWED_ORIGINS: ${PUBLIC_ORIGIN:?Set the exact HTTPS origin}
   MAX_UPLOAD_BYTES: "20971520"
@@ -62,7 +62,10 @@ services:
     mem_limit: 1536m
     memswap_limit: 1536m
     command: ["python", "-m", "service.worker", "--scenario", "scientific-hold"]
-    environment: *environment
+    environment:
+      <<: *environment
+      NVIDIA_API_KEY: ${NVIDIA_API_KEY:-}
+      LOGIC_AGENT_MODE: ${LOGIC_AGENT_MODE:-nat}
     volumes:
       - uploads:/data
     depends_on:

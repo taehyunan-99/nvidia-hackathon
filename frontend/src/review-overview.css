@@ -97,14 +97,12 @@
   font-size: var(--text-caption);
   font-weight: 600;
 }
-.review-candidate-options,
-.evidence-choices {
+.review-candidate-options {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
 }
-.review-candidate-options button,
-.evidence-choices button {
+.review-candidate-options button {
   border: 1px solid var(--border);
   background: var(--bg-secondary);
   padding: var(--space-2) var(--space-3);
@@ -115,8 +113,7 @@
   flex: 1 1 0;
   min-width: 0;
 }
-.review-candidate-options button[aria-pressed="true"],
-.evidence-choices button[aria-pressed="true"] {
+.review-candidate-options button[aria-pressed="true"] {
   border-color: var(--color-accent-ink);
   box-shadow: inset 0 -3px var(--color-accent);
 }
@@ -124,25 +121,33 @@
   height: 56px;
   padding: var(--space-2);
 }
-.evidence-choices span {
-  font-size: var(--text-caption);
-  color: var(--text-secondary);
-}
-.evidence-record {
-  width: 100%;
-  height: 56px;
-  margin: 0;
-  padding: var(--space-1) var(--space-3);
-  border-left: var(--space-1) solid var(--color-accent);
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  font-size: var(--text-caption);
+.evidence-categories {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  min-width: 0;
+  overflow-x: auto;
+  border: 1px solid var(--border);
 }
-.evidence-record small {
-  display: block;
+.evidence-categories button {
+  flex: 1 0 auto;
+  min-height: 56px;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-right: 1px solid var(--border);
+  background: var(--bg-secondary);
+  white-space: nowrap;
+  text-align: center;
+}
+.evidence-categories button:last-child {
+  border-right: 0;
+}
+.evidence-categories button[aria-pressed="true"] {
+  color: var(--color-accent-ink);
+  background: var(--color-accent-05);
+  box-shadow: inset 0 -3px var(--color-accent);
+}
+.evidence-categories span {
+  padding: var(--space-3);
+  font-size: var(--text-caption);
   color: var(--text-secondary);
 }
 .review-matrix-details {

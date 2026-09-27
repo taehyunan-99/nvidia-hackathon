@@ -113,6 +113,15 @@
       "required": ["schema_version","data_mode","session_id","status","expires_at"],
       "additionalProperties": false
     },
+    "ServiceConfig": {
+      "type": "object",
+      "properties": {
+        "schema_version": {"const":"0.1.0"},
+        "data_mode": {"enum":["mock","live"]}
+      },
+      "required": ["schema_version","data_mode"],
+      "additionalProperties": false
+    },
     "FieldError": {
       "type": "object",
       "properties": {"path":{"type":"string","pattern":"^/"},"message":{"type":"string","minLength":1}},

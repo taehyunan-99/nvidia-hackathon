@@ -18,10 +18,10 @@ DB 준비 확인 후 migration을 한 번 실행하고 API를 시작한다. DB�
 데이터를 유지하려면 `down -v`를 사용하지 않는다. 비밀번호를 바꾸려면 기존 DB 볼륨의
 자격 증명도 함께 관리해야 한다.
 
-이 구성은 `127.0.0.1`의 HTTP 개발 환경이다. 화면의 **저장형 모의 실행**은 사용자가 입력한 표적·후보 서열과 선택 구조 파일을
-영속 API에 접수하고 Compose의 별도 worker가 처리한 상태·결과를 조회한다. 같은 브라우저에서
-새로고침하면 유효한 세션과 실행 ID로 다시 조회한다. 모의 결과에는 실제 구조 계산이나
-모델 호출이 없다. 별도 동기식 `/api/review`를 사용하는 **실제 분석 실행** 버튼은
+이 구성은 `127.0.0.1`의 HTTP 개발 환경이다. 기본 `DATA_MODE=mock`에서는 사용자가 입력한 표적·후보 서열과 선택 구조 파일을
+영속 API에 접수하고 별도 worker의 모의 결과를 조회한다. `DATA_MODE=live`로 별도 격리 구성을 띄우면
+같은 입력을 실제 로직에 전달하고 진행·결과·파일을 저장한다. 브라우저는 실행 모드를 API에서 읽으며,
+새로고침하면 유효한 세션과 실행 ID로 다시 조회한다. 별도 동기식 `/api/review` 버튼은
 이 Compose 화면에서 숨긴다. 로컬에서 worker를 따로 실행하려면 API와 같은
 `DATABASE_URL`, `SERVICE_DATA_ROOT`를 설정하고 아래 명령을 사용한다.
 
@@ -30,13 +30,15 @@ uv run python -m service.worker --scenario scientific-hold --once
 ```
 
 `completed`, `scientific-hold`, `partial`, `failed`는 모두 실제 분석을 하지 않는
-모의 시나리오다. `--once`를 빼면 대기 중인 실행을 계속 처리한다. worker는 점유가
+모의 시나리오다. 실제 경로는 `DATA_MODE=live`와 `python -m service.worker --mode live --once`를 사용한다.
+공개 구조 일치 입력은 키 없이 예측을 생략할 수 있으며, Nemotron·Boltz-2 호출에는 서버 worker의 `NVIDIA_API_KEY`가 필요하다.
+`--once`를 빼면 대기 중인 실행을 계속 처리한다. 실제 경로는 한 번에 한 실행만 점유하고 나머지는 대기시킨다. worker는 점유가
 만료된 실행을 `interrupted`로 기록하고 자동 재실행하지 않는다. 세션 삭제·만료 후에는
-점유가 끝난 자료 파일을 정리한다. 공개 HTTPS·접수 제한, 실제 모델 호출과 AWS 자원은 아직 준비되지 않았다. 로컬 HTTPS와 백업·복구 검증은 아래 서버 구성 사전 검증을 따른다.
+점유가 끝난 자료 파일을 정리한다. 공개 HTTPS·접수 제한과 AWS 자원 생성은 아직 별도 과제다. 로컬 HTTPS와 백업·복구 검증은 아래 서버 구성 사전 검증을 따른다.
 
 ## 서버 구성 사전 검증
 
-별도 `compose.server.yaml`과 `.env.server.example`로 localhost HTTPS·Secure cookie·저장소 보존을 시험한다. 공개 구조와 분석 의존성은 API 이미지에 포함된다. 준비·재시작·격리 백업 복원은 [서버 검증 절차](../docs/frontend-hosting/server-rehearsal.md)를 따른다. 실제 분석 worker와 공개 접수 제한은 여전히 미연결이다.
+별도 `compose.server.yaml`과 `.env.server.example`로 localhost HTTPS·Secure cookie·저장소 보존을 시험한다. 공개 구조와 분석 의존성은 API 이미지에 포함된다. 준비·재시작·격리 백업 복원은 [서버 검증 절차](../docs/frontend-hosting/server-rehearsal.md)를 따른다. 공개 접수 제한과 AWS 배포는 별도 검증 대상이다.
 
 ## 영속 접수 API 준비
 
@@ -53,7 +55,7 @@ uv run python -m service.db
 uv run uvicorn service.operational:from_environment --factory --port 8011
 ```
 
-현재는 `DATA_MODE=mock`만 허용한다. `/api/session`으로 받은 HttpOnly cookie로
+`DATA_MODE=mock|live`를 허용한다. `/api/config`는 현재 모드만 반환한다. `/api/session`으로 받은 HttpOnly cookie로
 검토와 실행을 접수한다. `ALLOWED_ORIGINS`에는 브라우저의 정확한 출처를
 쉼표로 구분해 넣는다. HTTPS에서는 `SECURE_COOKIE=true`로 설정한다.
 `MAX_UPLOAD_BYTES` 기본값은 파일당 20 MiB의 **개발용 제한**이며 대표 입력과
@@ -63,16 +65,18 @@ PostgreSQL 연동 검사는 별도의 임시 DB를 가리키는 `TEST_DATABASE_U
 필요하며, 검사 중 해당 DB의 서비스 테이블을 비운다.
 
 ```bash
-TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:55432/postgres uv run pytest service/tests/test_operational.py service/tests/test_worker.py -q
+TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:55432/postgres uv run pytest service/tests -q
 ```
 
-이 API와 worker는 로컬 모의 검증 단계다. worker 점유·결과 등록·만료 자료 정리는
-임시 PostgreSQL에서 검사한다. HTTPS·공개 접수 제한은 다음 단계에서 구현·검증한다. 공개 서비스에
+이 API와 worker는 로컬 연결 검증 단계다. worker 점유·결과 등록·만료 자료 정리는
+임시 PostgreSQL에서 검사한다. 공개 접수 제한은 다음 단계에서 구현·검증한다. 공개 서비스에
 연결해서는 안 된다.
 
 준비된 결과 파일은 `artifact_files`에 실행 ID와 `artifacts/` 아래 상대 경로가 등록되고,
 Result의 해당 항목이 `ready`이며 크기·SHA-256이 실제 파일과 일치할 때만 세션 소유자가
-`GET /api/artifacts/{artifact_id}`에서 받는다. 현재 mock worker는 ready 파일을 만들지 않는다.
+`GET /api/artifacts/{artifact_id}` 또는 실행 ID를 함께 확인하는 `GET /api/runs/{run_id}/artifacts/{artifact_id}`에서 받는다. 현재 mock worker는 ready 파일을 만들지 않는다.
+같은 후보를 반복 실행해 파일 ID가 겹치면 실행 ID 없는 조회는 거부하므로 화면은 실행 ID가 포함된 경로를 사용한다.
+현재 로직은 ready 구조를 결과에 기록하지만 `LogicOutput.files`는 빈 배열로 반환한다. 실제 worker는 예측 파일을 실행 폴더에서, 공개 실험 파일을 검증된 구조 목록에서 찾아 크기·해시를 다시 확인한다. 로직 담당이 파일 목록을 채우면 해당 경로의 계약과 검사를 다시 대조한다.
 `GET /api/reviews/{review_id}`는 같은 세션의 저장된 입력을 새로고침 후 다시 보여준다.
 PR과 main의 자동 검사는 `.github/workflows/integration.yml`에서 수행한다.
 

@@ -12,6 +12,7 @@ HER2와 항체 후보를 비교·검토하는 현재 프로젝트의 기능·판
 - [a01-reference-inputs.md](a01-reference-inputs.md) — A-01 공개 구조·서열·assembly·잔기 대응 조사와 D1/D2 인계, Q04/G1 검토 대기
 - [a02-structure-metrics.md](a02-structure-metrics.md) — 승인 공개 구조의 접촉·표면적·정렬 계산, 누락 처리와 기하학적 겹침의 해석 한계
 - [a03-glycan-context.md](a03-glycan-context.md) — 동일 단백질에서 관측 당 포함·제외 표면 비교, 당 identity·공유결합·누락 검증과 B 인계
+- [a03-prediction-input-review.md](a03-prediction-input-review.md) — 예측 자료 가용성·서열 대응 검토, 중쇄 불일치·좌표 부재와 후속 계산 검증 기준
 - [logic-b-handoff.md](logic-b-handoff.md) — 로직 B 실행부의 현재 동작 범위와 D3–D6 인계 초안
 - [nat-agent-loop.md](nat-agent-loop.md) — 로직 B를 NAT tool-calling 루프로 바꾸는 설계, A→B 전환 기준과 로드맵. 구현·측정 완료, 기본 모드 `nat`로 전환
 - [nat-agent-loop-plan.md](nat-agent-loop-plan.md) — 위 설계의 태스크별 구현 계획 (Task 1–7, 6B 조건부)

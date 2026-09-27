@@ -4,7 +4,7 @@ import { ReviewOverview } from "./ReviewOverview";
 import { ReportView } from "./ReportView";
 import { parseScenarioFile, type ReviewInput, type Scenario, type ScenarioFile } from "./scenario-file";
 import PredictedStructure, { type PredictedView } from "./PredictedStructure";
-import { expiredFrame, isSessionExpired, mockFrame, readMockRun, SAVED_RUN_KEY, startMockRun } from "./persistent-mock";
+import { expiredFrame, isSessionExpired, savedFrame, readSavedRun, SAVED_RUN_KEY, serviceMode, startSavedRun } from "./persistent-mock";
 
 // 개발 중에는 vite와 실행부가 다른 포트에 뜬다. 배포 시 같은 출처면 빈 문자열로 둔다.
 const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8010";
@@ -25,10 +25,10 @@ import "./agent-experience.css";
  * 무엇을 어느 색으로 칠할지 정할 수 없기 때문이다. 짐작해서 칠하면
  * 틀린 잔기를 강조하게 된다.
  */
-function predictedViews(result: any, candidates: any[]): PredictedView[] {
+function resultViews(result: any, candidates: any[]): PredictedView[] {
   const views: PredictedView[] = [];
   for (const s of result.structures ?? []) {
-    if (s.kind !== "predicted") continue;
+    if (s.kind !== "predicted" && s.kind !== "experimental") continue;
     const artifact = (result.artifacts ?? []).find(
       (a: any) => a.artifact_id === s.artifact_id,
     );
@@ -43,12 +43,15 @@ function predictedViews(result: any, candidates: any[]): PredictedView[] {
         e.topic === "interface_contact_residues",
     );
     views.push({
+      kind: s.kind,
+      candidateId: s.candidate_id,
       runId: result.run_id,
       artifactId: s.artifact_id,
       structureId: s.structure_id,
       candidateName:
         candidates.find((c) => c.candidate_id === s.candidate_id)?.name ??
         s.candidate_id,
+      source: s.source,
       sha256: artifact.sha256,
       chains: chains as string[],
       residues: contact?.residues ?? [],
@@ -190,11 +193,11 @@ function App() {
   const [page, setPage] = useState(0),
     [scenarioFile, setScenarioFile] = useState<ScenarioFile | null>(null),
     [fileName, setFileName] = useState(""),
-    [fileError, setFileError] = useState(""),
     [liveBusy, setLiveBusy] = useState(""),
     [liveError, setLiveError] = useState(""),
     [mockBusy, setMockBusy] = useState(false),
     [mockError, setMockError] = useState(""),
+    [savedMode, setSavedMode] = useState<"mock" | "live" | null>(null),
     [savedRunId, setSavedRunId] = useState(() => localStorage.getItem(SAVED_RUN_KEY)),
     [frameIndex, setFrameIndex] = useState(0),
     [playing, setPlaying] = useState(false),
@@ -202,8 +205,8 @@ function App() {
     [conditionKind, setConditionKind] = useState("core"),
     [expanded, setExpanded] = useState<string | null>(null);
   const scenario = scenarioFile?.scenarios[frameIndex];
-  const live = scenarioFile?.data_mode === "live";
-  const persistedMock = fileName === "저장형 모의 실행";
+  const live = scenarioFile?.data_mode === "live" || (!scenarioFile && savedMode === "live" && import.meta.env.VITE_PERSISTENT_SERVICE === "1");
+  const persistedRun = fileName.startsWith("저장형 ");
   const result = scenario?.result;
   const expired = scenario?.session.status === "expired";
   function go(n: number) {
@@ -211,22 +214,6 @@ function App() {
     if (n === 0) setPlaying(false);
     setPage(n >= 2 && (playing || !result || expired) ? 1 : n);
     setExpanded(null);
-  }
-  async function loadFile(file: File) {
-    localStorage.removeItem(SAVED_RUN_KEY);
-    setSavedRunId(null);
-    setFileError("");
-    setScenarioFile(null);
-    setPlaying(false);
-    if (file.size > 2_000_000) {
-      setFileError("2MB 이하의 시나리오 JSON을 선택해 주세요.");
-      return;
-    }
-    try {
-      apply(parseScenarioFile(JSON.parse(await file.text())), file.name);
-    } catch (error) {
-      setFileError(error instanceof Error ? error.message : "JSON 파일을 읽지 못했습니다.");
-    }
   }
   function apply(parsed: ScenarioFile, label: string) {
     setScenarioFile(parsed);
@@ -240,7 +227,6 @@ function App() {
     localStorage.removeItem(SAVED_RUN_KEY);
     setSavedRunId(null);
     setLiveError("");
-    setFileError("");
     setScenarioFile(null);
     setPlaying(false);
     setLiveBusy(preset);
@@ -270,32 +256,38 @@ function App() {
       setLiveBusy("");
     }
   }
-  async function runMock(input: ReviewInput, files: Map<string, File>) {
+  async function runSaved(input: ReviewInput, files: Map<string, File>) {
     setMockError("");
     setMockBusy(true);
     setPlaying(false);
     try {
-      const { session, run } = await startMockRun(input, files);
-      apply(mockFrame(input, session, run, null), "저장형 모의 실행");
+      const { session, run } = await startSavedRun(input, files);
+      setSavedMode(run.data_mode as "mock" | "live");
+      apply(savedFrame(input, session, run, null), run.data_mode === "live" ? "저장형 실제 실행" : "저장형 모의 실행");
       setPage(1);
       setSavedRunId(run.run_id);
     } catch (error) {
-      setMockError(error instanceof Error ? error.message : "모의 실행을 접수하지 못했습니다.");
+      setMockError(error instanceof Error ? error.message : "검토 실행을 접수하지 못했습니다.");
     } finally {
       setMockBusy(false);
     }
   }
+  useEffect(() => {
+    if (import.meta.env.VITE_PERSISTENT_SERVICE !== "1") return;
+    void serviceMode().then(setSavedMode).catch(() => setMockError("서비스 실행 모드를 확인하지 못했습니다."));
+  }, []);
   useEffect(() => {
     if (!savedRunId) return;
     let active = true;
     let first = true;
     async function refresh() {
       try {
-        const current = await readMockRun(savedRunId!);
+        const current = await readSavedRun(savedRunId!);
         if (!active) return;
         setScenarioFile(current);
         setMockError("");
-        setFileName("저장형 모의 실행");
+        setSavedMode(current.data_mode as "mock" | "live");
+        setFileName(current.data_mode === "live" ? "저장형 실제 실행" : "저장형 모의 실행");
         setCandidate((previous) => previous || current.input.candidates[0].candidate_id);
         setFrameIndex(0);
         if (first) setPage(1);
@@ -303,8 +295,8 @@ function App() {
       } catch (error) {
         if (!active) return;
         if (isSessionExpired(error)) {
-          setScenarioFile((previous) => expiredFrame(previous?.input));
-          setFileName("저장형 모의 실행");
+          setScenarioFile((previous) => expiredFrame(previous?.input, previous?.data_mode === "live" ? "live" : "mock"));
+          setFileName(savedMode === "live" ? "저장형 실제 실행" : "저장형 모의 실행");
           setPage(1);
         } else {
           setMockError(error instanceof Error ? error.message : "저장된 실행을 조회하지 못했습니다.");
@@ -403,30 +395,22 @@ function App() {
             <>
               {page === 0 ? (
                 <AgentStart
-                  input={persistedMock ? null : scenarioFile?.input ?? null}
-                  fileName={fileName}
-                  error={fileError}
-                  onFile={(file) => void loadFile(file)}
                   onRunLive={(preset) => void runLive(preset)}
-                  onRunMock={(input, files) => void runMock(input, files)}
+                  onRunMock={(input, files) => void runSaved(input, files)}
+                  savedMode={savedMode}
                   mockBusy={mockBusy}
                   mockError={mockError}
                   liveBusy={liveBusy}
                   liveError={liveError}
-                  onStart={() => {
-                    setFrameIndex(0);
-                    setPlaying(true);
-                    go(1);
-                  }}
                 />
               ) : scenario && scenarioFile ? (
                 <>
                   <div className="request-context">
-                    <span>{live ? "실제 실행" : persistedMock ? "저장된 검토" : "업로드한 검토"}</span>
+                    <span>{live ? "실제 실행" : persistedRun ? "저장된 검토" : "업로드한 검토"}</span>
                     <p>{fileName}</p>
-                    <small>{live ? "실제 분석 결과" : persistedMock ? "저장형 모의 실행 · 실제 분석 아님" : "모의 재생 · 실제 분석 아님"}</small>
+                    <small>{live ? "실제 분석 결과" : persistedRun ? "저장형 모의 실행 · 실제 분석 아님" : "모의 재생 · 실제 분석 아님"}</small>
                   </div>
-                  {persistedMock && mockError && <p role="alert" className="notice">{mockError}</p>}
+                  {persistedRun && mockError && <p role="alert" className="notice">{mockError}</p>}
                   <div className="workspace-title">
                     <div>
                       <div className="eyebrow">HER2 REVIEW / 0{page + 1}</div>
@@ -445,10 +429,10 @@ function App() {
                             : "실행 범위와 후보별 의견, 근거·한계·다음 질문을 확인하세요."}
                       </p>
                     </div>
-                    <span className="tag">기록 {frameIndex + 1} / {scenarioFile.scenarios.length}{playing ? " · 모의 재생 중" : ""}{live ? " · 실제 실행" : persistedMock ? " · 저장형 모의 실행" : ""}</span>
+                    <span className="tag">기록 {frameIndex + 1} / {scenarioFile.scenarios.length}{playing ? " · 모의 재생 중" : ""}{live ? " · 실제 실행" : persistedRun ? " · 저장형 모의 실행" : ""}</span>
                   </div>
                   <div className="notice">
-                    <span className="tag">{live ? "실제 실행" : persistedMock ? "저장형 모의 실행" : "모의 재생"} · {labels[scenario.name] ?? scenario.name}</span>{" "}
+                    <span className="tag">{live ? "실제 실행" : persistedRun ? "저장형 모의 실행" : "모의 재생"} · {labels[scenario.name] ?? scenario.name}</span>{" "}
                     {scenario.description}
                   </div>
                   {expired ? (
@@ -535,6 +519,8 @@ function App() {
                       <ReviewOverview
                         result={result}
                         input={scenarioFile.input}
+                        views={resultViews(result, scenarioFile.input.candidates)}
+                        apiBase={API_BASE}
                         candidate={candidate}
                         conditionKind={conditionKind}
                         evidenceId={expanded}
@@ -552,12 +538,12 @@ function App() {
                     </>
                   ) : (
                     <>
-                      <ReportView result={result} input={scenarioFile.input} run={scenario.run} persistedMock={persistedMock} apiBase={API_BASE} />
+                      <ReportView result={result} input={scenarioFile.input} run={scenario.run} persistedMock={persistedRun} apiBase={API_BASE} />
                       {(() => {
-                        const views = predictedViews(
+                        const views = resultViews(
                           result,
                           scenarioFile.input.candidates,
-                        );
+                        ).filter((view) => view.kind === "predicted");
                         if (!views.length) return null;
                         return (
                           <section aria-label="예측 구조 3D">

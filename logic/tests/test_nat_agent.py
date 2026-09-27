@@ -109,6 +109,29 @@ def test_run_candidate_turns_an_agent_crash_into_a_rule_finish_reason(tmp_path):
     assert flow.states["cand-t"].status in {"completed", "partial", "failed"}
 
 
+def test_fallback_reason_detects_iteration_limit_by_call_count(tmp_path):
+    """M2: 반복 상한은 NAT의 영어 문구가 아니라 도구 호출 수로도 알아본다.
+
+    NAT는 상한에 닿으면 GraphRecursionError를 삼키고 영어 문장을 돌려준다.
+    그 문장이 바뀌어도 사유가 "종료 도구 없이 끝났다"로 잘못 분류되지 않게 한다.
+    """
+    from logic.agent_session import CandidateSession
+
+    session = CandidateSession(candidate("cand-t", "trastuzumab",
+                                          entity_sequence(TRASTUZUMAB, "heavy"),
+                                          entity_sequence(TRASTUZUMAB, "light")))
+    for _ in range(10):
+        session.calls.append({"tool": "compare_structure", "accepted": False, "note": "거부: …"})
+    changed = "문구가 바뀐 상한 메시지"
+    assert nat_agent._fallback_reason(session, changed, max_iterations=10) == "에이전트 반복 상한"
+    assert nat_agent._fallback_reason(session, changed, max_iterations=11).startswith(
+        "에이전트가 종료 도구 없이 끝났다")
+
+
+def test_max_iterations_is_read_from_the_shipped_config():
+    assert nat_agent._max_iterations(nat_agent.CONFIG_PATH) == 10
+
+
 def test_workflow_config_loads_with_registered_tools():
     pytest.importorskip("nat")
     from nat.runtime.loader import load_config
