@@ -25,6 +25,8 @@ from logic.contract import ContractError, SCHEMA_VERSION, now_rfc3339, validate
 from logic.structures import her2_target_sequence
 
 from .db import connect, require_schema
+from .reports import report_response
+from .limits import IntakeLimit, storage_bytes
 
 COOKIE_NAME = "her2_session"
 SESSION_LIFETIME = timedelta(minutes=30)
@@ -133,11 +135,25 @@ def create_app(
     secure_cookie: bool = False,
     allowed_origins: tuple[str, ...] = (),
     max_upload_bytes: int = 20 * 1024 * 1024,
+    max_session_runs: int = 1,
+    max_active_runs: int = 10,
+    max_sessions: int = 100,
+    max_session_reviews: int = 10,
+    max_storage_bytes: int = 1024 * 1024 * 1024,
+    max_request_bytes: int = 21 * 1024 * 1024,
+    requests_per_minute: int = 120,
 ) -> FastAPI:
-    if mode not in {"mock", "live"} or max_upload_bytes <= 0 or not dsn:
+    if mode not in {"mock", "live"} or min(max_upload_bytes, max_session_runs, max_active_runs, max_sessions, max_session_reviews, max_storage_bytes, max_request_bytes, requests_per_minute) <= 0 or not dsn:
         raise ValueError("DATABASE_URL, DATA_MODE, MAX_UPLOAD_BYTES 설정을 확인하세요.")
     api = FastAPI(title="HER2 후보 검토 서비스", version=SCHEMA_VERSION)
     data_root = Path(data_root).resolve()
+    api.add_middleware(IntakeLimit, dsn=dsn, mode=mode, max_bytes=max_request_bytes,
+                       requests_per_minute=requests_per_minute)
+
+    def check_storage(additional: int = 0):
+        if storage_bytes(data_root, dsn) + additional >= max_storage_bytes:
+            _fail(507, "STORAGE_LIMIT_REACHED", "저장 용량 한도에 도달했습니다. 만료 자료 정리 후 다시 시도하세요.")
+
 
     @api.get("/api/config")
     def config():
@@ -203,6 +219,10 @@ def create_app(
             "expires_at": datetime.now(timezone.utc) + SESSION_LIFETIME,
         }
         with connect(dsn) as conn:
+            conn.execute("SELECT pg_advisory_xact_lock(2174)")
+            if conn.execute("SELECT count(*) AS n FROM sessions WHERE status = 'active' AND expires_at > now()").fetchone()["n"] >= max_sessions:
+                _fail(429, "SESSION_LIMIT_REACHED", "현재 이용 세션이 한도에 도달했습니다.")
+            check_storage()
             conn.execute(
                 "INSERT INTO sessions(id, token_hash, status, expires_at) VALUES (%s, %s, %s, %s)",
                 (row["id"], hashlib.sha256(token.encode()).hexdigest(), row["status"], row["expires_at"]),
@@ -232,6 +252,7 @@ def create_app(
     @api.post("/api/reviews", status_code=201)
     async def create_review(request: Request):
         session = current_session(request)
+        check_storage()
         form = await request.form()
         metadata = form.get("metadata")
         if not isinstance(metadata, str) or len(form.getlist("metadata")) != 1:
@@ -266,6 +287,7 @@ def create_app(
                         size += len(chunk)
                         if size > max_upload_bytes:
                             _fail(413, "INPUT_TOO_LARGE", "파일 크기 제한을 넘었습니다.")
+                        check_storage(len(chunk))
                         digest.update(chunk)
                         temporary.write(chunk)
                 try:
@@ -284,6 +306,9 @@ def create_app(
                 ).fetchone()
                 if not active:
                     _fail(410, "SESSION_EXPIRED", "세션이 만료되었습니다.")
+                conn.execute("SELECT pg_advisory_xact_lock(2175)")
+                if conn.execute("SELECT count(*) AS n FROM reviews WHERE session_id = %s", (session["id"],)).fetchone()["n"] >= max_session_reviews:
+                    _fail(429, "REVIEW_LIMIT_REACHED", "이 세션의 입력 저장 한도에 도달했습니다.")
                 conn.execute("INSERT INTO reviews(id, session_id, input_json) VALUES (%s, %s, %s)", (review_id, session["id"], Jsonb(body)))
                 for key in manifest:
                     relative, digest, size = stored[key]
@@ -322,6 +347,23 @@ def create_app(
             review = conn.execute("SELECT input_json FROM reviews WHERE id = %s AND session_id = %s", (review_id, session["id"])).fetchone()
             if not review:
                 _fail(404, "NOT_FOUND", "검토를 찾을 수 없습니다.")
+            # Serialize admission across API processes; idempotent retries never consume another slot.
+            conn.execute("SELECT pg_advisory_xact_lock(2173)")
+            existing = conn.execute(
+                "SELECT state_json FROM runs WHERE session_id = %s AND review_id = %s AND request_key = %s",
+                (session["id"], review_id, body["request_key"]),
+            ).fetchone()
+            if existing:
+                return existing["state_json"]
+            counts = conn.execute(
+                "SELECT count(*) AS total, count(*) FILTER (WHERE r.session_id = %s) AS own "
+                "FROM runs r JOIN sessions s ON s.id = r.session_id "
+                "WHERE r.state_json->>'status' IN ('queued', 'running') "
+                "AND s.status = 'active' AND s.expires_at > now()", (session["id"],),
+            ).fetchone()
+            if counts["own"] >= max_session_runs or counts["total"] >= max_active_runs:
+                _fail(429, "RUN_LIMIT_REACHED", "진행·대기 중인 검토가 한도에 도달했습니다. 기존 실행을 확인하세요.", "check_run")
+            check_storage()
             run = _new_run(review_id, review["input_json"]["candidates"], mode)
             inserted = conn.execute(
                 "INSERT INTO runs(id, review_id, session_id, request_key, state_json) VALUES (%s, %s, %s, %s, %s) ON CONFLICT (session_id, review_id, request_key) DO NOTHING RETURNING state_json",
@@ -363,6 +405,20 @@ def create_app(
         if row["result_json"] is None:
             _fail(409, "RESULT_NOT_READY", "결과가 아직 없습니다.", "check_run")
         return JSONResponse(row["result_json"], headers={"Cache-Control": "no-store"})
+
+    @api.get("/api/runs/{run_id}/report.{format}")
+    def download_report(run_id: str, format: str, request: Request):
+        session = current_session(request)
+        if format not in {"json", "csv"}:
+            _fail(404, "NOT_FOUND", "보고서 형식을 찾을 수 없습니다.")
+        with connect(dsn) as conn:
+            row = conn.execute("SELECT state_json, result_json FROM runs WHERE id = %s AND session_id = %s",
+                               (run_id, session["id"])).fetchone()
+        if not row:
+            _fail(404, "NOT_FOUND", "실행을 찾을 수 없습니다.")
+        if row["result_json"] is None:
+            _fail(409, "RESULT_NOT_READY", "결과가 아직 없습니다.", "check_run")
+        return report_response(row["state_json"], row["result_json"], format)
 
     def artifact_response(artifact_id: str, request: Request, run_id: str | None = None):
         session = current_session(request)
@@ -419,4 +475,11 @@ def from_environment() -> FastAPI:
         secure_cookie=os.environ.get("SECURE_COOKIE", "false").lower() == "true",
         allowed_origins=tuple(filter(None, os.environ.get("ALLOWED_ORIGINS", "").split(","))),
         max_upload_bytes=int(os.environ.get("MAX_UPLOAD_BYTES", str(20 * 1024 * 1024))),
+        max_session_runs=int(os.environ.get("MAX_SESSION_RUNS", "1")),
+        max_active_runs=int(os.environ.get("MAX_ACTIVE_RUNS", "10")),
+        max_sessions=int(os.environ.get("MAX_SESSIONS", "100")),
+        max_session_reviews=int(os.environ.get("MAX_SESSION_REVIEWS", "10")),
+        max_storage_bytes=int(os.environ.get("MAX_STORAGE_BYTES", str(1024**3))),
+        max_request_bytes=int(os.environ.get("MAX_REQUEST_BYTES", str(21 * 1024**2))),
+        requests_per_minute=int(os.environ.get("REQUESTS_PER_MINUTE", "120")),
     )

@@ -27,9 +27,9 @@ def live_service(tmp_path: Path, monkeypatch):
         pytest.skip("TEST_DATABASE_URL required")
     migrate(DSN)
     with connect(DSN) as conn:
-        conn.execute("TRUNCATE runs, uploads, reviews, sessions CASCADE")
+        conn.execute("TRUNCATE runs, uploads, reviews, sessions, request_budget CASCADE")
     monkeypatch.setenv("LOGIC_AGENT_MODE", "rule")
-    with TestClient(create_app(DSN, tmp_path, mode="live")) as client:
+    with TestClient(create_app(DSN, tmp_path, mode="live", max_session_runs=10)) as client:
         yield client, tmp_path
 
 
@@ -62,6 +62,10 @@ def test_public_structure_run_persists_progress_result_and_private_files(live_se
     result = restarted.get(f"/api/runs/{run_id}/result").json()
     assert result["data_mode"] == "live"
     assert result["candidate_ids"] == [candidate["candidate_id"] for candidate in state["candidates"]]
+    report = restarted.get(f"/api/runs/{run_id}/report.json")
+    assert report.status_code == 200
+    assert report.json() == {"run": state, "result": result}
+    assert restarted.get(f"/api/runs/{run_id}/report.csv").status_code == 200
     ready = [artifact for artifact in result["artifacts"] if artifact["status"] == "ready"]
     assert len(ready) == 2
     for artifact in ready:
@@ -149,7 +153,7 @@ def test_expired_live_session_interrupts_and_removes_run_files(live_service):
     assert cleanup_sessions(DSN, root) == 1
     assert not work_dir.exists()
     with connect(DSN) as conn:
-        assert conn.execute("SELECT state_json FROM runs WHERE id = %s", (run_id,)).fetchone()["state_json"]["status"] == "interrupted"
+        assert conn.execute("SELECT state_json FROM runs WHERE id = %s", (run_id,)).fetchone() is None
     assert client.get(f"/api/runs/{run_id}").status_code == 410
 
 
@@ -194,6 +198,7 @@ def test_lost_lease_terminates_analysis_process(tmp_path, monkeypatch):
     assert process.terminated
 
 
+@pytest.mark.live
 @pytest.mark.skipif(os.getenv("RUN_LIVE_PERSISTED") != "1", reason="actual NVIDIA calls require RUN_LIVE_PERSISTED=1")
 def test_nat_prediction_is_saved_with_its_file(live_service, monkeypatch):
     client, root = live_service
@@ -207,7 +212,43 @@ def test_nat_prediction_is_saved_with_its_file(live_service, monkeypatch):
     state = client.get(f"/api/runs/{run_id}").json()
     assert state["result_available"], state
     result = client.get(f"/api/runs/{run_id}/result").json()
+    assert any(e["activity"]["actor"] == "agent" and e["activity"]["kind"] == "tool"
+               and e["activity"]["phase"] == "completed" for e in state["activity_events"])
+    assert not any(e["activity"]["kind"] == "fallback" for e in state["activity_events"])
     predicted = [item for item in result["structures"] if item["kind"] == "predicted"]
     assert predicted, result["opinions"]
     artifact = next(item for item in result["artifacts"] if item["artifact_id"] == predicted[0]["artifact_id"])
     assert client.get(f"/api/runs/{run_id}/artifacts/{artifact['artifact_id']}").status_code == 200
+
+
+def test_analysis_timeout_terminates_process(tmp_path, monkeypatch):
+    class Process:
+        returncode = None
+        terminated = False
+        def poll(self): return self.returncode
+        def terminate(self): self.terminated = True
+        def wait(self, timeout=None): self.returncode = -15
+    process = Process()
+    monkeypatch.setattr("service.live.subprocess.Popen", lambda *a, **kw: process)
+    moments = iter([0, 1200])
+    monkeypatch.setattr("service.live.time.monotonic", lambda: next(moments))
+    with pytest.raises(TimeoutError):
+        run_process({"work_dir": str(tmp_path)}, lambda update: None, lambda: True)
+    assert process.terminated
+
+
+def test_experimental_label_cannot_authorize_an_arbitrary_file(tmp_path):
+    root = tmp_path / "run"
+    root.mkdir()
+    outside = tmp_path / "secret.cif"
+    outside.write_bytes(b"private server bytes")
+    artifact = {"artifact_id": "af-test", "status": "ready", "file_name": str(outside),
+                "size_bytes": outside.stat().st_size, "sha256": hashlib.sha256(outside.read_bytes()).hexdigest()}
+    output = {"result": {"artifacts": [artifact], "structures": [
+        {"artifact_id": "af-test", "kind": "experimental", "source": {"record_id": "1N8Z"}}]}, "files": []}
+    with pytest.raises(ValueError, match="밖"):
+        verified_files(output, root)
+    artifact["file_name"] = "linked.cif"
+    (root / "linked.cif").symlink_to(outside)
+    with pytest.raises(ValueError, match="밖"):
+        verified_files(output, root)

@@ -89,6 +89,13 @@ def test_experimental_run_needs_no_api_key(monkeypatch):
     assert all(c["status"] == "completed" for c in frame["run"]["candidates"])
     steps = {s["step_id"]: s["status"] for s in frame["run"]["candidates"][0]["steps"]}
     assert steps["prediction"] == "skipped"
+    run_id = frame["run"]["run_id"]
+    assert client.get(f"/api/runs/{run_id}/report.json").json() == {"run": frame["run"], "result": frame["result"]}
+    assert client.get(f"/api/runs/{run_id}/report.csv").status_code == 200
+    for artifact in frame["result"]["artifacts"]:
+        if artifact["status"] == "ready":
+            assert client.get(f"/api/runs/{run_id}/artifacts/{artifact['artifact_id']}").status_code == 200
+
 
 
 def test_response_is_shaped_for_the_frontend():

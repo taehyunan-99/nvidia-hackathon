@@ -72,7 +72,11 @@ class ReferenceTests(unittest.TestCase):
     def setUpClass(cls):
         cls.refs = [a03.baseline.load_reference(p) for p in a03.baseline.PDBS]
         cls.contexts = [a03.load_context(r) for r in cls.refs]
-        cls.output = a03.HERE / 'generated'
+        cls.temp = tempfile.TemporaryDirectory()
+        cls.addClassCleanup(cls.temp.cleanup)
+        cls.output = Path(cls.temp.name)
+        with contextlib.redirect_stdout(io.StringIO()):
+            a03.run(cls.output)
         cls.summary = a03.baseline.read_json(cls.output / 'summary.json')
         cls.fragments = a03.baseline.read_json(cls.output / 'service-fragments.json')
 
@@ -169,6 +173,12 @@ class ReferenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Cross-candidate'):
             a03.validate_fragments(bad)
 
+    def test_archived_output_hashes_are_preserved(self):
+        archive = a03.HERE / "generated"
+        provenance = a03.baseline.read_json(archive / "provenance.json")
+        for item in provenance["output_files"]:
+            self.assertEqual(a03.baseline.digest(archive / item["path"]), item["sha256"])
+
     def test_recorded_hashes_and_original_input_preservation(self):
         report = a03.baseline.read_json(self.output / 'provenance.json')
         for item in report['inputs_and_implementation'] + report['source_files']:
@@ -195,7 +205,14 @@ if __name__ == '__main__':
               'errors': [{'test': str(t), 'detail': d} for t, d in result.errors],
               'test_implementation_sha256': a03.baseline.digest(Path(__file__)),
               'basis': 'Analytic cap; original assembly/connection identity; unchanged A-02 baseline; missing data; schema; byte reproducibility'}
-    a03.baseline.write_json(a03.HERE / 'generated/validation.json', report)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--report', type=Path)
+    args = parser.parse_args()
+    if args.report:
+        a03.baseline.write_json(args.report, report)
+    if not result.wasSuccessful():
+        print(json.dumps(report, ensure_ascii=False))
     print(json.dumps({'status': report['status'], 'tests_run': result.testsRun,
                       'failures': len(result.failures), 'errors': len(result.errors)}))
     raise SystemExit(0 if result.wasSuccessful() else 1)

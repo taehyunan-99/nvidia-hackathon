@@ -23,6 +23,10 @@ for name in ['migrate', 'api', 'worker']:
     assert not origin.path and not origin.query and not origin.fragment and not origin.username
     assert env['SECURE_COOKIE'] == 'true' and env['DATA_MODE'] in {'mock', 'live'}
 assert len({services[name]['environment']['DATA_MODE'] for name in ['migrate', 'api', 'worker']}) == 1
+for key in ['MAX_SESSION_RUNS', 'MAX_ACTIVE_RUNS', 'ANALYSIS_TIMEOUT_SECONDS', 'MAX_SESSIONS', 'MAX_SESSION_REVIEWS', 'MAX_STORAGE_BYTES', 'MAX_REQUEST_BYTES', 'REQUESTS_PER_MINUTE']:
+    assert all(int(services[name]['environment'][key]) > 0 for name in ['api', 'worker'])
+    assert services['api']['environment'][key] == services['worker']['environment'][key]
+assert services['worker']['environment']['PDB_SEARCH_ENABLED'] in {'0', '1'}
 for name in ['db', 'api', 'worker']:
     assert not services[name].get('ports'), f'{name} must not publish a port'
 for port in services['web']['ports']:

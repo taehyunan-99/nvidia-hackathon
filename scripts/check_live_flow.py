@@ -1,4 +1,4 @@
-"""Check the same-origin persisted public-structure analysis without model charges."""
+"""Check persisted public-structure analysis. Configure worker keys empty for offline checks; rule mode alone can call models."""
 
 import hashlib
 import json

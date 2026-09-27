@@ -164,16 +164,9 @@ export async function loadMolecule(
   const contactLoci = contactComponents.map((c) =>
     Structure.toStructureElementLoci(c.obj!.data),
   );
-  let options: ViewOptions = {
-    view: "overview",
-    opacity: 1,
-    hideAntibody: false,
-    context: false,
-  };
   let queue = Promise.resolve();
   const update = (next: ViewOptions, focus = false) => {
     queue = queue.then(async () => {
-      options = next;
       const dim = next.view !== "overview";
       const state = plugin.build();
       reps.forEach((r, i) =>

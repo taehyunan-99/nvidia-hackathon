@@ -26,6 +26,14 @@ services:
       SECURE_COOKIE: "false"
       ALLOWED_ORIGINS: http://127.0.0.1:${WEB_PORT:-8080}
       MAX_UPLOAD_BYTES: "20971520"
+      MAX_SESSION_RUNS: ${MAX_SESSION_RUNS:-1}
+      MAX_ACTIVE_RUNS: ${MAX_ACTIVE_RUNS:-10}
+      ANALYSIS_TIMEOUT_SECONDS: ${ANALYSIS_TIMEOUT_SECONDS:-1200}
+      MAX_SESSIONS: ${MAX_SESSIONS:-100}
+      MAX_SESSION_REVIEWS: ${MAX_SESSION_REVIEWS:-10}
+      MAX_STORAGE_BYTES: ${MAX_STORAGE_BYTES:-1073741824}
+      MAX_REQUEST_BYTES: ${MAX_REQUEST_BYTES:-22020096}
+      REQUESTS_PER_MINUTE: ${REQUESTS_PER_MINUTE:-120}
     depends_on:
       db:
         condition: service_healthy
@@ -57,6 +65,7 @@ services:
       <<: *api_environment
       NVIDIA_API_KEY: ${NVIDIA_API_KEY:-}
       LOGIC_AGENT_MODE: ${LOGIC_AGENT_MODE:-nat}
+      PDB_SEARCH_ENABLED: ${PDB_SEARCH_ENABLED:-1}
     volumes:
       - uploads:/data
     depends_on:

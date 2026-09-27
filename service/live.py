@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import time
@@ -48,6 +49,10 @@ def request_for_job(dsn: str, job: dict, data_root: Path) -> dict:
 
 
 def run_process(request: dict, progress, alive) -> dict:
+    timeout = int(os.environ.get("ANALYSIS_TIMEOUT_SECONDS", "1200"))
+    if timeout <= 0:
+        raise ValueError("ANALYSIS_TIMEOUT_SECONDS must be positive")
+    started = time.monotonic()
     work_dir = Path(request["work_dir"])
     request_path = work_dir / "request.json"
     output_path = work_dir / "output.json"
@@ -62,6 +67,8 @@ def run_process(request: dict, progress, alive) -> dict:
         pending = ""
         try:
             while True:
+                if time.monotonic() - started >= timeout:
+                    raise TimeoutError("분석 실행 시간 제한을 넘었습니다.")
                 if not alive():
                     raise InterruptedError("작업 점유권 또는 세션이 종료되었습니다.")
                 # Observe exit before reading so the final flushed events are drained.
@@ -104,7 +111,8 @@ def verified_files(output: dict, work_dir: Path) -> list[tuple[str, Path, bytes]
     """Resolve declared files, current predicted output, or a verified public catalog file."""
     ready = {item["artifact_id"]: item for item in output["result"]["artifacts"] if item["status"] == "ready"}
     declared = {item["artifact_id"]: item["path"] for item in output["files"]}
-    if len(declared) != len(output["files"]) or set(declared) - set(ready):
+    artifact_ids = [item["artifact_id"] for item in output["result"]["artifacts"]]
+    if len(set(artifact_ids)) != len(artifact_ids) or len(declared) != len(output["files"]) or set(declared) - set(ready):
         raise ValueError("산출물 목록이 결과와 일치하지 않습니다.")
     files = []
     root = work_dir.resolve()
@@ -120,14 +128,15 @@ def verified_files(output: dict, work_dir: Path) -> list[tuple[str, Path, bytes]
         if artifact_id in declared and not source.is_relative_to(root):
             raise ValueError("산출물 파일이 실행 폴더 밖에 있습니다.")
         if not source.is_relative_to(root) or not source.is_file():
+            public = None
             if artifact_id not in declared and artifact_id in experimental:
                 from logic.structures import load_catalog
-
                 public = load_catalog().get(experimental[artifact_id])
-                if public and public.path.name == artifact["file_name"]:
-                    source = public.path.resolve()
-            if not source.is_file() or (not source.is_relative_to(root) and artifact_id not in experimental):
+            if not public or public.path.name != artifact["file_name"]:
                 raise ValueError("산출물 파일이 실행 폴더 밖에 있거나 없습니다.")
+            source = public.path.resolve()
+            if not source.is_file() or hashlib.sha256(source.read_bytes()).hexdigest() != public.verified_sha256:
+                raise ValueError("공개 산출물 파일 무결성이 맞지 않습니다.")
         content = source.read_bytes()
         if len(content) != artifact["size_bytes"] or hashlib.sha256(content).hexdigest() != artifact["sha256"]:
             raise ValueError("산출물 파일 무결성이 맞지 않습니다.")

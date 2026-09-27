@@ -194,6 +194,9 @@ def test_live_agent_reviews_experimental_candidate(tmp_path, monkeypatch):
     monkeypatch.setenv("LOGIC_AGENT_MODE", "nat")
     output, flow = run_flow(_request(tmp_path), client=ScriptedClient())
     trace = flow.agent_traces["cand-t"]
+    assert not flow.agent_errors
+    assert not flow.rule_finishes
+    assert any(item["tool"] == "use_experimental_structure" and item["accepted"] for item in trace)
     assert trace[0]["tool"] == "check_input"
     assert flow.states["cand-t"].status == "completed"
 

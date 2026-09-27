@@ -72,6 +72,12 @@ export function ReviewOverview({
   const gaps = [...new Set(conditions.flatMap((c) => c.gaps))];
   const hasMeasuredEvidence = evidence.some((item) => item.measurement_state === "measured");
   const selectedView = views.find((view) => view.candidateId === candidate && conditions.some((condition) => (condition.structure_ids as string[]).includes(view.structureId)));
+  const evidenceView = selectedView && selected ? {
+    ...selectedView,
+    residues: (selected.residues as (PredictedView["residues"][number] & { has_coordinates?: boolean })[]).filter((r) => r.has_coordinates !== false),
+    unmeasuredReason: selected.measurement_state === "measured" && selected.residues.length
+      ? null : selected.reason ?? "선택한 근거에 강조할 잔기 좌표가 없습니다.",
+  } : selectedView;
   const selectionControls = (
     <div className="review-workbench-controls" aria-label="검토 결과 선택">
       <div className="review-workbench-controls-title">
@@ -153,7 +159,7 @@ export function ReviewOverview({
       <div
         className="compare-grid review-focus"
       >
-        {live ? selectedView ? <PredictedStructure key={`${selectedView.artifactId}-${conditionKind}`} context={conditionKind === "context"} view={selectedView} apiBase={apiBase} /> : <p className="panel">선택한 후보와 조건에 연결된 구조 파일이 없습니다.</p> : <Suspense fallback={<p>3D 준비 중…</p>}><StructurePreview /></Suspense>}
+        {live ? selectedView ? <PredictedStructure key={`${selectedView.artifactId}-${conditionKind}-${selected?.evidence_id}`} context={conditionKind === "context"} focusEvidence view={evidenceView!} apiBase={apiBase} /> : <p className="panel">선택한 후보와 조건에 연결된 구조 파일이 없습니다.</p> : <Suspense fallback={<p>3D 준비 중…</p>}><StructurePreview /></Suspense>}
         <section
           className="panel review-evidence"
           aria-live="polite"

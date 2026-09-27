@@ -29,17 +29,24 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: '24'
+          node-version: '25'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
-          python-version: '3.12'
+          python-version: '3.13'
       - run: npm ci --prefix frontend
-      - run: npm --prefix frontend run build
+      - run: VITE_PERSISTENT_SERVICE=1 VITE_API_BASE='' npm --prefix frontend run build
+      - run: node --experimental-strip-types --test frontend/tests/*.test.mjs
       - run: uv sync --locked
       - run: uv run --locked python docs/frontend-hosting/contracts/validate-contract.py
       - run: uv run --locked pytest service/tests logic/tests -q
+      - name: Offline research checks (temporary outputs)
+        run: |
+          uv run --locked python docs/topics/her2/assets/a01/test_inputs.py
+          uv run --locked python docs/topics/her2/assets/a02/test_metrics.py
+          uv run --locked python docs/topics/her2/assets/a03/test_compare.py
+          uv run --locked pytest docs/topics/her2/assets/hackathon-evaluation/test_score.py -q
       - name: Compose mock flow
         run: |
           docker compose up --build -d --wait

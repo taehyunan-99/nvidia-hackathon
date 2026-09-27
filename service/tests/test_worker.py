@@ -26,7 +26,7 @@ def service(tmp_path):
         pytest.skip("TEST_DATABASE_URL required")
     migrate(DSN)
     with connect(DSN) as conn:
-        conn.execute("TRUNCATE runs, uploads, reviews, sessions CASCADE")
+        conn.execute("TRUNCATE runs, uploads, reviews, sessions, request_budget CASCADE")
     with TestClient(create_app(DSN, tmp_path)) as client:
         yield client, tmp_path
 
@@ -148,3 +148,34 @@ def test_delete_waits_for_lease_then_removes_file(service):
     assert not upload.exists()
     with connect(DSN) as conn:
         assert conn.execute("SELECT status FROM sessions").fetchone()["status"] == "deleted"
+
+
+def test_cleanup_failure_retries_without_blocking_other_sessions(service, monkeypatch):
+    import shutil
+    client, root = service
+    first = _run(client)
+    path = root / "runs" / first
+    path.mkdir(parents=True)
+    (path / "request.json").write_text("private input")
+    client.delete("/api/session")
+    second = _run(client)
+    client.delete("/api/session")
+    real = shutil.rmtree
+
+    def fail_first(target):
+        if target == path:
+            raise PermissionError("injected")
+        return real(target)
+
+    with monkeypatch.context() as patch:
+        patch.setattr("service.worker.shutil.rmtree", fail_first)
+        assert cleanup_sessions(DSN, root) == 1
+    assert path.exists()
+    with connect(DSN) as conn:
+        assert conn.execute("SELECT count(*) AS n FROM sessions WHERE cleaned_at IS NULL").fetchone()["n"] == 1
+        assert conn.execute("SELECT id FROM runs").fetchone()["id"] == first
+    assert cleanup_sessions(DSN, root) == 1
+    assert not path.exists()
+    with connect(DSN) as conn:
+        for table in ("reviews", "runs", "uploads", "artifact_files"):
+            assert conn.execute(f"SELECT count(*) AS n FROM {table}").fetchone()["n"] == 0
