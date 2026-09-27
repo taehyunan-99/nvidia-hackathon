@@ -1,0 +1,176 @@
+{
+  "dataset_version": "hackathon-v1",
+  "mode": "offline",
+  "reviewer": "Codex: offline observations and persisted UI reviewed; not a biological expert review",
+  "evaluated_commit": "7c5cf2dfcaf2e9be5f10f1da7ea57e89fd3a8f48",
+  "results": [
+    {
+      "check_id": "I1",
+      "status": "pass",
+      "evidence": [
+        "C01/observation.json#/result/structures"
+      ],
+      "note": "원본 대조와 구조 1N8Z·1S78, label 사슬 C/B/A 및 A/D/C 대응 확인."
+    },
+    {
+      "check_id": "I2",
+      "status": "pass",
+      "evidence": [
+        "ui/persisted-report-ax.txt",
+        "ui/persisted-trastuzumab-ax.txt",
+        "ui/persisted-trastuzumab.png",
+        "ui/persisted-pertuzumab.png",
+        "ui/persisted-result.json"
+      ],
+      "note": "영속 API·worker 결과와 양 후보의 3D/보고 출처·artifact·run ID 일치. 별도 동기 API 오류는 분리 기록."
+    },
+    {
+      "check_id": "I3",
+      "status": "fail",
+      "evidence": [
+        "C02/observation.json#/progress"
+      ],
+      "note": "A 607자와 P04626 충돌이 입력 오류로 기록되지 않았다."
+    },
+    {
+      "check_id": "I4",
+      "status": "fail",
+      "evidence": [
+        "C02/observation.json#/result/structures"
+      ],
+      "note": "잘못된 표적 입력에서 실험 구조 두 건 재사용 후 completed."
+    },
+    {
+      "check_id": "T1",
+      "status": "pass",
+      "evidence": [
+        "C03/observation.json#/candidates"
+      ],
+      "note": "잘못된 중쇄 123을 입력 단계에서 실패 처리하고 이후 단계 생략; 정상 후보만 source 결정."
+    },
+    {
+      "check_id": "T2",
+      "status": "pass",
+      "evidence": [
+        "C03/observation.json#/decisions"
+      ],
+      "note": "정상 trastuzumab은 실험 구조 사용, 예측 0회."
+    },
+    {
+      "check_id": "T3",
+      "status": "pass",
+      "evidence": [
+        "C04/observation.json#/decisions"
+      ],
+      "note": "규칙 기준선이 합성 변이에서 predict 선택. 실제 모델의 새 후보 선택률은 미측정."
+    },
+    {
+      "check_id": "T4",
+      "status": "pass",
+      "evidence": [
+        "C04/observation.json#/prediction_attempts"
+      ],
+      "note": "요청 polymer 서열을 fixture와 대조. 변이 후보에 공개 구조 접촉 근거 없음."
+    },
+    {
+      "check_id": "S1",
+      "status": "pass",
+      "evidence": [
+        "C05/observation.json#/result/evidence"
+      ],
+      "note": "별도 검산한 기대 label 잔기 집합과 정확히 일치: 39/56."
+    },
+    {
+      "check_id": "S2",
+      "status": "pass",
+      "evidence": [
+        "ui/persisted-pertuzumab-ax.txt",
+        "ui/persisted-trastuzumab-ax.txt",
+        "ui/persisted-trastuzumab.png",
+        "ui/persisted-pertuzumab.png",
+        "ui/persisted-result.json"
+      ],
+      "note": "두 구조의 해시·사슬·label 집합·조건과 화면의 39/56 강조, 보고 출처 대조."
+    },
+    {
+      "check_id": "S3",
+      "status": "fail",
+      "evidence": [
+        "C06/observation.json#/result/evidence"
+      ],
+      "note": "좌표 없는 예측의 접촉을 검토 불가로 남기지 않고 measured 39로 기록."
+    },
+    {
+      "check_id": "S4",
+      "status": "fail",
+      "evidence": [
+        "C06/observation.json#/result/structures"
+      ],
+      "note": "predicted 구조에 원본 1N8Z에서 얻은 접촉 39를 연결."
+    },
+    {
+      "check_id": "E1",
+      "status": "fail",
+      "evidence": [
+        "C07/observation.json#/result/opinions"
+      ],
+      "note": "오프라인 규칙 결과는 접촉까지 interface_review 추가 확인으로 묶음. 새 주제별 판정 요구와의 차이."
+    },
+    {
+      "check_id": "E2",
+      "status": "pass",
+      "evidence": [
+        "C07/observation.json#/result/conditions"
+      ],
+      "note": "표면 노출/충돌 not_run, 당 조건 gaps와 다음 확인 질문 표시. 없거나 안전하다고 단정하지 않음."
+    },
+    {
+      "check_id": "E3",
+      "status": "fail",
+      "evidence": [
+        "C08/observation.json#/observations/0"
+      ],
+      "note": "효능 입증·부작용 없음 문장이 정상 의견으로 저장됨. 강제 입력 관문 검사, 모델 환각 관측 아님."
+    },
+    {
+      "check_id": "E4",
+      "status": "fail",
+      "evidence": [
+        "C08/observation.json#/observations/1"
+      ],
+      "note": "접촉 수 39를 친화도 39 nM로 바꾼 문장이 저장됨."
+    },
+    {
+      "check_id": "R1",
+      "status": "pass",
+      "evidence": [
+        "C09/observation.json#/candidates"
+      ],
+      "note": "예측 timeout 후 failed/not_assessed, 가짜 예측 구조·측정 없음."
+    },
+    {
+      "check_id": "R2",
+      "status": "pass",
+      "evidence": [
+        "C09/observation.json#/result"
+      ],
+      "note": "정상 trastuzumab 결과 유지, 전체 partial, 예측 대역 1회."
+    },
+    {
+      "check_id": "R3",
+      "status": "pass",
+      "evidence": [
+        "C10/observation.json#/progress"
+      ],
+      "note": "중단된 trastuzumab 비교 단계·구조·접촉 근거가 각각 한 번만 기록됨."
+    },
+    {
+      "check_id": "R4",
+      "status": "pass",
+      "evidence": [
+        "C10/observation.json#/result/opinions"
+      ],
+      "note": "중단된 후보의 의견에 규칙 복구와 주입 중단 이유·미계산 한계 명시."
+    }
+  ]
+}

@@ -1,0 +1,282 @@
+Browser tab: 1, Title: "HER2 · 항체 후보 검토", URL: "http://127.0.0.1:5188/".
+1 AXWebArea HER2 · 항체 후보 검토, URL: 127.0.0.1:5188/
+	2 container root
+		3 link Description: 본문으로 이동, Value: 127.0.0.1:5188/#main
+		4 container
+			5 button 검토 입력으로
+				6 text ✳
+				7 text HER2
+				8 text 항체 후보 검토
+			9 container 주 메뉴
+				10 button 분석
+				11 button 소개
+				12 button 팀
+			13 text NVIDIA HACKATHON · TEAM PROJECT 실제 실행
+			14 container 화면 테마
+				15 checkbox 라이트, Value: 1
+				16 checkbox 다크, Value: 0
+		60 container 검토 단계
+			61 button 01검토 입력
+				62 text 0
+				63 text 1
+				64 text 검토 입력
+			65 button 02분석 진행
+				66 text 0
+				67 text 2
+				68 text 분석 진행
+			69 button 03구조 비교
+				70 text 0
+				105 text 3
+				106 text 구조 비교
+			71 button 04결과 보고
+				72 text 0
+				107 text 4
+				108 text 결과 보고
+		73 container main
+			74 text 실제 실행
+			75 text 저장형 실제 실행
+			76 text 실제 분석 결과
+			77 container
+				78 text HER2 REVIEW / 0 4
+			79 heading 후보 검토 결과, Value: 1
+				80 text 후보 검토 결과
+			81 text 실행 범위와 후보별 의견, 근거·한계·다음 질문을 확인하세요.
+			82 text 기록  1  /  1  · 실제 실행 실제 실행  ·  종료 서버에 저장된 실제 분석 실행입니다.
+			109 container 보고 범위
+				110 text 검토 범위
+				111 heading 이번 실행의 결과, Value: 2
+					112 text 이번 실행의 결과
+				113 text 아래 판단은 이 실행에 기록된 조건과 근거에만 적용됩니다. 결합력이나 치료 효과를 뜻하지 않습니다.
+				114 text 자료 공백
+				115 text 당쇄 조성·점유율은 이 구조 파일에 기록된 범위까지만 확인했다.
+				116 container
+					117 text 구조 기록  2 건 · 측정 근거  2 건
+				118 definition list
+					119 container 비교 판단
+						120 text 비교 판단
+					121 text 조건 확인 필요
+					122 container 추가 확인 의견
+						123 text 추가 확인 의견
+					124 container
+						125 text 2 건
+					126 container 보류·실패 후보
+						127 text 보류·실패 후보
+					128 container
+						129 text 0 개
+			130 container 후보별 검토 현황
+				131 text 01 / COMPARE
+				132 heading 후보별 검토 현황, Value: 2, ID: report-comparison-title
+					133 text 후보별 검토 현황
+				134 text 한 행에 같은 후보·조건의 의견, 근거 상태와 다음 질문을 연결했습니다. 순위나 종합 점수는 없습니다.
+				135 table
+					136 row
+						137 cell
+							138 text 후보
+						139 cell
+							140 text 검토 조건·항목
+						141 cell
+							142 text 의견
+						143 cell
+							144 text 근거 상태
+						145 cell
+							146 text 다음 확인
+					147 row
+						148 cell
+							149 link Description: Trastuzumab Fab, Value: 127.0.0.1:5188/#report-op-trastuzumab-core
+							150 container
+								151 text 실행:  종료
+						152 cell
+							153 text HER2–항체 중심 · interface_review
+						154 cell
+							155 text 추가 확인
+						156 cell
+							157 text 측정됨
+						158 cell
+							159 content list
+								160 container
+									161 AXListMarker •
+									162 text 접촉 잔기 선택 기준(4.5 Å)을 이 비교의 판정 기준으로 쓸 것인지 확정이 필요하다.
+								163 container
+									164 AXListMarker •
+									165 text 충돌·표면 노출 계산의 정의와 제외 규칙을 A-02에서 확정해야 한다.
+								166 container
+									167 AXListMarker •
+									168 text 구조에 포함된 당쇄를 표면 노출 계산에 넣을지, 넣는다면 원자 반지름을 어떻게 둘지 정해야 한다.
+					169 row
+						170 cell
+							171 link Description: Pertuzumab Fab, Value: 127.0.0.1:5188/#report-op-pertuzumab-core
+							172 container
+								173 text 실행:  종료
+						174 cell
+							175 text HER2–항체 중심 · interface_review
+						176 cell
+							177 text 추가 확인
+						178 cell
+							179 text 측정됨
+						180 cell
+							181 content list
+								182 container
+									183 AXListMarker •
+									184 text 접촉 잔기 선택 기준(4.5 Å)을 이 비교의 판정 기준으로 쓸 것인지 확정이 필요하다.
+								185 container
+									186 AXListMarker •
+									187 text 충돌·표면 노출 계산의 정의와 제외 규칙을 A-02에서 확정해야 한다.
+								188 container
+									189 AXListMarker •
+									190 text 구조에 포함된 당쇄를 표면 노출 계산에 넣을지, 넣는다면 원자 반지름을 어떻게 둘지 정해야 한다.
+			191 container 의견과 연결 근거
+				192 text 02 / EVIDENCE
+				193 heading 의견과 연결 근거, Value: 2, ID: report-evidence-title
+					194 text 의견과 연결 근거
+				195 text 의견마다 적용 조건과 근거의 측정 여부를 확인하세요.
+				196 container report-op-trastuzumab-core
+					197 container
+						198 text Trastuzumab Fab  ·  HER2–항체 중심
+						199 heading interface_review 검토, Value: 3
+							200 text interface_review  검토
+						201 text 추가 확인
+					202 text 코드에 정해 둔 규칙대로 진행했다. (판단: 규칙 — 모델 호출이 실패했다: NVIDIA_API_KEY가 없어 호출하지 않았다. build.nvidia.com에서 키를 발급해 환경변수로 넣어야 예측…)
+					203 heading 연결 근거, Value: 4
+						204 text 연결 근거
+					205 content list
+						206 container
+							207 text 접촉 잔기  ·  측정됨 구조에서 계산한 값 39 residue 정의:  표적·항체 중원자 간 거리 4.5 Å 이내로 선택한 잔기 수. 잔기 번호는 label 기준이며 결합력·효능 판정이 아니다.
+							208 content list
+								209 container
+									210 link Description: RCSB PDB 1N8Z, Value: files.rcsb.org/download/1N8Z.cif
+									211 text ·  1N8Z
+					212 heading 해석 범위와 다음 확인, Value: 4
+						213 text 해석 범위와 다음 확인
+					214 content list
+						215 container
+							216 AXListMarker •
+							217 text 예측·실험 구조 공통으로 충돌 판정 기준(A-02의 거리·제외 규칙)이 합의 전이라 계산하지 않았다.
+						218 container
+							219 AXListMarker •
+							220 text 예측·실험 구조 공통으로 표면 노출 계산은 FreeSASA 설치와 당쇄 포함 여부 검증(A-03) 이후에 한다.
+					221 heading 다음 질문, Value: 4
+						222 text 다음 질문
+					223 content list
+						224 container
+							225 AXListMarker •
+							226 text 접촉 잔기 선택 기준(4.5 Å)을 이 비교의 판정 기준으로 쓸 것인지 확정이 필요하다.
+						227 container
+							228 AXListMarker •
+							229 text 충돌·표면 노출 계산의 정의와 제외 규칙을 A-02에서 확정해야 한다.
+						230 container
+							231 AXListMarker •
+							232 text 구조에 포함된 당쇄를 표면 노출 계산에 넣을지, 넣는다면 원자 반지름을 어떻게 둘지 정해야 한다.
+					233 text 조건 출처
+					234 content list
+						235 container
+							236 AXListMarker •
+							237 link Description: RCSB PDB 1N8Z, Value: files.rcsb.org/download/1N8Z.cif
+							238 text  ·  1N8Z
+				239 container report-op-pertuzumab-core
+					240 container
+						241 text Pertuzumab Fab  ·  HER2–항체 중심
+						242 heading interface_review 검토, Value: 3
+							243 text interface_review  검토
+						244 text 추가 확인
+					245 text 코드에 정해 둔 규칙대로 진행했다. (판단: 규칙 — 모델 호출이 실패했다: NVIDIA_API_KEY가 없어 호출하지 않았다. build.nvidia.com에서 키를 발급해 환경변수로 넣어야 예측…)
+					246 heading 연결 근거, Value: 4
+						247 text 연결 근거
+					248 content list
+						249 container
+							250 text 접촉 잔기  ·  측정됨 구조에서 계산한 값 56 residue 정의:  표적·항체 중원자 간 거리 4.5 Å 이내로 선택한 잔기 수. 잔기 번호는 label 기준이며 결합력·효능 판정이 아니다.
+							251 content list
+								252 container
+									253 link Description: RCSB PDB 1S78, Value: files.rcsb.org/download/1S78.cif
+									254 text ·  1S78
+					255 heading 해석 범위와 다음 확인, Value: 4
+						256 text 해석 범위와 다음 확인
+					257 content list
+						258 container
+							259 AXListMarker •
+							260 text 예측·실험 구조 공통으로 충돌 판정 기준(A-02의 거리·제외 규칙)이 합의 전이라 계산하지 않았다.
+						261 container
+							262 AXListMarker •
+							263 text 예측·실험 구조 공통으로 표면 노출 계산은 FreeSASA 설치와 당쇄 포함 여부 검증(A-03) 이후에 한다.
+					264 heading 다음 질문, Value: 4
+						265 text 다음 질문
+					266 content list
+						267 container
+							268 AXListMarker •
+							269 text 접촉 잔기 선택 기준(4.5 Å)을 이 비교의 판정 기준으로 쓸 것인지 확정이 필요하다.
+						270 container
+							271 AXListMarker •
+							272 text 충돌·표면 노출 계산의 정의와 제외 규칙을 A-02에서 확정해야 한다.
+						273 container
+							274 AXListMarker •
+							275 text 구조에 포함된 당쇄를 표면 노출 계산에 넣을지, 넣는다면 원자 반지름을 어떻게 둘지 정해야 한다.
+					276 text 조건 출처
+					277 content list
+						278 container
+							279 AXListMarker •
+							280 link Description: RCSB PDB 1S78, Value: files.rcsb.org/download/1S78.cif
+							281 text  ·  1S78
+				282 heading 의견에 연결되지 않은 근거, Value: 3
+					283 text 의견에 연결되지 않은 근거
+				284 text 아래 기록은 검토 의견을 뒷받침하는 근거로 연결되지 않았습니다.
+				285 content list
+					286 container
+						287 text 원자 간 충돌  ·  미실행 예측·실험 구조 공통으로 충돌 판정 기준(A-02의 거리·제외 규칙)이 합의 전이라 계산하지 않았다. 출처 기록 없음
+					288 container
+						289 text 표면 노출  ·  미실행 예측·실험 구조 공통으로 표면 노출 계산은 FreeSASA 설치와 당쇄 포함 여부 검증(A-03) 이후에 한다. 출처 기록 없음
+					290 container
+						291 text 원자 간 충돌  ·  미실행 예측·실험 구조 공통으로 충돌 판정 기준(A-02의 거리·제외 규칙)이 합의 전이라 계산하지 않았다. 출처 기록 없음
+					292 container
+						293 text 표면 노출  ·  미실행 예측·실험 구조 공통으로 표면 노출 계산은 FreeSASA 설치와 당쇄 포함 여부 검증(A-03) 이후에 한다. 출처 기록 없음
+			294 container 결과 파일
+				295 text 03 / FILES
+				296 heading 결과 파일, Value: 2, ID: report-files-title
+					297 text 결과 파일
+				298 text 준비된 파일만 열 수 있습니다. 모의 파일과 누락 파일은 생성된 결과로 표시하지 않습니다.
+				299 text 구조 파일
+				300 text 1N8Z.cif  ·  MMCIF
+				301 text 조회 가능
+				302 link Description: 내려받기 ↓, Value: 127.0.0.1:5188/api/runs/run-90be4f57bb5f4bd5ae63ab1145c6d84d/artifacts/af-st-trastuzumab-1n8z
+				303 text 구조 파일
+				304 text 1S78.cif  ·  MMCIF
+				305 text 조회 가능
+				306 link Description: 내려받기 ↓, Value: 127.0.0.1:5188/api/runs/run-90be4f57bb5f4bd5ae63ab1145c6d84d/artifacts/af-st-pertuzumab-1s78
+			307 container 실행 기록
+				308 heading 실행 기록, Value: 2
+					309 text 실행 기록
+				310 definition list
+					311 container 실행 ID
+						312 text 실행 ID
+					313 text run-90be4f57bb5f4bd5ae63ab1145c6d84d
+					314 container 결과 생성
+						315 text 결과 생성
+					316 text 2026. 9. 27. 오전 10:33:36
+					317 container 설정 버전
+						318 text 설정 버전
+					319 text service-0.1.0
+					320 container 실행 상태
+						321 text 실행 상태
+					322 text 종료
+				323 heading 구조 자료 출처, Value: 3
+					324 text 구조 자료 출처
+				325 text 실험 구조의 출처는 이 구조에서 계산한 접촉값이나 결합력의 실험 검증을 뜻하지 않습니다.
+				326 content list
+					327 container
+						328 AXListMarker •
+						329 text Trastuzumab Fab  ·  실험 구조
+						330 content list
+							331 container
+								332 AXListMarker ◦
+								333 link Description: RCSB PDB 1N8Z, Value: files.rcsb.org/download/1N8Z.cif
+								334 text  ·  1N8Z
+					335 container
+						336 AXListMarker •
+						337 text Pertuzumab Fab  ·  실험 구조
+						338 content list
+							339 container
+								340 AXListMarker ◦
+								341 link Description: RCSB PDB 1S78, Value: files.rcsb.org/download/1S78.cif
+								342 text  ·  1S78
+		58 container
+			59 text HER2 · Evidence-led antibody review 독립 해커톤 프로젝트 ·  실제 분석 결과  · NVIDIA 공식 제품 아님
+
+The focused UI element is 1 AXWebArea HER2 · 항체 후보 검토, URL: 127.0.0.1:5188/

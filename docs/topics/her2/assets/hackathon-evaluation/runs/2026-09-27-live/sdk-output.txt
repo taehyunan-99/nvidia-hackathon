@@ -1,0 +1,4 @@
+/Users/taehyunan/.codex/worktrees/agent-evaluation/nvidia-hackathon/.venv/lib/python3.13/site-packages/nat/authentication/credential_validator/bearer_token_validator.py:25: AuthlibDeprecationWarning: authlib.jose module is deprecated, please use joserfc instead.
+It will be compatible before version 2.0.0.
+  from authlib.jose import JsonWebKey
+C01: completed; 20.117s; Boltz network=0

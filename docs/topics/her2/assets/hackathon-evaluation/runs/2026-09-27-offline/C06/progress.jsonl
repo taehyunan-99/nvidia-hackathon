@@ -1,0 +1,9 @@
+{"schema_version": "0.1.0", "run_id": "run-eval-c06", "candidate_id": "trastuzumab", "step_id": "input_mapping", "status": "running", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c06", "candidate_id": "trastuzumab", "step_id": "input_mapping", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c06", "candidate_id": "trastuzumab", "step_id": "evidence_review", "status": "completed", "reason": "1N8Z과 한쪽 사슬만 서열이 일치한다. 같은 후보로 보지 않고 예측 경로로 진행했다.", "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c06", "candidate_id": "trastuzumab", "step_id": "prediction", "status": "running", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c06", "candidate_id": "trastuzumab", "step_id": "prediction", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c06", "candidate_id": "trastuzumab", "step_id": "structure_comparison", "status": "running", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c06", "candidate_id": "trastuzumab", "step_id": "structure_comparison", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c06", "candidate_id": "trastuzumab", "step_id": "reporting", "status": "running", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c06", "candidate_id": "trastuzumab", "step_id": "reporting", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}

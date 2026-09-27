@@ -1,0 +1,16 @@
+{"schema_version": "0.1.0", "run_id": "run-eval-c05", "candidate_id": "trastuzumab", "step_id": "input_mapping", "status": "running", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c05", "candidate_id": "trastuzumab", "step_id": "input_mapping", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c05", "candidate_id": "trastuzumab", "step_id": "evidence_review", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c05", "candidate_id": "trastuzumab", "step_id": "prediction", "status": "skipped", "reason": "코드에 정해 둔 규칙대로 진행했다. (판단: 규칙 — EVALUATION: offline baseline)", "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c05", "candidate_id": "trastuzumab", "step_id": "structure_comparison", "status": "running", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c05", "candidate_id": "trastuzumab", "step_id": "structure_comparison", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c05", "candidate_id": "trastuzumab", "step_id": "reporting", "status": "running", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c05", "candidate_id": "trastuzumab", "step_id": "reporting", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c05", "candidate_id": "pertuzumab", "step_id": "input_mapping", "status": "running", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c05", "candidate_id": "pertuzumab", "step_id": "input_mapping", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c05", "candidate_id": "pertuzumab", "step_id": "evidence_review", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c05", "candidate_id": "pertuzumab", "step_id": "prediction", "status": "skipped", "reason": "코드에 정해 둔 규칙대로 진행했다. (판단: 규칙 — EVALUATION: offline baseline)", "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c05", "candidate_id": "pertuzumab", "step_id": "structure_comparison", "status": "running", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c05", "candidate_id": "pertuzumab", "step_id": "structure_comparison", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c05", "candidate_id": "pertuzumab", "step_id": "reporting", "status": "running", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}
+{"schema_version": "0.1.0", "run_id": "run-eval-c05", "candidate_id": "pertuzumab", "step_id": "reporting", "status": "completed", "reason": null, "updated_at": "2026-09-27T01:28:54Z"}

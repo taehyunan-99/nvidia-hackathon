@@ -1,0 +1,1486 @@
+{
+  "id": "run-90be4f57bb5f4bd5ae63ab1145c6d84d",
+  "state_json": {
+    "error": null,
+    "run_id": "run-90be4f57bb5f4bd5ae63ab1145c6d84d",
+    "status": "completed",
+    "data_mode": "live",
+    "review_id": "rev-b2ebd90d9d3946fab377fddfb9bb2b1a",
+    "candidates": [
+      {
+        "steps": [
+          {
+            "reason": null,
+            "status": "completed",
+            "step_id": "input_mapping"
+          },
+          {
+            "reason": null,
+            "status": "completed",
+            "step_id": "evidence_review"
+          },
+          {
+            "reason": "코드에 정해 둔 규칙대로 진행했다. (판단: 규칙 — 모델 호출이 실패했다: NVIDIA_API_KEY가 없어 호출하지 않았다. build.nvidia.com에서 키를 발급해 환경변수로 넣어야 예측…)",
+            "status": "skipped",
+            "step_id": "prediction"
+          },
+          {
+            "reason": null,
+            "status": "completed",
+            "step_id": "structure_comparison"
+          },
+          {
+            "reason": null,
+            "status": "completed",
+            "step_id": "reporting"
+          }
+        ],
+        "reason": null,
+        "status": "completed",
+        "candidate_id": "trastuzumab",
+        "current_step": null
+      },
+      {
+        "steps": [
+          {
+            "reason": null,
+            "status": "completed",
+            "step_id": "input_mapping"
+          },
+          {
+            "reason": null,
+            "status": "completed",
+            "step_id": "evidence_review"
+          },
+          {
+            "reason": "코드에 정해 둔 규칙대로 진행했다. (판단: 규칙 — 모델 호출이 실패했다: NVIDIA_API_KEY가 없어 호출하지 않았다. build.nvidia.com에서 키를 발급해 환경변수로 넣어야 예측…)",
+            "status": "skipped",
+            "step_id": "prediction"
+          },
+          {
+            "reason": null,
+            "status": "completed",
+            "step_id": "structure_comparison"
+          },
+          {
+            "reason": null,
+            "status": "completed",
+            "step_id": "reporting"
+          }
+        ],
+        "reason": null,
+        "status": "completed",
+        "candidate_id": "pertuzumab",
+        "current_step": null
+      }
+    ],
+    "created_at": "2026-09-27T01:33:35Z",
+    "started_at": "2026-09-27T01:33:35.790882Z",
+    "updated_at": "2026-09-27T01:33:37.051124Z",
+    "finished_at": "2026-09-27T01:33:37.051124Z",
+    "schema_version": "0.1.0",
+    "result_available": true,
+    "settings_version": "service-0.1.0"
+  },
+  "result_json": {
+    "run_id": "run-90be4f57bb5f4bd5ae63ab1145c6d84d",
+    "evidence": [
+      {
+        "kind": "computed",
+        "unit": "residue",
+        "topic": "interface_contact_residues",
+        "value": 39.0,
+        "reason": null,
+        "sources": [
+          {
+            "url": "https://files.rcsb.org/download/1N8Z.cif",
+            "title": "RCSB PDB 1N8Z",
+            "record_id": "1N8Z"
+          }
+        ],
+        "residues": [
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 28,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 30,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 31,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 32,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 50,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 53,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 91,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 92,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 93,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 94,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 33,
+            "model_number": 1,
+            "label_asym_id": "B",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 50,
+            "model_number": 1,
+            "label_asym_id": "B",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 52,
+            "model_number": 1,
+            "label_asym_id": "B",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 57,
+            "model_number": 1,
+            "label_asym_id": "B",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 58,
+            "model_number": 1,
+            "label_asym_id": "B",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 59,
+            "model_number": 1,
+            "label_asym_id": "B",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 99,
+            "model_number": 1,
+            "label_asym_id": "B",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 103,
+            "model_number": 1,
+            "label_asym_id": "B",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 104,
+            "model_number": 1,
+            "label_asym_id": "B",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 105,
+            "model_number": 1,
+            "label_asym_id": "B",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 557,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 558,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 560,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 561,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 569,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 570,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 571,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 572,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 573,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 579,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 591,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 593,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 596,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 598,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 600,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 602,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 603,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 604,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 605,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          }
+        ],
+        "definition": "표적·항체 중원자 간 거리 4.5 Å 이내로 선택한 잔기 수. 잔기 번호는 label 기준이며 결합력·효능 판정이 아니다.",
+        "evidence_id": "ev-trastuzumab-interface_contact_residues",
+        "candidate_id": "trastuzumab",
+        "condition_id": "cond-trastuzumab-core",
+        "structure_id": "st-trastuzumab-1n8z",
+        "measurement_state": "measured"
+      },
+      {
+        "kind": "computed",
+        "unit": null,
+        "topic": "atom_clash",
+        "value": null,
+        "reason": "예측·실험 구조 공통으로 충돌 판정 기준(A-02의 거리·제외 규칙)이 합의 전이라 계산하지 않았다.",
+        "sources": [],
+        "residues": [],
+        "definition": null,
+        "evidence_id": "ev-trastuzumab-atom_clash",
+        "candidate_id": "trastuzumab",
+        "condition_id": "cond-trastuzumab-core",
+        "structure_id": "st-trastuzumab-1n8z",
+        "measurement_state": "not_run"
+      },
+      {
+        "kind": "computed",
+        "unit": null,
+        "topic": "surface_exposure",
+        "value": null,
+        "reason": "예측·실험 구조 공통으로 표면 노출 계산은 FreeSASA 설치와 당쇄 포함 여부 검증(A-03) 이후에 한다.",
+        "sources": [],
+        "residues": [],
+        "definition": null,
+        "evidence_id": "ev-trastuzumab-surface_exposure",
+        "candidate_id": "trastuzumab",
+        "condition_id": "cond-trastuzumab-core",
+        "structure_id": "st-trastuzumab-1n8z",
+        "measurement_state": "not_run"
+      },
+      {
+        "kind": "computed",
+        "unit": "residue",
+        "topic": "interface_contact_residues",
+        "value": 56.0,
+        "reason": null,
+        "sources": [
+          {
+            "url": "https://files.rcsb.org/download/1S78.cif",
+            "title": "RCSB PDB 1S78",
+            "record_id": "1S78"
+          }
+        ],
+        "residues": [
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 128,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 156,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 236,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 245,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 246,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 248,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 252,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 254,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 255,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 256,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 257,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 268,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 285,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 286,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 287,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 288,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 290,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 292,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 294,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 295,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 296,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 297,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 311,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 313,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 314,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 315,
+            "model_number": 1,
+            "label_asym_id": "A",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 49,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 50,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 53,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 55,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 94,
+            "model_number": 1,
+            "label_asym_id": "C",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 28,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 30,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 31,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 32,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 33,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 52,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 53,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 54,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 55,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 56,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 58,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 59,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 60,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 62,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 72,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 74,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 75,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 76,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 98,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 100,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 101,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 102,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 103,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 105,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          },
+          {
+            "auth_seq_id": null,
+            "operator_id": null,
+            "auth_asym_id": null,
+            "label_seq_id": 107,
+            "model_number": 1,
+            "label_asym_id": "D",
+            "insertion_code": null,
+            "has_coordinates": true,
+            "sequence_position": null
+          }
+        ],
+        "definition": "표적·항체 중원자 간 거리 4.5 Å 이내로 선택한 잔기 수. 잔기 번호는 label 기준이며 결합력·효능 판정이 아니다.",
+        "evidence_id": "ev-pertuzumab-interface_contact_residues",
+        "candidate_id": "pertuzumab",
+        "condition_id": "cond-pertuzumab-core",
+        "structure_id": "st-pertuzumab-1s78",
+        "measurement_state": "measured"
+      },
+      {
+        "kind": "computed",
+        "unit": null,
+        "topic": "atom_clash",
+        "value": null,
+        "reason": "예측·실험 구조 공통으로 충돌 판정 기준(A-02의 거리·제외 규칙)이 합의 전이라 계산하지 않았다.",
+        "sources": [],
+        "residues": [],
+        "definition": null,
+        "evidence_id": "ev-pertuzumab-atom_clash",
+        "candidate_id": "pertuzumab",
+        "condition_id": "cond-pertuzumab-core",
+        "structure_id": "st-pertuzumab-1s78",
+        "measurement_state": "not_run"
+      },
+      {
+        "kind": "computed",
+        "unit": null,
+        "topic": "surface_exposure",
+        "value": null,
+        "reason": "예측·실험 구조 공통으로 표면 노출 계산은 FreeSASA 설치와 당쇄 포함 여부 검증(A-03) 이후에 한다.",
+        "sources": [],
+        "residues": [],
+        "definition": null,
+        "evidence_id": "ev-pertuzumab-surface_exposure",
+        "candidate_id": "pertuzumab",
+        "condition_id": "cond-pertuzumab-core",
+        "structure_id": "st-pertuzumab-1s78",
+        "measurement_state": "not_run"
+      }
+    ],
+    "opinions": [
+      {
+        "topic": "interface_review",
+        "reason": "코드에 정해 둔 규칙대로 진행했다. (판단: 규칙 — 모델 호출이 실패했다: NVIDIA_API_KEY가 없어 호출하지 않았다. build.nvidia.com에서 키를 발급해 환경변수로 넣어야 예측…)",
+        "decision": "needs_confirmation",
+        "opinion_id": "op-trastuzumab-core",
+        "limitations": [
+          "예측·실험 구조 공통으로 충돌 판정 기준(A-02의 거리·제외 규칙)이 합의 전이라 계산하지 않았다.",
+          "예측·실험 구조 공통으로 표면 노출 계산은 FreeSASA 설치와 당쇄 포함 여부 검증(A-03) 이후에 한다."
+        ],
+        "candidate_id": "trastuzumab",
+        "condition_id": "cond-trastuzumab-core",
+        "evidence_ids": [
+          "ev-trastuzumab-interface_contact_residues"
+        ],
+        "follow_up_questions": [
+          "접촉 잔기 선택 기준(4.5 Å)을 이 비교의 판정 기준으로 쓸 것인지 확정이 필요하다.",
+          "충돌·표면 노출 계산의 정의와 제외 규칙을 A-02에서 확정해야 한다.",
+          "구조에 포함된 당쇄를 표면 노출 계산에 넣을지, 넣는다면 원자 반지름을 어떻게 둘지 정해야 한다."
+        ],
+        "conflicting_evidence_ids": []
+      },
+      {
+        "topic": "interface_review",
+        "reason": "코드에 정해 둔 규칙대로 진행했다. (판단: 규칙 — 모델 호출이 실패했다: NVIDIA_API_KEY가 없어 호출하지 않았다. build.nvidia.com에서 키를 발급해 환경변수로 넣어야 예측…)",
+        "decision": "needs_confirmation",
+        "opinion_id": "op-pertuzumab-core",
+        "limitations": [
+          "예측·실험 구조 공통으로 충돌 판정 기준(A-02의 거리·제외 규칙)이 합의 전이라 계산하지 않았다.",
+          "예측·실험 구조 공통으로 표면 노출 계산은 FreeSASA 설치와 당쇄 포함 여부 검증(A-03) 이후에 한다."
+        ],
+        "candidate_id": "pertuzumab",
+        "condition_id": "cond-pertuzumab-core",
+        "evidence_ids": [
+          "ev-pertuzumab-interface_contact_residues"
+        ],
+        "follow_up_questions": [
+          "접촉 잔기 선택 기준(4.5 Å)을 이 비교의 판정 기준으로 쓸 것인지 확정이 필요하다.",
+          "충돌·표면 노출 계산의 정의와 제외 규칙을 A-02에서 확정해야 한다.",
+          "구조에 포함된 당쇄를 표면 노출 계산에 넣을지, 넣는다면 원자 반지름을 어떻게 둘지 정해야 한다."
+        ],
+        "conflicting_evidence_ids": []
+      }
+    ],
+    "artifacts": [
+      {
+        "role": "structure",
+        "format": "mmcif",
+        "reason": null,
+        "sha256": "9f22f02b6e514de56dab8a48bc31a16302a51397779e64c398ad3a7f05cb19a2",
+        "status": "ready",
+        "file_name": "1N8Z.cif",
+        "size_bytes": 845613,
+        "artifact_id": "af-st-trastuzumab-1n8z"
+      },
+      {
+        "role": "structure",
+        "format": "mmcif",
+        "reason": null,
+        "sha256": "468b0fa0d3368c1d8971d26e896a7ed8b938437dfa5eb55132ef24ef0033d9f0",
+        "status": "ready",
+        "file_name": "1S78.cif",
+        "size_bytes": 1619308,
+        "artifact_id": "af-st-pertuzumab-1s78"
+      }
+    ],
+    "data_mode": "live",
+    "review_id": "rev-b2ebd90d9d3946fab377fddfb9bb2b1a",
+    "conditions": [
+      {
+        "gaps": [],
+        "kind": "core",
+        "sources": [
+          {
+            "url": "https://files.rcsb.org/download/1N8Z.cif",
+            "title": "RCSB PDB 1N8Z",
+            "record_id": "1N8Z"
+          }
+        ],
+        "candidate_id": "trastuzumab",
+        "condition_id": "cond-trastuzumab-core",
+        "structure_ids": [
+          "st-trastuzumab-1n8z"
+        ],
+        "included_components": [
+          "target",
+          "heavy",
+          "light"
+        ]
+      },
+      {
+        "gaps": [
+          "당쇄 조성·점유율은 이 구조 파일에 기록된 범위까지만 확인했다.",
+          "표면 노출 비교는 FreeSASA 검증 전이라 계산하지 않았다."
+        ],
+        "kind": "context",
+        "sources": [
+          {
+            "url": "https://files.rcsb.org/download/1N8Z.cif",
+            "title": "RCSB PDB 1N8Z",
+            "record_id": "1N8Z"
+          }
+        ],
+        "candidate_id": "trastuzumab",
+        "condition_id": "cond-trastuzumab-context",
+        "structure_ids": [
+          "st-trastuzumab-1n8z"
+        ],
+        "included_components": [
+          "target",
+          "heavy",
+          "light",
+          "glycan"
+        ]
+      },
+      {
+        "gaps": [],
+        "kind": "core",
+        "sources": [
+          {
+            "url": "https://files.rcsb.org/download/1S78.cif",
+            "title": "RCSB PDB 1S78",
+            "record_id": "1S78"
+          }
+        ],
+        "candidate_id": "pertuzumab",
+        "condition_id": "cond-pertuzumab-core",
+        "structure_ids": [
+          "st-pertuzumab-1s78"
+        ],
+        "included_components": [
+          "target",
+          "heavy",
+          "light"
+        ]
+      },
+      {
+        "gaps": [
+          "당쇄 조성·점유율은 이 구조 파일에 기록된 범위까지만 확인했다.",
+          "표면 노출 비교는 FreeSASA 검증 전이라 계산하지 않았다."
+        ],
+        "kind": "context",
+        "sources": [
+          {
+            "url": "https://files.rcsb.org/download/1S78.cif",
+            "title": "RCSB PDB 1S78",
+            "record_id": "1S78"
+          }
+        ],
+        "candidate_id": "pertuzumab",
+        "condition_id": "cond-pertuzumab-context",
+        "structure_ids": [
+          "st-pertuzumab-1s78"
+        ],
+        "included_components": [
+          "target",
+          "heavy",
+          "light",
+          "glycan"
+        ]
+      }
+    ],
+    "created_at": "2026-09-27T01:33:36Z",
+    "structures": [
+      {
+        "kind": "experimental",
+        "source": {
+          "url": "https://files.rcsb.org/download/1N8Z.cif",
+          "title": "RCSB PDB 1N8Z",
+          "record_id": "1N8Z"
+        },
+        "alignment": null,
+        "artifact_id": "af-st-trastuzumab-1n8z",
+        "assembly_id": null,
+        "candidate_id": "trastuzumab",
+        "model_number": 1,
+        "structure_id": "st-trastuzumab-1n8z",
+        "chain_mapping": [
+          {
+            "role": "target",
+            "operator_id": null,
+            "auth_asym_id": null,
+            "model_number": 1,
+            "label_asym_id": "C"
+          },
+          {
+            "role": "heavy",
+            "operator_id": null,
+            "auth_asym_id": null,
+            "model_number": 1,
+            "label_asym_id": "B"
+          },
+          {
+            "role": "light",
+            "operator_id": null,
+            "auth_asym_id": null,
+            "model_number": 1,
+            "label_asym_id": "A"
+          }
+        ],
+        "residue_mapping": []
+      },
+      {
+        "kind": "experimental",
+        "source": {
+          "url": "https://files.rcsb.org/download/1S78.cif",
+          "title": "RCSB PDB 1S78",
+          "record_id": "1S78"
+        },
+        "alignment": null,
+        "artifact_id": "af-st-pertuzumab-1s78",
+        "assembly_id": null,
+        "candidate_id": "pertuzumab",
+        "model_number": 1,
+        "structure_id": "st-pertuzumab-1s78",
+        "chain_mapping": [
+          {
+            "role": "target",
+            "operator_id": null,
+            "auth_asym_id": null,
+            "model_number": 1,
+            "label_asym_id": "A"
+          },
+          {
+            "role": "heavy",
+            "operator_id": null,
+            "auth_asym_id": null,
+            "model_number": 1,
+            "label_asym_id": "D"
+          },
+          {
+            "role": "light",
+            "operator_id": null,
+            "auth_asym_id": null,
+            "model_number": 1,
+            "label_asym_id": "C"
+          }
+        ],
+        "residue_mapping": []
+      }
+    ],
+    "candidate_ids": [
+      "trastuzumab",
+      "pertuzumab"
+    ],
+    "schema_version": "0.1.0",
+    "settings_version": "service-0.1.0"
+  }
+}

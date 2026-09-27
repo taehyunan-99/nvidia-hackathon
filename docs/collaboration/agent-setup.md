@@ -20,6 +20,8 @@ GitHub 최신 both 모드도 AGENTS.md 원본과 CLAUDE.md import 방식을 사�
 `learn`은 Codex에서 `$learn`, Claude에서 `/learn`으로 명시 호출한다.
 원본의 메모·대상·근거 확인 절차를 거친 후 해당 영역 LEARNED_CAUTIONS.md에 누적한다. 본문 가이드의 8번 섹션에서 이 파일을 참조한다.
 
+`agent-evaluate`는 [공통 원본](../../.agents/skills/agent-evaluate/SKILL.md)을 명시 호출해 HER2 에이전트를 평가하고 점수·실행 근거를 기록한다. 프로젝트 자체 작성 스킬이며 평가 기준·데이터·Python 의존성은 [해커톤 평가 문서](../topics/her2/hackathon-evaluation.md)와 `uv.lock`을 따른다. 외부 스킬을 복제하거나 별도 라이선스를 부여한 것은 아니다. 기본은 오프라인이며 실제 모델 호출은 요청된 범위에서만 수행한다.
+
 `handoff` 스킬과 검증 코드는 공유하지만 `docs/HANDOFF.md`, `docs/HANDOFF.html`, `docs/HANDOFF.md.parallel.lock`, `docs/handoff-runs/`는 `.gitignore`로 제외한 개인 기록이다. 각자 별도 clone에서 현재 인계 파일 하나를 관리하고, 다음 세션도 같은 checkout에서 이어간다. 이 기록은 커밋·PR에 포함하지 않으며 다른 PC·clone·worktree에 자동 전달되지 않는다. 팀 진행 상황과 결정은 별도 공용 문서로 관리한다.
 
 ## Git 작업 준비

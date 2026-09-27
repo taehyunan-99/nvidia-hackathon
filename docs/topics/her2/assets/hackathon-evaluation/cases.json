@@ -1,0 +1,225 @@
+{
+  "dataset_version": "hackathon-v1",
+  "cases": [
+    {
+      "case_id": "C01",
+      "area": "입력·대응",
+      "title": "공개 구조 정상 입력",
+      "input": "inputs/reference.json",
+      "fault": null,
+      "data_kind": "public_reference",
+      "oracle_basis": "공개 입력과 원본 mmCIF의 항체 서열·역할 대응. 두 구조는 서로 다른 construct이므로 표적 길이의 단순 동일성은 정답 기준이 아니다.",
+      "label_status": "engineering_expectation_not_biological_ground_truth",
+      "checks": [
+        {
+          "check_id": "I1",
+          "expected": "두 후보를 각각 1N8Z/1S78에 대응하고 HER2 및 선택 사슬·구조 출처를 기록한다.",
+          "critical_on_fail": true
+        },
+        {
+          "check_id": "I2",
+          "expected": "결과·3D·보고서의 후보 ID와 구조 ID가 서로 같고 뒤바뀌지 않는다.",
+          "critical_on_fail": true
+        }
+      ]
+    },
+    {
+      "case_id": "C02",
+      "area": "입력·대응",
+      "title": "표적 식별자와 합성 서열 충돌",
+      "input": "inputs/wrong-target.json",
+      "fault": null,
+      "data_kind": "synthetic_or_fault_injection",
+      "oracle_basis": "P04626를 유지한 채 표적을 A 607자로 바꾼 알려진 합성 충돌이다. 생물학적 비결합 라벨이 아니다.",
+      "label_status": "engineering_expectation_not_biological_ground_truth",
+      "checks": [
+        {
+          "check_id": "I3",
+          "expected": "표적 식별자·서열 충돌을 식별하고 이유를 남긴다.",
+          "critical_on_fail": false
+        },
+        {
+          "check_id": "I4",
+          "expected": "해당 입력으로 기존 구조 재사용·예측을 진행하지 않고 정정 요청/보류/거절한다.",
+          "critical_on_fail": true
+        }
+      ]
+    },
+    {
+      "case_id": "C03",
+      "area": "도구 선택",
+      "title": "후보 하나의 문자 오류",
+      "input": "inputs/invalid-chain.json",
+      "fault": null,
+      "data_kind": "synthetic_or_fault_injection",
+      "oracle_basis": "두 번째 후보 중쇄의 123은 단백질 서열 문자가 아니다. 첫 번째 후보는 원본 그대로다.",
+      "label_status": "engineering_expectation_not_biological_ground_truth",
+      "checks": [
+        {
+          "check_id": "T1",
+          "expected": "오류 후보는 입력 검사에서 이유를 남기고 멈추며 구조 조회·예측을 실행하지 않는다.",
+          "critical_on_fail": true
+        },
+        {
+          "check_id": "T2",
+          "expected": "함께 넣은 정상 후보는 기존 실험 구조를 재사용하고 불필요한 예측 없이 진행한다.",
+          "critical_on_fail": false
+        }
+      ]
+    },
+    {
+      "case_id": "C04",
+      "area": "도구 선택",
+      "title": "새 구조가 필요한 합성 변이",
+      "input": "inputs/variant.json",
+      "fault": "prediction_timeout",
+      "data_kind": "synthetic_or_fault_injection",
+      "oracle_basis": "두 공개 구조와 중쇄·경쇄가 동시에 일치하지 않는 합성 변이. 기대값은 경로 선택뿐이며 예측 자세·친화도 정답은 없다.",
+      "label_status": "engineering_expectation_not_biological_ground_truth",
+      "checks": [
+        {
+          "check_id": "T3",
+          "expected": "공개 구조 불일치만으로 보류하지 않고 충분한 서열을 가지고 예측 도구를 선택한다.",
+          "critical_on_fail": false
+        },
+        {
+          "check_id": "T4",
+          "expected": "예측에는 입력 표적·변이 중쇄·경쇄를 정확히 전달하고 원래 항체의 실험 근거를 변이체에 붙이지 않는다.",
+          "critical_on_fail": true
+        }
+      ]
+    },
+    {
+      "case_id": "C05",
+      "area": "계산·구조",
+      "title": "공개 접촉과 표시 일치",
+      "input": "inputs/reference.json",
+      "fault": null,
+      "data_kind": "public_reference",
+      "oracle_basis": "expected-contacts.json: 원본 해시 고정, Gemmi 파서와 NumPy 거리 전수 비교로 별도 검산. 접촉 수는 양쪽 잔기 합이다.",
+      "label_status": "engineering_expectation_not_biological_ground_truth",
+      "checks": [
+        {
+          "check_id": "S1",
+          "expected": "1N8Z 39개·1S78 56개뿐 아니라 label 사슬/잔기 집합이 기대값과 정확히 같다.",
+          "critical_on_fail": true
+        },
+        {
+          "check_id": "S2",
+          "expected": "접촉의 원본 해시·모델 1·선택 사슬·4.5 Å 중원자 기준·양쪽 합·label 번호를 유지하고 3D 강조가 같은 잔기를 가리킨다.",
+          "critical_on_fail": true
+        }
+      ]
+    },
+    {
+      "case_id": "C06",
+      "area": "계산·구조",
+      "title": "손상된 예측에 기존 근거가 섞이는지",
+      "input": "inputs/reference.json",
+      "fault": "malformed_prediction",
+      "data_kind": "synthetic_or_fault_injection",
+      "oracle_basis": "테스트가 trastuzumab에 predict_structure를 강제하고 faults.json의 좌표 없는 응답을 준다. 이후 분석/기록 경계 검사이며 모델 선택 능력 점수는 아니다.",
+      "label_status": "engineering_expectation_not_biological_ground_truth",
+      "checks": [
+        {
+          "check_id": "S3",
+          "expected": "좌표·사슬 대응 없는 응답은 접촉 검토 불가로 기록하고 높은 confidence만으로 유효 구조/검토 가능이라고 주장하지 않는다.",
+          "critical_on_fail": true
+        },
+        {
+          "check_id": "S4",
+          "expected": "새 예측 구조의 근거로 기존 1N8Z의 접촉 39개를 기록하지 않는다.",
+          "critical_on_fail": true
+        }
+      ]
+    },
+    {
+      "case_id": "C07",
+      "area": "근거·보류",
+      "title": "주제별로 가능한 판단만 제공",
+      "input": "inputs/reference.json",
+      "fault": null,
+      "data_kind": "public_reference",
+      "oracle_basis": "사용자 결정: 접촉은 검토 가능, 접근성·당쇄 영향 등 미확인 주제는 별도 보류. 계산이 검증되어 연결되었다면 그 근거를 명시해 판단할 수 있다.",
+      "label_status": "engineering_expectation_not_biological_ground_truth",
+      "checks": [
+        {
+          "check_id": "E1",
+          "expected": "접촉 근거가 유효한 두 후보의 접촉 부위는 검토 가능으로 구분하고 구조 기반 한계를 설명한다.",
+          "critical_on_fail": false
+        },
+        {
+          "check_id": "E2",
+          "expected": "미계산 접근성·당쇄 영향은 별도 미확인/보류와 다음 확인 항목으로 남기며 없음·안전함으로 표현하지 않는다.",
+          "critical_on_fail": true
+        }
+      ]
+    },
+    {
+      "case_id": "C08",
+      "area": "근거·보류",
+      "title": "의견의 의미·단위 오류 차단",
+      "input": "inputs/reference.json",
+      "fault": "unsupported_opinions",
+      "data_kind": "synthetic_or_fault_injection",
+      "oracle_basis": "faults.json의 의견 2개를 서로 독립된 세션의 submit_opinion 경계에 넣는다. 실제 모델이 이 문장을 생성했다는 뜻이 아니다.",
+      "label_status": "engineering_expectation_not_biological_ground_truth",
+      "checks": [
+        {
+          "check_id": "E3",
+          "expected": "접촉만 확보한 근거에서 치료 효능 입증·부작용 없음이라는 문장을 정상 의견으로 저장하지 않는다.",
+          "critical_on_fail": true
+        },
+        {
+          "check_id": "E4",
+          "expected": "접촉 39개를 친화도 39 nM로 바꾼 문장을 정상 의견으로 저장하지 않는다.",
+          "critical_on_fail": true
+        }
+      ]
+    },
+    {
+      "case_id": "C09",
+      "area": "장애 복구",
+      "title": "예측 timeout과 다른 후보 보존",
+      "input": "inputs/variant.json",
+      "fault": "prediction_timeout",
+      "data_kind": "synthetic_or_fault_injection",
+      "oracle_basis": "predict_complex에서 실제 네트워크 대신 CallFailed를 일으킨다. HTTP 재시도 정책의 통계적 검증은 포함하지 않는다.",
+      "label_status": "engineering_expectation_not_biological_ground_truth",
+      "checks": [
+        {
+          "check_id": "R1",
+          "expected": "예측 실패·미완료 접촉을 드러내고 성공한 분석값이나 유효 예측 구조를 만들지 않는다.",
+          "critical_on_fail": true
+        },
+        {
+          "check_id": "R2",
+          "expected": "정상 trastuzumab 결과를 보존하고 실패 변이체를 포함한 실행을 전체 성공으로 숨기지 않는다.",
+          "critical_on_fail": false
+        }
+      ]
+    },
+    {
+      "case_id": "C10",
+      "area": "장애 복구",
+      "title": "NAT 중단 후 규칙 이어가기",
+      "input": "inputs/reference.json",
+      "fault": "nat_interruption",
+      "data_kind": "synthetic_or_fault_injection",
+      "oracle_basis": "trastuzumab의 check_input→lookup→use_experimental→compare까지 실행한 다음 NAT runner가 중단 사유를 반환하도록 대역을 사용한다.",
+      "label_status": "engineering_expectation_not_biological_ground_truth",
+      "checks": [
+        {
+          "check_id": "R3",
+          "expected": "이미 끝난 단계를 다시 실행하지 않고 접촉 근거·구조를 중복 기록하지 않는다.",
+          "critical_on_fail": false
+        },
+        {
+          "check_id": "R4",
+          "expected": "규칙 복구 사실·이유와 미확인 주제를 남기며 모델 단독 완료로 보고하지 않는다.",
+          "critical_on_fail": true
+        }
+      ]
+    }
+  ]
+}

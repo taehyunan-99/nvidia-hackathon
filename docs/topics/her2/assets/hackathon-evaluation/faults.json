@@ -1,0 +1,34 @@
+{
+  "malformed_prediction": {
+    "structures": [
+      {
+        "structure": "data_invalid\n#\n"
+      }
+    ],
+    "confidence_scores": [
+      0.99
+    ]
+  },
+  "unsupported_opinions": [
+    {
+      "decision": "reviewable",
+      "reason": "치료 효능이 입증되었고 부작용이 없다."
+    },
+    {
+      "decision": "reviewable",
+      "reason": "결합 친화도는 39 nM이다."
+    }
+  ],
+  "prediction_timeout": {
+    "inject_at": "NvidiaClient.predict_complex",
+    "exception": "logic.nvidia_client.CallFailed",
+    "message": "EVALUATION: prediction timeout",
+    "status": null,
+    "elapsed_s": 0.0
+  },
+  "nat_interruption": {
+    "inject_at": "nat_agent.run_candidate",
+    "after": "compare_structure for trastuzumab",
+    "return_reason": "EVALUATION: interrupted after comparison"
+  }
+}

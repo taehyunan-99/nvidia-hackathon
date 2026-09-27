@@ -1,0 +1,41 @@
+{
+  "mode": "offline",
+  "areas": {
+    "입력·대응": {
+      "passed": 2,
+      "evaluated": 4,
+      "maximum": 4
+    },
+    "도구 선택": {
+      "passed": 4,
+      "evaluated": 4,
+      "maximum": 4
+    },
+    "계산·구조": {
+      "passed": 2,
+      "evaluated": 4,
+      "maximum": 4
+    },
+    "근거·보류": {
+      "passed": 1,
+      "evaluated": 4,
+      "maximum": 4
+    },
+    "장애 복구": {
+      "passed": 4,
+      "evaluated": 4,
+      "maximum": 4
+    }
+  },
+  "score_out_of_20": 13,
+  "critical_failures": [
+    "I4",
+    "S3",
+    "S4",
+    "E3",
+    "E4"
+  ],
+  "not_run": [],
+  "readiness": "blocked_by_critical_failure",
+  "scope": "Internal demo rubric; not a model accuracy or biological validation score"
+}

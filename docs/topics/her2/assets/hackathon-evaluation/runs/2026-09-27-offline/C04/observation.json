@@ -1,0 +1,929 @@
+{
+  "result": {
+    "schema_version": "0.1.0",
+    "data_mode": "live",
+    "run_id": "run-eval-c04",
+    "review_id": "rev-evaluation",
+    "candidate_ids": [
+      "trastuzumab",
+      "synthetic-variant"
+    ],
+    "created_at": "2026-09-27T01:28:54Z",
+    "settings_version": "hackathon-v1",
+    "structures": [
+      {
+        "structure_id": "st-trastuzumab-1n8z",
+        "candidate_id": "trastuzumab",
+        "artifact_id": "af-st-trastuzumab-1n8z",
+        "kind": "experimental",
+        "source": {
+          "title": "RCSB PDB 1N8Z",
+          "url": "https://files.rcsb.org/download/1N8Z.cif",
+          "record_id": "1N8Z"
+        },
+        "model_number": 1,
+        "assembly_id": null,
+        "chain_mapping": [
+          {
+            "role": "target",
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "operator_id": null
+          },
+          {
+            "role": "heavy",
+            "model_number": 1,
+            "label_asym_id": "B",
+            "auth_asym_id": null,
+            "operator_id": null
+          },
+          {
+            "role": "light",
+            "model_number": 1,
+            "label_asym_id": "A",
+            "auth_asym_id": null,
+            "operator_id": null
+          }
+        ],
+        "residue_mapping": [],
+        "alignment": null
+      }
+    ],
+    "conditions": [
+      {
+        "condition_id": "cond-trastuzumab-core",
+        "candidate_id": "trastuzumab",
+        "kind": "core",
+        "structure_ids": [
+          "st-trastuzumab-1n8z"
+        ],
+        "included_components": [
+          "target",
+          "heavy",
+          "light"
+        ],
+        "gaps": [],
+        "sources": [
+          {
+            "title": "RCSB PDB 1N8Z",
+            "url": "https://files.rcsb.org/download/1N8Z.cif",
+            "record_id": "1N8Z"
+          }
+        ]
+      },
+      {
+        "condition_id": "cond-trastuzumab-context",
+        "candidate_id": "trastuzumab",
+        "kind": "context",
+        "structure_ids": [
+          "st-trastuzumab-1n8z"
+        ],
+        "included_components": [
+          "target",
+          "heavy",
+          "light",
+          "glycan"
+        ],
+        "gaps": [
+          "당쇄 조성·점유율은 이 구조 파일에 기록된 범위까지만 확인했다.",
+          "표면 노출 비교는 FreeSASA 검증 전이라 계산하지 않았다."
+        ],
+        "sources": [
+          {
+            "title": "RCSB PDB 1N8Z",
+            "url": "https://files.rcsb.org/download/1N8Z.cif",
+            "record_id": "1N8Z"
+          }
+        ]
+      },
+      {
+        "condition_id": "cond-synthetic-variant-core",
+        "candidate_id": "synthetic-variant",
+        "kind": "core",
+        "structure_ids": [],
+        "included_components": [],
+        "gaps": [
+          "EVALUATION: prediction timeout (stub, no network)"
+        ],
+        "sources": []
+      }
+    ],
+    "evidence": [
+      {
+        "evidence_id": "ev-trastuzumab-interface_contact_residues",
+        "candidate_id": "trastuzumab",
+        "condition_id": "cond-trastuzumab-core",
+        "structure_id": "st-trastuzumab-1n8z",
+        "topic": "interface_contact_residues",
+        "kind": "computed",
+        "measurement_state": "measured",
+        "value": 39.0,
+        "unit": "residue",
+        "definition": "표적·항체 중원자 간 거리 4.5 Å 이내로 선택한 잔기 수. 잔기 번호는 label 기준이며 결합력·효능 판정이 아니다.",
+        "reason": null,
+        "residues": [
+          {
+            "model_number": 1,
+            "label_asym_id": "A",
+            "auth_asym_id": null,
+            "label_seq_id": 28,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "A",
+            "auth_asym_id": null,
+            "label_seq_id": 30,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "A",
+            "auth_asym_id": null,
+            "label_seq_id": 31,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "A",
+            "auth_asym_id": null,
+            "label_seq_id": 32,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "A",
+            "auth_asym_id": null,
+            "label_seq_id": 50,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "A",
+            "auth_asym_id": null,
+            "label_seq_id": 53,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "A",
+            "auth_asym_id": null,
+            "label_seq_id": 91,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "A",
+            "auth_asym_id": null,
+            "label_seq_id": 92,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "A",
+            "auth_asym_id": null,
+            "label_seq_id": 93,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "A",
+            "auth_asym_id": null,
+            "label_seq_id": 94,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "B",
+            "auth_asym_id": null,
+            "label_seq_id": 33,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "B",
+            "auth_asym_id": null,
+            "label_seq_id": 50,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "B",
+            "auth_asym_id": null,
+            "label_seq_id": 52,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "B",
+            "auth_asym_id": null,
+            "label_seq_id": 57,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "B",
+            "auth_asym_id": null,
+            "label_seq_id": 58,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "B",
+            "auth_asym_id": null,
+            "label_seq_id": 59,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "B",
+            "auth_asym_id": null,
+            "label_seq_id": 99,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "B",
+            "auth_asym_id": null,
+            "label_seq_id": 103,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "B",
+            "auth_asym_id": null,
+            "label_seq_id": 104,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "B",
+            "auth_asym_id": null,
+            "label_seq_id": 105,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "label_seq_id": 557,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "label_seq_id": 558,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "label_seq_id": 560,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "label_seq_id": 561,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "label_seq_id": 569,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "label_seq_id": 570,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "label_seq_id": 571,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "label_seq_id": 572,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "label_seq_id": 573,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "label_seq_id": 579,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "label_seq_id": 591,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "label_seq_id": 593,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "label_seq_id": 596,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "label_seq_id": 598,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "label_seq_id": 600,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "label_seq_id": 602,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "label_seq_id": 603,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "label_seq_id": 604,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          },
+          {
+            "model_number": 1,
+            "label_asym_id": "C",
+            "auth_asym_id": null,
+            "label_seq_id": 605,
+            "auth_seq_id": null,
+            "insertion_code": null,
+            "sequence_position": null,
+            "operator_id": null,
+            "has_coordinates": true
+          }
+        ],
+        "sources": [
+          {
+            "title": "RCSB PDB 1N8Z",
+            "url": "https://files.rcsb.org/download/1N8Z.cif",
+            "record_id": "1N8Z"
+          }
+        ]
+      },
+      {
+        "evidence_id": "ev-trastuzumab-atom_clash",
+        "candidate_id": "trastuzumab",
+        "condition_id": "cond-trastuzumab-core",
+        "structure_id": "st-trastuzumab-1n8z",
+        "topic": "atom_clash",
+        "kind": "computed",
+        "measurement_state": "not_run",
+        "value": null,
+        "unit": null,
+        "definition": null,
+        "reason": "예측·실험 구조 공통으로 충돌 판정 기준(A-02의 거리·제외 규칙)이 합의 전이라 계산하지 않았다.",
+        "residues": [],
+        "sources": []
+      },
+      {
+        "evidence_id": "ev-trastuzumab-surface_exposure",
+        "candidate_id": "trastuzumab",
+        "condition_id": "cond-trastuzumab-core",
+        "structure_id": "st-trastuzumab-1n8z",
+        "topic": "surface_exposure",
+        "kind": "computed",
+        "measurement_state": "not_run",
+        "value": null,
+        "unit": null,
+        "definition": null,
+        "reason": "예측·실험 구조 공통으로 표면 노출 계산은 FreeSASA 설치와 당쇄 포함 여부 검증(A-03) 이후에 한다.",
+        "residues": [],
+        "sources": []
+      }
+    ],
+    "opinions": [
+      {
+        "opinion_id": "op-trastuzumab-core",
+        "candidate_id": "trastuzumab",
+        "condition_id": "cond-trastuzumab-core",
+        "topic": "interface_review",
+        "decision": "needs_confirmation",
+        "evidence_ids": [
+          "ev-trastuzumab-interface_contact_residues"
+        ],
+        "conflicting_evidence_ids": [],
+        "reason": "코드에 정해 둔 규칙대로 진행했다. (판단: 규칙 — EVALUATION: offline baseline)",
+        "limitations": [
+          "예측·실험 구조 공통으로 충돌 판정 기준(A-02의 거리·제외 규칙)이 합의 전이라 계산하지 않았다.",
+          "예측·실험 구조 공통으로 표면 노출 계산은 FreeSASA 설치와 당쇄 포함 여부 검증(A-03) 이후에 한다."
+        ],
+        "follow_up_questions": [
+          "접촉 잔기 선택 기준(4.5 Å)을 이 비교의 판정 기준으로 쓸 것인지 확정이 필요하다.",
+          "충돌·표면 노출 계산의 정의와 제외 규칙을 A-02에서 확정해야 한다.",
+          "구조에 포함된 당쇄를 표면 노출 계산에 넣을지, 넣는다면 원자 반지름을 어떻게 둘지 정해야 한다."
+        ]
+      },
+      {
+        "opinion_id": "op-synthetic-variant-structure_availability",
+        "candidate_id": "synthetic-variant",
+        "condition_id": "cond-synthetic-variant-core",
+        "topic": "structure_availability",
+        "decision": "not_assessed",
+        "evidence_ids": [],
+        "conflicting_evidence_ids": [],
+        "reason": "EVALUATION: prediction timeout (stub, no network)",
+        "limitations": [],
+        "follow_up_questions": [
+          "보완할 입력·자료를 확인한 뒤 새 실행으로 다시 접수해야 한다."
+        ]
+      }
+    ],
+    "artifacts": [
+      {
+        "artifact_id": "af-st-trastuzumab-1n8z",
+        "role": "structure",
+        "format": "mmcif",
+        "status": "ready",
+        "file_name": "1N8Z.cif",
+        "size_bytes": 845613,
+        "sha256": "9f22f02b6e514de56dab8a48bc31a16302a51397779e64c398ad3a7f05cb19a2",
+        "reason": null
+      }
+    ]
+  },
+  "status": "partial",
+  "candidates": [
+    {
+      "candidate_id": "trastuzumab",
+      "status": "completed",
+      "current_step": null,
+      "steps": [
+        {
+          "step_id": "input_mapping",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "step_id": "evidence_review",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "step_id": "prediction",
+          "status": "skipped",
+          "reason": "코드에 정해 둔 규칙대로 진행했다. (판단: 규칙 — EVALUATION: offline baseline)"
+        },
+        {
+          "step_id": "structure_comparison",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "step_id": "reporting",
+          "status": "completed",
+          "reason": null
+        }
+      ],
+      "reason": null
+    },
+    {
+      "candidate_id": "synthetic-variant",
+      "status": "failed",
+      "current_step": null,
+      "steps": [
+        {
+          "step_id": "input_mapping",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "step_id": "evidence_review",
+          "status": "completed",
+          "reason": "1S78과 한쪽 사슬만 서열이 일치한다. 같은 후보로 보지 않고 예측 경로로 진행했다."
+        },
+        {
+          "step_id": "prediction",
+          "status": "failed",
+          "reason": "EVALUATION: prediction timeout (stub, no network)"
+        },
+        {
+          "step_id": "structure_comparison",
+          "status": "skipped",
+          "reason": "예측이 실패해 진행하지 않았다."
+        },
+        {
+          "step_id": "reporting",
+          "status": "skipped",
+          "reason": "예측이 실패해 진행하지 않았다."
+        }
+      ],
+      "reason": "EVALUATION: prediction timeout (stub, no network)"
+    }
+  ],
+  "progress": [
+    {
+      "schema_version": "0.1.0",
+      "run_id": "run-eval-c04",
+      "candidate_id": "trastuzumab",
+      "step_id": "input_mapping",
+      "status": "running",
+      "reason": null,
+      "updated_at": "2026-09-27T01:28:54Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "run_id": "run-eval-c04",
+      "candidate_id": "trastuzumab",
+      "step_id": "input_mapping",
+      "status": "completed",
+      "reason": null,
+      "updated_at": "2026-09-27T01:28:54Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "run_id": "run-eval-c04",
+      "candidate_id": "trastuzumab",
+      "step_id": "evidence_review",
+      "status": "completed",
+      "reason": null,
+      "updated_at": "2026-09-27T01:28:54Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "run_id": "run-eval-c04",
+      "candidate_id": "trastuzumab",
+      "step_id": "prediction",
+      "status": "skipped",
+      "reason": "코드에 정해 둔 규칙대로 진행했다. (판단: 규칙 — EVALUATION: offline baseline)",
+      "updated_at": "2026-09-27T01:28:54Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "run_id": "run-eval-c04",
+      "candidate_id": "trastuzumab",
+      "step_id": "structure_comparison",
+      "status": "running",
+      "reason": null,
+      "updated_at": "2026-09-27T01:28:54Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "run_id": "run-eval-c04",
+      "candidate_id": "trastuzumab",
+      "step_id": "structure_comparison",
+      "status": "completed",
+      "reason": null,
+      "updated_at": "2026-09-27T01:28:54Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "run_id": "run-eval-c04",
+      "candidate_id": "trastuzumab",
+      "step_id": "reporting",
+      "status": "running",
+      "reason": null,
+      "updated_at": "2026-09-27T01:28:54Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "run_id": "run-eval-c04",
+      "candidate_id": "trastuzumab",
+      "step_id": "reporting",
+      "status": "completed",
+      "reason": null,
+      "updated_at": "2026-09-27T01:28:54Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "run_id": "run-eval-c04",
+      "candidate_id": "synthetic-variant",
+      "step_id": "input_mapping",
+      "status": "running",
+      "reason": null,
+      "updated_at": "2026-09-27T01:28:54Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "run_id": "run-eval-c04",
+      "candidate_id": "synthetic-variant",
+      "step_id": "input_mapping",
+      "status": "completed",
+      "reason": null,
+      "updated_at": "2026-09-27T01:28:54Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "run_id": "run-eval-c04",
+      "candidate_id": "synthetic-variant",
+      "step_id": "evidence_review",
+      "status": "completed",
+      "reason": "1S78과 한쪽 사슬만 서열이 일치한다. 같은 후보로 보지 않고 예측 경로로 진행했다.",
+      "updated_at": "2026-09-27T01:28:54Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "run_id": "run-eval-c04",
+      "candidate_id": "synthetic-variant",
+      "step_id": "prediction",
+      "status": "running",
+      "reason": null,
+      "updated_at": "2026-09-27T01:28:54Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "run_id": "run-eval-c04",
+      "candidate_id": "synthetic-variant",
+      "step_id": "prediction",
+      "status": "failed",
+      "reason": "EVALUATION: prediction timeout (stub, no network)",
+      "updated_at": "2026-09-27T01:28:54Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "run_id": "run-eval-c04",
+      "candidate_id": "synthetic-variant",
+      "step_id": "structure_comparison",
+      "status": "skipped",
+      "reason": "예측이 실패해 진행하지 않았다.",
+      "updated_at": "2026-09-27T01:28:54Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "run_id": "run-eval-c04",
+      "candidate_id": "synthetic-variant",
+      "step_id": "reporting",
+      "status": "skipped",
+      "reason": "예측이 실패해 진행하지 않았다.",
+      "updated_at": "2026-09-27T01:28:54Z"
+    }
+  ],
+  "decisions": [
+    {
+      "step": "structure_source",
+      "action": "use_experimental",
+      "reason": "코드에 정해 둔 규칙대로 진행했다.",
+      "decided_by": "rule",
+      "model": null,
+      "fallback_reason": "EVALUATION: offline baseline",
+      "facts": [
+        "공개 구조 검색 결과: 1N8Z",
+        "중쇄 서열 정확히 일치: 예",
+        "경쇄 서열 정확히 일치: 예",
+        "같은 구조에 표적 사슬 있음: 예",
+        "표적 서열 길이 607자 (예측 입력으로 충분)",
+        "중쇄 서열 길이 220자 (예측 입력으로 충분)",
+        "경쇄 서열 길이 214자 (예측 입력으로 충분)"
+      ]
+    },
+    {
+      "step": "review_opinion",
+      "action": "needs_confirmation",
+      "reason": "코드에 정해 둔 규칙대로 진행했다.",
+      "decided_by": "rule",
+      "model": null,
+      "fallback_reason": "EVALUATION: offline baseline",
+      "facts": [
+        "계산해 확보한 근거 1건, 아직 계산하지 않은 항목 2건.",
+        "interface_contact_residues: 39 residue (표적·항체 중원자 간 거리 4.5 Å 이내로 선택한 잔기 수. 잔기 번호는 label 기준이며 결합력·효능 판정이 아니다.)",
+        "atom_clash: 미계산 — 예측·실험 구조 공통으로 충돌 판정 기준(A-02의 거리·제외 규칙)이 합의 전이라 계산하지 않았다.",
+        "surface_exposure: 미계산 — 예측·실험 구조 공통으로 표면 노출 계산은 FreeSASA 설치와 당쇄 포함 여부 검증(A-03) 이후에 한다."
+      ]
+    },
+    {
+      "step": "structure_source",
+      "action": "predict",
+      "reason": "코드에 정해 둔 규칙대로 진행했다.",
+      "decided_by": "rule",
+      "model": null,
+      "fallback_reason": "EVALUATION: offline baseline",
+      "facts": [
+        "공개 구조 검색 결과: 1S78",
+        "중쇄 서열 정확히 일치: 아니오",
+        "경쇄 서열 정확히 일치: 예",
+        "같은 구조에 표적 사슬 있음: 예",
+        "표적 서열 길이 607자 (예측 입력으로 충분)",
+        "중쇄 서열 길이 226자 (예측 입력으로 충분)",
+        "경쇄 서열 길이 214자 (예측 입력으로 충분)"
+      ]
+    }
+  ],
+  "tool_traces": {},
+  "prediction_attempts": [
+    {
+      "polymers": [
+        {
+          "id": "A",
+          "molecule_type": "protein",
+          "sequence": "TQVCTGTDMKLRLPASPETHLDMLRHLYQGCQVVQGNLELTYLPTNASLSFLQDIQEVQGYVLIAHNQVRQVPLQRLRIVRGTQLFEDNYALAVLDNGDPLNNTTPVTGASPGGLRELQLRSLTEILKGGVLIQRNPQLCYQDTILWKDIFHKNNQLALTLIDTNRSRACHPCSPMCKGSRCWGESSEDCQSLTRTVCAGGCARCKGPLPTDCCHEQCAAGCTGPKHSDCLACLHFNHSGICELHCPALVTYNTDTFESMPNPEGRYTFGASCVTACPYNYLSTDVGSCTLVCPLHNQEVTAEDGTQRCEKCSKPCARVCYGLGMEHLREVRAVTSANIQEFAGCKKIFGSLAFLPESFDGDPASNTAPLQPEQLQVFETLEEITGYLYISAWPDSLPDLSVFQNLQVIRGRILHNGAYSLTLQGLGISWLGLRSLRELGSGLALIHHNTHLCFVHTVPWDQLFRNPHQALLHTANRPEDECVGEGLACHQLCARGHCWGPGPTQCVNCSQFLRGQECVEECRVLQGLPREYVNARHCLPCHPECQPQNGSVTCFGPEADQCVACAHYKDPPFCVARCPSGVKPDLSYMPIWKFPDEEGACQPCPIN"
+        },
+        {
+          "id": "H",
+          "molecule_type": "protein",
+          "sequence": "EVQLVESGGGLVQPGGSLRLSCAASGFTFTAYTMDWVRQAPGKGLEWVADVNPNSGGSIYNQRFKGRFTLSVDRSKNTLYLQMNSLRAEDTAVYYCARNLGPSFYFDYWGQGTLVTVSSASTKGPSVFPLAPSSKSTSGGTAALGCLVKDYFPEPVTVSWNSGALTSGVHTFPAVLQSSGLYSLSSVVTVPSSSLGTQTYICNVNHKPSNTKVDKKVEPKSCDKTH"
+        },
+        {
+          "id": "L",
+          "molecule_type": "protein",
+          "sequence": "DIQMTQSPSSLSASVGDRVTITCKASQDVSIGVAWYQQKPGKAPKLLIYSASYRYTGVPSRFSGSGSGTDFTLTISSLQPEDFATYYCQQYYIYPYTFGQGTKVEIKRTVAAPSVFIFPPSDEQLKSGTASVVCLLNNFYPREAKVQWKVDNALQSGNSQESVTEQDSKDSTYSLSSTLTLSKADYEKHKVYACEVTHQGLSSPVTKSFNRGEC"
+        }
+      ],
+      "settings": {},
+      "network": false
+    }
+  ],
+  "boltz_network_calls": 0,
+  "observations": [],
+  "seconds": 0.008,
+  "execution_mode": "offline"
+}

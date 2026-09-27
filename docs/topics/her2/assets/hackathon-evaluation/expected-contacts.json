@@ -1,0 +1,416 @@
+{
+  "1N8Z": {
+    "source_sha256": "9f22f02b6e514de56dab8a48bc31a16302a51397779e64c398ad3a7f05cb19a2",
+    "model_number": 1,
+    "coordinate_file": "asymmetric_unit",
+    "numbering": "label",
+    "target_chains": [
+      "C"
+    ],
+    "antibody_chains": [
+      "A",
+      "B"
+    ],
+    "cutoff_angstrom": 4.5,
+    "contact_count_both_sides": 39,
+    "contact_residues": [
+      {
+        "chain": "A",
+        "seq": 28
+      },
+      {
+        "chain": "A",
+        "seq": 30
+      },
+      {
+        "chain": "A",
+        "seq": 31
+      },
+      {
+        "chain": "A",
+        "seq": 32
+      },
+      {
+        "chain": "A",
+        "seq": 50
+      },
+      {
+        "chain": "A",
+        "seq": 53
+      },
+      {
+        "chain": "A",
+        "seq": 91
+      },
+      {
+        "chain": "A",
+        "seq": 92
+      },
+      {
+        "chain": "A",
+        "seq": 93
+      },
+      {
+        "chain": "A",
+        "seq": 94
+      },
+      {
+        "chain": "B",
+        "seq": 33
+      },
+      {
+        "chain": "B",
+        "seq": 50
+      },
+      {
+        "chain": "B",
+        "seq": 52
+      },
+      {
+        "chain": "B",
+        "seq": 57
+      },
+      {
+        "chain": "B",
+        "seq": 58
+      },
+      {
+        "chain": "B",
+        "seq": 59
+      },
+      {
+        "chain": "B",
+        "seq": 99
+      },
+      {
+        "chain": "B",
+        "seq": 103
+      },
+      {
+        "chain": "B",
+        "seq": 104
+      },
+      {
+        "chain": "B",
+        "seq": 105
+      },
+      {
+        "chain": "C",
+        "seq": 557
+      },
+      {
+        "chain": "C",
+        "seq": 558
+      },
+      {
+        "chain": "C",
+        "seq": 560
+      },
+      {
+        "chain": "C",
+        "seq": 561
+      },
+      {
+        "chain": "C",
+        "seq": 569
+      },
+      {
+        "chain": "C",
+        "seq": 570
+      },
+      {
+        "chain": "C",
+        "seq": 571
+      },
+      {
+        "chain": "C",
+        "seq": 572
+      },
+      {
+        "chain": "C",
+        "seq": 573
+      },
+      {
+        "chain": "C",
+        "seq": 579
+      },
+      {
+        "chain": "C",
+        "seq": 591
+      },
+      {
+        "chain": "C",
+        "seq": 593
+      },
+      {
+        "chain": "C",
+        "seq": 596
+      },
+      {
+        "chain": "C",
+        "seq": 598
+      },
+      {
+        "chain": "C",
+        "seq": 600
+      },
+      {
+        "chain": "C",
+        "seq": 602
+      },
+      {
+        "chain": "C",
+        "seq": 603
+      },
+      {
+        "chain": "C",
+        "seq": 604
+      },
+      {
+        "chain": "C",
+        "seq": 605
+      }
+    ]
+  },
+  "1S78": {
+    "source_sha256": "468b0fa0d3368c1d8971d26e896a7ed8b938437dfa5eb55132ef24ef0033d9f0",
+    "model_number": 1,
+    "coordinate_file": "asymmetric_unit",
+    "numbering": "label",
+    "target_chains": [
+      "A"
+    ],
+    "antibody_chains": [
+      "C",
+      "D"
+    ],
+    "cutoff_angstrom": 4.5,
+    "contact_count_both_sides": 56,
+    "contact_residues": [
+      {
+        "chain": "A",
+        "seq": 128
+      },
+      {
+        "chain": "A",
+        "seq": 156
+      },
+      {
+        "chain": "A",
+        "seq": 236
+      },
+      {
+        "chain": "A",
+        "seq": 245
+      },
+      {
+        "chain": "A",
+        "seq": 246
+      },
+      {
+        "chain": "A",
+        "seq": 248
+      },
+      {
+        "chain": "A",
+        "seq": 252
+      },
+      {
+        "chain": "A",
+        "seq": 254
+      },
+      {
+        "chain": "A",
+        "seq": 255
+      },
+      {
+        "chain": "A",
+        "seq": 256
+      },
+      {
+        "chain": "A",
+        "seq": 257
+      },
+      {
+        "chain": "A",
+        "seq": 268
+      },
+      {
+        "chain": "A",
+        "seq": 285
+      },
+      {
+        "chain": "A",
+        "seq": 286
+      },
+      {
+        "chain": "A",
+        "seq": 287
+      },
+      {
+        "chain": "A",
+        "seq": 288
+      },
+      {
+        "chain": "A",
+        "seq": 290
+      },
+      {
+        "chain": "A",
+        "seq": 292
+      },
+      {
+        "chain": "A",
+        "seq": 294
+      },
+      {
+        "chain": "A",
+        "seq": 295
+      },
+      {
+        "chain": "A",
+        "seq": 296
+      },
+      {
+        "chain": "A",
+        "seq": 297
+      },
+      {
+        "chain": "A",
+        "seq": 311
+      },
+      {
+        "chain": "A",
+        "seq": 313
+      },
+      {
+        "chain": "A",
+        "seq": 314
+      },
+      {
+        "chain": "A",
+        "seq": 315
+      },
+      {
+        "chain": "C",
+        "seq": 49
+      },
+      {
+        "chain": "C",
+        "seq": 50
+      },
+      {
+        "chain": "C",
+        "seq": 53
+      },
+      {
+        "chain": "C",
+        "seq": 55
+      },
+      {
+        "chain": "C",
+        "seq": 94
+      },
+      {
+        "chain": "D",
+        "seq": 28
+      },
+      {
+        "chain": "D",
+        "seq": 30
+      },
+      {
+        "chain": "D",
+        "seq": 31
+      },
+      {
+        "chain": "D",
+        "seq": 32
+      },
+      {
+        "chain": "D",
+        "seq": 33
+      },
+      {
+        "chain": "D",
+        "seq": 52
+      },
+      {
+        "chain": "D",
+        "seq": 53
+      },
+      {
+        "chain": "D",
+        "seq": 54
+      },
+      {
+        "chain": "D",
+        "seq": 55
+      },
+      {
+        "chain": "D",
+        "seq": 56
+      },
+      {
+        "chain": "D",
+        "seq": 58
+      },
+      {
+        "chain": "D",
+        "seq": 59
+      },
+      {
+        "chain": "D",
+        "seq": 60
+      },
+      {
+        "chain": "D",
+        "seq": 62
+      },
+      {
+        "chain": "D",
+        "seq": 72
+      },
+      {
+        "chain": "D",
+        "seq": 74
+      },
+      {
+        "chain": "D",
+        "seq": 75
+      },
+      {
+        "chain": "D",
+        "seq": 76
+      },
+      {
+        "chain": "D",
+        "seq": 98
+      },
+      {
+        "chain": "D",
+        "seq": 100
+      },
+      {
+        "chain": "D",
+        "seq": 101
+      },
+      {
+        "chain": "D",
+        "seq": 102
+      },
+      {
+        "chain": "D",
+        "seq": 103
+      },
+      {
+        "chain": "D",
+        "seq": 105
+      },
+      {
+        "chain": "D",
+        "seq": 107
+      }
+    ]
+  }
+}

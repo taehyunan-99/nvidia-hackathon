@@ -1,0 +1,6 @@
+interface:
+  display_name: "HER2 에이전트 평가"
+  short_description: "해커톤용 20점 루브릭과 10개 사례로 평가하고 실행 근거를 기록"
+  default_prompt: "$agent-evaluate로 현재 HER2 에이전트를 평가하고 점수와 실패 근거를 기록해줘."
+policy:
+  allow_implicit_invocation: false

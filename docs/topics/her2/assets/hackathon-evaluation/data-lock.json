@@ -1,0 +1,71 @@
+{
+  "dataset_version": "hackathon-v1",
+  "prepared_on": "2026-09-27",
+  "base_commit": "7c5cf2dfcaf2e9be5f10f1da7ea57e89fd3a8f48",
+  "purpose": "demo regression; not independent biological benchmark",
+  "source_fixture": {
+    "path": "docs/frontend-hosting/fixtures/public-reference-input.json",
+    "sha256": "2d785c4653bcbeb71c147588117b39458bcec3711006586d7daf8f1daf4d7628"
+  },
+  "sources": [
+    {
+      "path": "frontend/public/structures/1N8Z.cif",
+      "sha256": "9f22f02b6e514de56dab8a48bc31a16302a51397779e64c398ad3a7f05cb19a2",
+      "url": "https://files.rcsb.org/download/1N8Z.cif",
+      "entry_url": "https://www.rcsb.org/structure/1N8Z",
+      "original_retrieved_at": "2026-09-25T15:54:59.691613+00:00"
+    },
+    {
+      "path": "frontend/public/structures/1S78.cif",
+      "sha256": "468b0fa0d3368c1d8971d26e896a7ed8b938437dfa5eb55132ef24ef0033d9f0",
+      "url": "https://files.rcsb.org/download/1S78.cif",
+      "entry_url": "https://www.rcsb.org/structure/1S78",
+      "original_retrieved_at": "2026-09-25T15:54:59.691613+00:00"
+    }
+  ],
+  "generation": {
+    "script_sha256": "16cd6980b32afa73fb487feb765cfb83f0c821a28ccd9be0ad30877f87181f9d",
+    "gemmi": "0.7.5",
+    "numpy": "2.5.3",
+    "contact_oracle": "Gemmi mmCIF parser + NumPy all-pairs distance; no logic imports"
+  },
+  "transformations": {
+    "wrong-target": "Keep identifier P04626; replace target with synthetic A x 607; clear target citations",
+    "invalid-chain": "Replace second heavy chain with QVQL123; clear candidate citations",
+    "variant": "Second candidate heavy-chain deposited position 31: D -> A; synthetic, not measured binding"
+  },
+  "files": [
+    {
+      "path": "expected-contacts.json",
+      "sha256": "8b6a519d7eb3de76ef40a27198102856d058af5fcebf679ddf8a85b38bf0bf02"
+    },
+    {
+      "path": "faults.json",
+      "sha256": "51e80119fd3081ee28f22aff4fbd3e6c5531c3a80671f7cdb8284c38cf20eeee"
+    },
+    {
+      "path": "cases.json",
+      "sha256": "fef1892b9f3161e2510314d54e31407012715af02af303af243b4db4288e58fc"
+    },
+    {
+      "path": "scorecard-template.json",
+      "sha256": "6f781cc3268c68ce6fe7630553c0cff63ec6abefdc284b5e11ab7459f1b19d09"
+    },
+    {
+      "path": "inputs/invalid-chain.json",
+      "sha256": "6256f7d4187b64ad23ffaa51234490a4c154765182560ef14bff4bcda567c732"
+    },
+    {
+      "path": "inputs/reference.json",
+      "sha256": "de12673fa8ec499fd4ba3401b177b0e861c8d2be35719d65f6c12aadb29d4300"
+    },
+    {
+      "path": "inputs/variant.json",
+      "sha256": "fd83d8638f87aabef2aaea97fd58103ca649d47562e133699b169c9a8aad395c"
+    },
+    {
+      "path": "inputs/wrong-target.json",
+      "sha256": "61bdf1e1d0a43bf7c342d426bf582c385fde22be6d337f4f93007b39e17d4847"
+    }
+  ]
+}
