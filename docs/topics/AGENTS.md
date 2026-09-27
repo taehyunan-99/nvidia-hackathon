@@ -10,7 +10,7 @@
 - [her2/agent-design.md](her2/agent-design.md) — 판단 흐름
 - [her2/validation.md](her2/validation.md) — 구현·검증 범위
 
-형식: Markdown 중심. 웹 서비스 기술 선택·잠정안은 [ARCHITECTURE](../ARCHITECTURE.md)와 [ADR](../ADR.md)을 따른다. 구현·배포는 미검증이다.
+형식: Markdown 중심. 웹 서비스 기술 선택·잠정안은 [ARCHITECTURE](../ARCHITECTURE.md)와 [ADR](../ADR.md)을 따른다. 로컬 서비스·분석 구현이 있으며 공개 배포는 미검증이다. 현재 상태는 [서비스 가이드](../frontend-hosting/AGENTS.md)와 코드에서 확인한다.
 
 ## 3. HOW — 수정 방법
 
@@ -31,7 +31,7 @@ hackathon의 규정, tools의 실행 조건과 references의 출처를 함께 �
 
 ## 7. COMMANDS — 검증 명령
 
-저장소 루트에서 `git diff --check`로 공백 오류를 확인하고 변경 문서의 상대 링크·import 대상을 직접 확인한다. 앱 빌드·테스트 명령은 아직 없다.
+저장소 루트에서 `git diff --check`로 공백 오류를 확인하고 변경 문서의 상대 링크·import 대상을 직접 확인한다. 제품 검사는 서비스 가이드의 격리 DB·빌드 명령을 따른다.
 
 ## 8. ⚠️ LEARNED CAUTIONS — 학습된 주의사항
 

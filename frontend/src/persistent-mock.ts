@@ -1,4 +1,3 @@
-import fixture from "../../docs/frontend-hosting/fixtures/scenarios.json";
 import { parseScenarioFile, type ReviewInput, type ScenarioFile } from "./scenario-file";
 
 export const SAVED_RUN_KEY = "her2-mock-run";
@@ -80,7 +79,7 @@ export function savedFrame(input: ReviewInput, session: Session, run: Run, resul
   });
 }
 
-export function expiredFrame(input: ReviewInput = fixture.input, mode: "mock" | "live" = "mock"): ScenarioFile {
+export function expiredFrame(input: ReviewInput, mode: "mock" | "live"): ScenarioFile {
   return parseScenarioFile({
     schema_version: "0.1.0",
     data_mode: mode,

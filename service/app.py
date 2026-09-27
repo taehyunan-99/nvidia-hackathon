@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 import tempfile
 import time
@@ -32,6 +33,7 @@ from logic.contract import SCHEMA_VERSION, ContractError, now_rfc3339, validate
 from logic.flow import run_flow
 
 from . import demo_input
+from .reports import report_response
 
 DATA_MODE = "live"
 WORK_ROOT = Path(tempfile.gettempdir()) / "her2-review-runs"
@@ -111,6 +113,17 @@ def artifact(run_id: str, artifact_id: str) -> Response:
             "Access-Control-Expose-Headers": "X-Artifact-Sha256",
         },
     )
+
+
+@app.get("/api/runs/{run_id}/report.{format}")
+def report(run_id: str, format: str) -> Response:
+    if not _RUN_ID.fullmatch(run_id) or format not in {"json", "csv"}:
+        raise HTTPException(404, "모르는 실행 또는 보고서 형식이다.")
+    path = WORK_ROOT / run_id / "report-snapshot.json"
+    if not path.is_file():
+        raise HTTPException(404, "보고서가 없다.")
+    snapshot = json.loads(path.read_text(encoding="utf-8"))
+    return report_response(snapshot["run"], snapshot["result"], format)
 
 
 @app.post("/api/review")
@@ -199,4 +212,6 @@ def review(body: ReviewRequest) -> dict[str, Any]:
         # 계약을 어긴 결과를 화면으로 내보내지 않는다.
         raise HTTPException(500, f"결과가 계약을 어겼다:\n{exc}") from exc
 
+    (work_dir / "report-snapshot.json").write_text(
+        json.dumps({"run": run, "result": output["result"]}, ensure_ascii=False), encoding="utf-8")
     return scenario_file

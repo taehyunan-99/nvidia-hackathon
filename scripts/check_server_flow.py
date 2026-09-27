@@ -40,6 +40,7 @@ if args.mode == 'create':
     cookie = headers['Set-Cookie']
     assert session['status'] == 'active' and 'Secure' in cookie and 'HttpOnly' in cookie
     payload = json.loads(Path('docs/frontend-hosting/fixtures/scenarios.json').read_text())['input']
+    payload['target'] = json.loads(Path('docs/frontend-hosting/fixtures/public-reference-input.json').read_text())['target']
     source = Path('frontend/public/structures/1N8Z.cif').read_bytes()
     payload['uploads'] = [{'upload_key': 'structure_a', 'file_name': '1N8Z.cif', 'format': 'mmcif',
         'candidate_id': payload['candidates'][0]['candidate_id'], 'role': 'complex',

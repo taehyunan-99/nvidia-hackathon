@@ -42,10 +42,12 @@ export default function PredictedStructure({
   apiBase,
   view,
   context = false,
+  focusEvidence = false,
 }: {
   apiBase: string;
   view: PredictedView;
   context?: boolean;
+  focusEvidence?: boolean;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const activePlugin = useRef<PluginContext | null>(null);
@@ -54,7 +56,7 @@ export default function PredictedStructure({
   const [count, setCount] = useState(0);
   const [retry, setRetry] = useState(0);
   const [mode, setMode] = useState("mixed");
-  const initialOptions = { ...defaults, context: context && (view.contextChains === undefined || view.contextChains.length > 0) };
+  const initialOptions: ViewOptions = { ...defaults, view: focusEvidence && !view.unmeasuredReason && view.residues.length ? "contacts" : "overview", context: context && (view.contextChains === undefined || view.contextChains.length > 0) };
   const [options, setOptions] = useState<ViewOptions>(initialOptions);
   const optionsRef = useRef(options);
   const [hasContext, setHasContext] = useState(false);
@@ -186,7 +188,7 @@ export default function PredictedStructure({
           <strong>관찰 위치</strong>
           <div className="structure-views" role="group" aria-label="3D 보기 선택">
             <button disabled={!ready} aria-pressed={options.view === "overview"} onClick={() => void change({ view: "overview" }, true)}>전체 보기</button>
-            <button disabled={!ready || count === 0} aria-pressed={options.view === "contacts"} onClick={() => void change({ view: "contacts" }, true)}>접촉 부위 보기</button>
+            <button disabled={!ready || count === 0} aria-pressed={options.view === "contacts"} onClick={() => void change({ view: "contacts" }, true)}>{focusEvidence ? "선택 근거 부위 보기" : "접촉 부위 보기"}</button>
           </div>
         </div>
         <div className="structure-control-group">
@@ -240,9 +242,9 @@ export default function PredictedStructure({
         )}
       </div>
       <p className="view-explanation">
-        {!ready ? "접촉 잔기 강조를 준비하고 있습니다." : view.unmeasuredReason
-          ? `접촉 잔기를 계산하지 않아 강조 없이 전체 구조만 표시합니다. ${view.unmeasuredReason}`
-          : `4.5 Å 이내 접촉 잔기 ${count}개를 강조했습니다. 결합력·효능 판정은 아닙니다.`}
+        {!ready ? "잔기 강조를 준비하고 있습니다." : view.unmeasuredReason
+          ? `선택 근거의 강조 없이 전체 구조만 표시합니다. ${view.unmeasuredReason}`
+          : focusEvidence ? `선택 근거에 연결된 잔기 ${count}개를 강조했습니다. 결합력·효능 판정은 아닙니다.` : `4.5 Å 이내 접촉 잔기 ${count}개를 강조했습니다. 결합력·효능 판정은 아닙니다.`}
       </p>
       {message && <p role="alert">{message}</p>}
       <p className="view-explanation">

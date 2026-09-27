@@ -31,7 +31,8 @@ python -m pytest logic/tests -q
 판단부 모드는 `LOGIC_AGENT_MODE=nat|rule`로 고른다. 기본값은 `nat`(NAT
 `tool_calling_agent`가 도구를 골라 진행하고, 끝내지 못하면 규칙으로
 마무리한다). `LOGIC_AGENT_MODE=rule`은 이전 동작(고정 단계·`if` 분기)을
-그대로 되돌린다. 자세한 설계는 [nat-agent-loop.md](../docs/topics/her2/nat-agent-loop.md).
+그대로 되돌린다. `rule`도 기본 Decider와 예측을 통해 모델을 호출할 수 있다.
+오프라인 검사에서는 `NVIDIA_API_KEY`와 `NGC_API_KEY`를 빈 값으로 설정하고 자동 검색도 별도로 끈다. 잘못된 모드 값은 실행을 거부한다. 자세한 설계는 [nat-agent-loop.md](../docs/topics/her2/nat-agent-loop.md).
 
 ```bash
 LOGIC_AGENT_MODE=rule python -m logic.run --request req.json --out out.json

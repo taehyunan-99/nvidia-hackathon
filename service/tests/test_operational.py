@@ -25,7 +25,7 @@ def client(tmp_path):
         pytest.skip("TEST_DATABASE_URL required for PostgreSQL integration tests")
     migrate(DSN)
     with connect(DSN) as conn:
-        conn.execute("TRUNCATE runs, uploads, reviews, sessions CASCADE")
+        conn.execute("TRUNCATE runs, uploads, reviews, sessions, request_budget CASCADE")
     with TestClient(create_app(DSN, tmp_path)) as api:
         yield api
 
@@ -204,3 +204,111 @@ def test_valid_structure_is_stored_with_hash_but_client_path_is_ignored(client, 
 def test_cross_origin_mutation_is_rejected(client):
     response = client.post("/api/session", headers={"Origin": "https://other.example"})
     assert response.status_code == 403
+
+
+def test_admission_is_idempotent_and_rejects_second_active_run(client):
+    review_id = review(client)
+    first = client.post(f"/api/reviews/{review_id}/runs", json={"request_key": "one"})
+    assert first.status_code == 202
+    assert client.post(f"/api/reviews/{review_id}/runs", json={"request_key": "one"}).json() == first.json()
+    rejected = client.post(f"/api/reviews/{review_id}/runs", json={"request_key": "two"})
+    assert rejected.status_code == 429 and rejected.json()["code"] == "RUN_LIMIT_REACHED"
+
+
+def test_concurrent_global_admission_and_reports(client, tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+    from service.worker import process_one
+    review(client)
+    peers = [TestClient(create_app(DSN, tmp_path, max_active_runs=1)) for _ in range(2)]
+    ids = [review(peer) for peer in peers]
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        responses = list(pool.map(lambda item: item[0].post(f"/api/reviews/{item[1]}/runs", json={"request_key": "one"}), zip(peers, ids)))
+    assert sorted(r.status_code for r in responses) == [202, 429]
+    winner = next(i for i, response in enumerate(responses) if response.status_code == 202)
+    owner = peers[winner]
+    run_id = responses[winner].json()["run_id"]
+    assert owner.get(f"/api/runs/{run_id}/report.json").status_code == 409
+    process_one(DSN, data_root=tmp_path)
+    response = owner.get(f"/api/runs/{run_id}/report.json")
+    assert response.status_code == 200
+    assert response.json()["run"] == owner.get(f"/api/runs/{run_id}").json()
+    assert response.json()["result"] == owner.get(f"/api/runs/{run_id}/result").json()
+    assert response.headers["cache-control"] == "no-store"
+    assert owner.get(f"/api/runs/{run_id}/report.csv").status_code == 200
+    assert client.get(f"/api/runs/{run_id}/report.json").status_code == 404
+    assert owner.get(f"/api/runs/{run_id}/report.exe").status_code == 404
+
+
+def test_session_review_and_storage_limits(client, tmp_path):
+    limited = TestClient(create_app(DSN, tmp_path, max_sessions=1, max_session_reviews=1))
+    assert limited.post('/api/session').status_code == 201
+    assert TestClient(create_app(DSN, tmp_path, max_sessions=1)).post('/api/session').status_code == 429
+    from service.demo_input import experimental_demo
+    body = {'metadata': json.dumps(experimental_demo())}
+    assert limited.post('/api/reviews', data=body).status_code == 201
+    assert limited.post('/api/reviews', data=body).json()['code'] == 'REVIEW_LIMIT_REACHED'
+    storage_limited = TestClient(create_app(DSN, tmp_path, max_storage_bytes=1))
+    assert storage_limited.post('/api/session').json()['code'] == 'STORAGE_LIMIT_REACHED'
+
+
+def test_global_mutation_rate_limit(client, tmp_path):
+    limited = TestClient(create_app(DSN, tmp_path, requests_per_minute=2))
+    assert limited.post('/api/session').status_code == 201
+    assert limited.post('/api/session/heartbeat').status_code == 200
+    assert limited.post('/api/session/heartbeat').json()['code'] == 'REQUEST_LIMIT_REACHED'
+    assert limited.get('/api/config').status_code == 200
+
+
+def test_request_limit_applies_before_multipart_including_chunked(client, tmp_path):
+    limited = TestClient(create_app(DSN, tmp_path, max_request_bytes=10))
+    for body in [b'a' * 11, iter([b'12345', b'678901'])]:
+        response = limited.post('/api/reviews', content=body, headers={'content-type': 'multipart/form-data; boundary=x'})
+        assert response.status_code == 413
+        assert response.json()['code'] == 'INPUT_TOO_LARGE'
+    assert not list(tmp_path.rglob('*'))
+
+
+def test_request_budget_is_shared_and_atomic(client):
+    from concurrent.futures import ThreadPoolExecutor
+    from service.limits import admit_request
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        results = list(pool.map(lambda _: admit_request(DSN, 3), range(20)))
+    assert sum(results) == 3
+    with connect(DSN) as conn:
+        conn.execute("UPDATE request_budget SET bucket = bucket - interval '2 minutes'")
+    assert admit_request(DSN, 3)
+
+
+def test_slow_body_is_rejected_before_the_application(monkeypatch):
+    import asyncio
+    from service.limits import IntakeLimit
+    sent = []
+    async def application(*args):
+        raise AssertionError('oversize/slow body reached parser')
+    async def send(message): sent.append(message)
+    async def receive():
+        await asyncio.sleep(1)
+        return {'type': 'http.request', 'body': b''}
+    async def deadline_exceeded(awaitable, timeout):
+        awaitable.close()
+        raise TimeoutError
+    monkeypatch.setattr("service.limits.asyncio.wait_for", deadline_exceeded)
+    # Test the receiving boundary directly, independently of DB admission.
+    limiter = IntakeLimit(application, dsn='', mode='live', max_bytes=10, requests_per_minute=1)
+    asyncio.run(limiter.read_body({'type': 'http'}, receive, send))
+    assert sent[0]['status'] == 408
+
+
+def test_continuously_ready_body_cannot_bypass_receive_deadline(monkeypatch):
+    import asyncio
+    from types import SimpleNamespace
+    from service.limits import IntakeLimit
+    sent = []
+    async def app(*args): raise AssertionError('must not reach app')
+    async def receive(): raise AssertionError('deadline must be checked before receive')
+    async def send(message): sent.append(message)
+    moments = iter([0, 31])
+    monkeypatch.setattr('service.limits.time', SimpleNamespace(monotonic=lambda: next(moments)))
+    limiter = IntakeLimit(app, dsn='', mode='live', max_bytes=10, requests_per_minute=1)
+    asyncio.run(limiter.read_body({'type': 'http'}, receive, send))
+    assert sent[0]['status'] == 408

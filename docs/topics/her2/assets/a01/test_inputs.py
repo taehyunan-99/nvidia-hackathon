@@ -3,6 +3,8 @@ import copy
 import io
 import json
 import unittest
+import tempfile
+from pathlib import Path
 from unittest.mock import patch
 
 import build_inputs as builder
@@ -11,6 +13,13 @@ import build_inputs as builder
 class ReferenceInputTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        cls.temp = tempfile.TemporaryDirectory()
+        cls.addClassCleanup(cls.temp.cleanup)
+        cls.output_patch = patch.object(builder, 'OUT', Path(cls.temp.name))
+        cls.output_patch.start()
+        cls.addClassCleanup(cls.output_patch.stop)
+        with contextlib.redirect_stdout(io.StringIO()):
+            builder.main()
         cls.canonical = ''.join((builder.HERE / 'sources/P04626.fasta').read_text().splitlines()[1:])
         cls.entries = {pdb: builder.inspect_entry(pdb, cls.canonical) for pdb in builder.PDBS}
         cls.structures = json.loads((builder.OUT / 'structures.json').read_text(encoding='utf-8'))
@@ -122,13 +131,19 @@ if __name__ == '__main__':
     names = [test.id().split('.')[-1] for test in suite]
     stream = io.StringIO()
     result = unittest.TextTestRunner(stream=stream, verbosity=2).run(suite)
-    builder.write_json('validation.json', {
+    report = {
         'status': 'PASS' if result.wasSuccessful() else 'FAIL', 'tests_run': result.testsRun,
         'tests': names, 'failures': [(test.id(), reason) for test, reason in result.failures],
         'errors': [(test.id(), reason) for test, reason in result.errors],
         'evidence_basis': 'RCSB entry counts, inspected mmCIF residue anchors, corruption rejection, offline rebuild',
-    })
-    print(f'{"PASS" if result.wasSuccessful() else "FAIL"}: {result.testsRun} A-01 checks; generated/validation.json')
+    }
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--report', type=Path)
+    args = parser.parse_args()
+    if args.report:
+        args.report.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
+    print(f'{"PASS" if result.wasSuccessful() else "FAIL"}: {result.testsRun} A-01 checks; temporary regenerated outputs')
     if not result.wasSuccessful():
         print(stream.getvalue())
     raise SystemExit(0 if result.wasSuccessful() else 1)

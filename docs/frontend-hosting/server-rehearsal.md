@@ -15,7 +15,7 @@ chmod 600 .env.server.local
 
 기존 `.env.server.local`이 있으면 덮어쓰지 않는다. `openssl rand -hex 24`로 만든 값을 해당 파일의 `POSTGRES_PASSWORD`에 넣는다. 비밀번호·세션 체크포인트·백업은 Git이나 채팅에 넣지 않는다. DB 비밀번호를 바꾸려면 기존 DB 계정도 함께 변경해야 하며 env 파일만 바꾸지 않는다.
 
-API 이미지는 공개 구조 좌표·검증 목록·접촉 결과, A-01/02/03 입력·계산 코드와 고정된 분석 의존성을 포함한다. NAT는 해당 checkout의 `pyproject.toml`·`uv.lock`에 따라 설치되므로 최신 에이전트 변경이 포함된 커밋으로 배포 이미지를 만들어야 한다. 구조 계산이 이미지 안에 있다는 사실은 worker 연결 완료를 뜻하지 않는다.
+API 이미지는 공개 구조 좌표·검증 목록·접촉 결과, 실제 사용하는 A-02 metrics 코드와 uv.lock의 분석 의존성을 포함한다. 개발 테스트·모델 측정 도구·연구 결과 묶음은 API 이미지에서 제외한다. NAT는 해당 checkout의 `pyproject.toml`·`uv.lock`에 따라 설치되므로 최신 에이전트 변경이 포함된 커밋으로 배포 이미지를 만들어야 한다. 구조 계산이 이미지 안에 있다는 사실은 worker 연결 완료를 뜻하지 않는다.
 
 ```sh
 python3 scripts/check_server_config.py
@@ -46,7 +46,7 @@ dc exec -T api python /tmp/check_server_storage.py < tmp/server-check/state.json
 
 ## 일관된 백업과 격리 복원
 
-아래는 합성 입력·공개 구조를 넣은 **검증용 데이터**의 복구 실습이다. 운영 임시 자료의 백업 보관 정책을 자동으로 채택하지 않는다. 실제 운영 백업은 보관·삭제 정책을 정하고 백업에도 만료·접근 제한을 적용해야 한다.
+아래는 합성 입력·공개 구조를 넣은 **검증용 데이터**의 복구 실습이다. 해커톤 임시 입력·결과의 정기 운영 백업은 만들지 않는다. 검증용 백업은 복원 검사 후 폐기한다. 복원 시 API를 열기 전에 만료 자료를 정리한다. 만료 전 촬영한 백업은 이후 명시적 삭제를 알 수 없으므로 운영 사용자 자료를 복원하지 않는다.
 
 ```sh
 umask 077
@@ -64,6 +64,7 @@ restore() { docker compose -p her2-server-restore --env-file tmp/server-check/re
 restore up -d --wait db
 restore exec -T db pg_restore -U her2 -d her2 --no-owner --exit-on-error < tmp/server-check/database.dump
 restore run --rm --no-deps --user 0 -T api tar -xf - -C /data < tmp/server-check/uploads.tar
+restore run --rm --no-deps -T api python -c "import os; from pathlib import Path; from service.worker import reap, cleanup_sessions; d=os.environ['DATABASE_URL']; reap(d); cleanup_sessions(d, Path('/data'))"
 restore up -d --wait
 restore cp web:/data/caddy/pki/authorities/local/root.crt tmp/server-check/restored-root.crt
 python3 scripts/check_server_flow.py verify --base-url https://localhost:8444 --ca tmp/server-check/restored-root.crt --state tmp/server-check/state.json

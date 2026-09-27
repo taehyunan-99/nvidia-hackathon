@@ -89,9 +89,19 @@ class ReferenceTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.refs = [analyze.load_reference(p) for p in analyze.PDBS]
-        cls.generated = analyze.HERE / "generated"
+        cls.temp = tempfile.TemporaryDirectory()
+        cls.addClassCleanup(cls.temp.cleanup)
+        cls.generated = Path(cls.temp.name)
+        with contextlib.redirect_stdout(io.StringIO()):
+            analyze.run(cls.generated)
         cls.summary = analyze.read_json(cls.generated / "summary.json")
         cls.fragments = analyze.read_json(cls.generated / "service-fragments.json")
+
+    def test_archived_output_hashes_are_preserved(self):
+        archive = analyze.HERE / "generated"
+        provenance = analyze.read_json(archive / "provenance.json")
+        for item in provenance["output_files"]:
+            self.assertEqual(analyze.digest(archive / item["path"]), item["sha256"])
 
     def test_source_hash_rejects_changed_input(self):
         with patch.object(analyze, "digest", return_value="changed"):
@@ -220,7 +230,14 @@ if __name__ == "__main__":
               "tests": names, "failures": [{"test": str(t), "detail": d} for t, d in result.failures],
               "errors": [{"test": str(t), "detail": d} for t, d in result.errors],
               "basis": "Analytic geometry, original mapping, independent neighbor search, consumer set and schema checks, offline rebuild"}
-    analyze.write_json(analyze.HERE / "generated/validation.json", report)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--report", type=Path)
+    args = parser.parse_args()
+    if args.report:
+        analyze.write_json(args.report, report)
+    if not result.wasSuccessful():
+        print(capture.getvalue())
     print(json.dumps({"status": report["status"], "tests_run": result.testsRun,
                       "failures": len(result.failures), "errors": len(result.errors)}))
     raise SystemExit(0 if result.wasSuccessful() else 1)

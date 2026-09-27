@@ -209,6 +209,8 @@ class Flow:
     # ------------------------------------------------------------ 실행
     def run(self) -> dict[str, Any]:
         mode = os.getenv("LOGIC_AGENT_MODE", "nat")
+        if mode not in {"nat", "rule"}:
+            raise ValueError("LOGIC_AGENT_MODE must be nat or rule")
         for candidate in self.request["input"]["candidates"]:
             if mode == "nat":
                 self._run_candidate_nat(candidate)

@@ -20,6 +20,9 @@ HER2 서비스의 입력·진행·비교·보고 화면, 백엔드 접수·저�
 - [hosting-requirements.md](hosting-requirements.md) — 실행·저장·외부 호출·배포 조건과 실측 인계
 - [hosting-guide.md](hosting-guide.md) — AWS·Docker 입문 설명, 호스팅 비교·공식 가격·선택 조건 조사
 - [server-rehearsal.md](server-rehearsal.md) — 배포 전 HTTPS·이미지·재시작·격리 복구 검증 절차
+- [local-e2e.md](local-e2e.md) — 사용자 로컬 실제 E2E 절차·모델 호출 구분·확인 항목
+- [runtime-files.md](runtime-files.md) — 실행 파일별 용도·호출 경로·검증 경계
+- [runtime-audit.md](runtime-audit.md) — 실행·모의 경로, 코드 용도, 설계 차이와 운영 준비를 막는 문제의 재현·수정 우선순위
 - [backend-deployment-plan.md](backend-deployment-plan.md) — 백엔드·Docker·AWS·HTTPS 준비 순서, CI/CD 도입과 검증·복구·운영 계획
 - [temporary-contract.md](temporary-contract.md) — 사용자 요청으로 먼저 정한 v0.1.0 서비스 개발용 임시 규격
 - [contracts/service.schema.json](contracts/service.schema.json) — 임시 입력·출력의 JSON Schema 원본
@@ -80,4 +83,4 @@ HER2 서비스의 입력·진행·비교·보고 화면, 백엔드 접수·저�
 
 자동 검사 정의는 [integration.yml](../../.github/workflows/integration.yml)에 있다. 정의 존재와 원격 실행 성공은 별도로 확인한다.
 
-CI는 서비스·로직 통합 검사에 `uv run --locked pytest service/tests logic/tests -q`를 사용한다. 위 서비스 한정 검사와 대상이 다르다. 현재 CI의 Node 24·Python 3.12와 Docker 빌드의 Node 25·Python 3.13은 서로 다르므로 하나의 검증 환경으로 기록하지 않는다.
+CI는 서비스·로직 통합 검사에 `uv run --locked pytest service/tests logic/tests -q`를 사용한다. 위 서비스 한정 검사와 대상이 다르다. CI와 Docker 빌드는 Node 25·Python 3.13을 사용한다. OS·이미지·실제 실행 결과는 여전히 구분해 기록한다.

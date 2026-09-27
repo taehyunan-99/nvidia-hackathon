@@ -1,10 +1,11 @@
-"""Separate, mock-only worker for persisted review runs."""
+"""Separate mock/live worker for persisted review runs."""
 
 from __future__ import annotations
 
 import argparse
 import copy
 import json
+import logging
 import os
 import shutil
 import time
@@ -17,6 +18,7 @@ from psycopg.types.json import Jsonb
 from logic.contract import validate
 
 from .db import connect, require_schema
+from .limits import storage_bytes
 from .live import request_for_job, run_process, verified_files
 from .operational import _timestamp
 
@@ -61,7 +63,7 @@ def reap(dsn: str) -> int:
 
 
 def cleanup_sessions(dsn: str, data_root: Path) -> int:
-    """Remove expired/deleted session uploads only after every lease is released."""
+    """Remove expired/deleted session files and DB payloads after every lease is released."""
     root = data_root.resolve()
     count = 0
     with connect(dsn) as conn:
@@ -77,21 +79,32 @@ def cleanup_sessions(dsn: str, data_root: Path) -> int:
             ).fetchone()
             if live:
                 continue
-            paths = conn.execute(
-                """SELECT u.relative_path FROM uploads u JOIN reviews v ON v.id = u.review_id
-                   WHERE v.session_id = %s""", (session["id"],)
-            ).fetchall()
-            for item in paths:
-                path = (root / item["relative_path"]).resolve()
-                if not path.is_relative_to(root):
-                    raise RuntimeError("저장 경로가 데이터 루트 밖입니다.")
-                path.unlink(missing_ok=True)
-            run_ids = conn.execute("SELECT id FROM runs WHERE session_id = %s", (session["id"],)).fetchall()
-            for run in run_ids:
-                for folder in ("runs", "artifacts"):
-                    path = (root / folder / run["id"]).resolve()
-                    if path.is_relative_to(root / folder):
-                        shutil.rmtree(path, ignore_errors=True)
+            try:
+                paths = conn.execute(
+                    """SELECT u.relative_path FROM uploads u JOIN reviews v ON v.id = u.review_id
+                       WHERE v.session_id = %s""", (session["id"],)
+                ).fetchall()
+                for item in paths:
+                    path = (root / item["relative_path"]).resolve()
+                    if not path.is_relative_to(root):
+                        raise OSError("저장 경로가 데이터 루트 밖입니다.")
+                    path.unlink(missing_ok=True)
+                run_ids = conn.execute("SELECT id FROM runs WHERE session_id = %s", (session["id"],)).fetchall()
+                for run in run_ids:
+                    for folder in ("runs", "artifacts"):
+                        path = (root / folder / run["id"]).resolve()
+                        if not path.is_relative_to(root / folder):
+                            raise OSError("실행 자료 경로가 데이터 루트 밖입니다.")
+                        if path.exists():
+                            shutil.rmtree(path)
+            except OSError:
+                logging.getLogger(__name__).exception("Session file cleanup failed; will retry: %s", session["id"])
+                continue
+            # Delete payloads only after files are gone; retain the session tombstone for 410 responses.
+            conn.execute("DELETE FROM artifact_files WHERE run_id IN (SELECT id FROM runs WHERE session_id = %s)", (session["id"],))
+            conn.execute("DELETE FROM runs WHERE session_id = %s", (session["id"],))
+            conn.execute("DELETE FROM uploads WHERE review_id IN (SELECT id FROM reviews WHERE session_id = %s)", (session["id"],))
+            conn.execute("DELETE FROM reviews WHERE session_id = %s", (session["id"],))
             conn.execute(
                 "UPDATE sessions SET status = %s, cleaned_at = now() WHERE id = %s",
                 ("deleted" if session["status"] == "deleting" else "expired", session["id"]),
@@ -347,6 +360,8 @@ def process_one(dsn: str, scenario: str = "scientific-hold", *, data_root: Path 
     reap(dsn)
     if data_root is not None:
         cleanup_sessions(dsn, data_root)
+    if data_root is not None and storage_bytes(data_root, dsn) >= int(os.environ.get("MAX_STORAGE_BYTES", str(1024**3))):
+        return None
     owner = uuid.uuid4().hex
     job = claim(dsn, owner, mode)
     if job is None:
@@ -363,6 +378,8 @@ def process_one(dsn: str, scenario: str = "scientific-hold", *, data_root: Path 
                 if time.monotonic() - last_heartbeat < 5:
                     return True
                 last_heartbeat = time.monotonic()
+                if storage_bytes(data_root, dsn) >= int(os.environ.get("MAX_STORAGE_BYTES", str(1024**3))):
+                    raise RuntimeError("STORAGE_LIMIT_REACHED")
                 return heartbeat(dsn, job["id"], owner)
 
             def progress(update):

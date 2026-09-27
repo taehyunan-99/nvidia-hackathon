@@ -556,3 +556,9 @@ def test_partial_sequence_match_does_not_count_as_same_candidate(tmp_path):
     )
     made = [s for s in output["result"]["structures"] if s["candidate_id"] == "half-match"]
     assert made and made[0]["kind"] == "predicted"
+
+
+def test_unknown_agent_mode_is_not_silently_run_as_rule(tmp_path, monkeypatch):
+    monkeypatch.setenv("LOGIC_AGENT_MODE", "typo")
+    with pytest.raises(ValueError, match="LOGIC_AGENT_MODE"):
+        run_flow(make_request([candidate("a", "A", "ACD", "ACD"), candidate("b", "B", "ACD", "ACD")], tmp_path))

@@ -68,9 +68,17 @@ PostgreSQL 연동 검사는 별도의 임시 DB를 가리키는 `TEST_DATABASE_U
 TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:55432/postgres uv run pytest service/tests -q
 ```
 
-이 API와 worker는 로컬 연결 검증 단계다. worker 점유·결과 등록·만료 자료 정리는
-임시 PostgreSQL에서 검사한다. 공개 접수 제한은 다음 단계에서 구현·검증한다. 공개 서비스에
-연결해서는 안 된다.
+이 API와 worker는 로컬 검증용 접수 제한을 적용한다. `MAX_SESSION_RUNS=1`은 세션당 대기·진행 실행 수,
+`MAX_ACTIVE_RUNS=10`은 유효한 전체 세션의 대기·진행 실행 수다. 같은 접수 키의 재시도는 같은 실행을 반환한다.
+`ANALYSIS_TIMEOUT_SECONDS=1200`을 넘긴 분석 프로세스는 종료하고 실패로 남기며 자동 재실행하지 않는다.
+이 값은 해커톤 로컬 검증 기본값이다. 추가로 변경 요청 빈도·활성 세션 수·세션 입력 수·요청 크기/수신 시간과 DB+파일 용량 경계값을 적용한다. 설정과 사용자 테스트 절차는 [로컬 E2E](../docs/frontend-hosting/local-e2e.md)를 따른다.
+공개 서비스에는 아직 연결하지 않는다.
+
+만료·삭제 후 실행 점유가 해제되면 파일과 DB의 입력·실행·결과를 지운다. 최소 세션 만료 기록은 410 응답을 위해 남긴다.
+파일 정리 실패 시 완료로 기록하지 않고 다음 정리에서 재시도한다. 백업 복원은 외부 접근 전에 만료 자료를 정리해야 한다.
+`GET /api/runs/{run_id}/report.json|csv`는 같은 세션이 조회하는 Run/Result 스냅샷으로 보고서를 생성한다.
+JSON은 상태·결과 전체, CSV는 실행·후보·근거·의견·출처를 포함한 행과 원본 record_json을 제공한다.
+미확인 값은 빈 칸과 상태·사유로 보존하며 mock 보고서는 data_mode=mock을 유지한다.
 
 준비된 결과 파일은 `artifact_files`에 실행 ID와 `artifacts/` 아래 상대 경로가 등록되고,
 Result의 해당 항목이 `ready`이며 크기·SHA-256이 실제 파일과 일치할 때만 세션 소유자가
@@ -135,6 +143,6 @@ python -m pytest service/tests logic/tests -q
 ## 아직 아닌 것
 
 - 동시 실행·중복 접수·취소를 다루지 않는다. 같은 요청을 두 번 보내면 호출도 두 번 나간다.
-- 결과를 보관하지 않는다. 응답을 놓치면 다시 실행해야 한다.
+- 실행별 임시 폴더에 구조·보고서 snapshot을 남기지만 영속 세션 조회·만료 정리는 없다. 공개 운영은 영속 API를 사용한다.
 - 인증이 없다. 개발용 CORS(localhost)만 열려 있다. 배포 전에 좁혀야 한다.
 - 분당 호출 한도를 모른다. 연속 실행 시 동작은 미확인이다.

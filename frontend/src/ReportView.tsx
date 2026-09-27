@@ -62,7 +62,7 @@ export function ReportView({ result, input, run, persistedMock, apiBase }: {
   const artifactUrl = (artifact: Result["artifacts"][number]) => {
     if (artifact.status !== "ready") return null;
     if (persistedMock) return `${apiBase}/api/runs/${encodeURIComponent(result.run_id)}/artifacts/${encodeURIComponent(artifact.artifact_id)}`;
-    const predicted = structures.some((structure) => structure.artifact_id === artifact.artifact_id && structure.kind === "predicted");
+    const predicted = structures.some((structure) => structure.artifact_id === artifact.artifact_id && ["predicted", "experimental"].includes(structure.kind));
     return result.data_mode === "live" && predicted ? `${apiBase}/api/runs/${encodeURIComponent(result.run_id)}/artifacts/${encodeURIComponent(artifact.artifact_id)}` : null;
   };
 
@@ -126,6 +126,7 @@ export function ReportView({ result, input, run, persistedMock, apiBase }: {
 
     <section className="report-section" aria-labelledby="report-files-title">
       <div className="report-section-heading"><span className="eyebrow">03 / FILES</span><h2 id="report-files-title">결과 파일</h2><p>준비된 파일만 열 수 있습니다. 모의 파일과 누락 파일은 생성된 결과로 표시하지 않습니다.</p></div>
+      {run && <div className="actions">{(["json", "csv"] as const).map((format) => <a key={format} className="secondary" href={`${apiBase}/api/runs/${encodeURIComponent(result.run_id)}/report.${format}`} download={`report.${format}`}>{result.data_mode === "mock" ? "모의 기록" : "결과"} {format.toUpperCase()} 내려받기 ↓</a>)}</div>}
       <div className="report-file-list">{result.artifacts.length ? result.artifacts.map((artifact) => {
         const url = artifactUrl(artifact);
         return <div className="report-file" key={artifact.artifact_id}><div><strong>{files[artifact.role] ?? artifact.role}</strong><span>{artifact.file_name} · {artifact.format.toUpperCase()}</span><small>{url ? "조회 가능" : artifact.reason ?? (artifact.status === "ready" ? "파일 경로가 연결되지 않았습니다." : "파일 없음")}</small></div>{url ? <a className="secondary" href={url} download={artifact.file_name}>내려받기 ↓</a> : <span className="report-file-status">{artifact.status === "mock" ? "모의 항목" : "이용 불가"}</span>}</div>;

@@ -280,17 +280,3 @@ def reference_epitope_overlap_measurement(
         residues=[residue(label_asym_id=target, label_seq_id=n) for n in hits],
         sources=[source],
     )
-
-
-def pending_measurements(reason_prefix: str) -> list[Measurement]:
-    """아직 A가 인계하지 않은 계산들. 값을 만들지 않고 미실행으로 남긴다."""
-    return [
-        Measurement.not_run(
-            "atom_clash",
-            f"{reason_prefix} 충돌 판정 기준(A-02의 거리·제외 규칙)이 합의 전이라 계산하지 않았다.",
-        ),
-        Measurement.not_run(
-            "surface_exposure",
-            f"{reason_prefix} 표면 노출 계산은 FreeSASA 설치와 당쇄 포함 여부 검증(A-03) 이후에 한다.",
-        ),
-    ]

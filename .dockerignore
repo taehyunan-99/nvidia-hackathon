@@ -19,3 +19,7 @@ tmp
 temp
 work
 logs
+logic/tests
+service/tests
+logic/measure_agent.py
+logic/check_key.py

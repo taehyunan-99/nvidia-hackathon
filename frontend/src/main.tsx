@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
+import { runFromSearch, runUrl } from "./run-location";
 import { AgentStart, About, Team } from "./AgentStart";
 import { AgentActivity } from "./AgentActivity";
 import { ReviewOverview } from "./ReviewOverview";
 import { ReportView } from "./ReportView";
-import { parseScenarioFile, type ReviewInput, type Scenario, type ScenarioFile } from "./scenario-file";
+import { parseScenarioFile, type ReviewInput, type ScenarioFile } from "./scenario-file";
 import PredictedStructure, { type PredictedView } from "./PredictedStructure";
 import { expiredFrame, isSessionExpired, savedFrame, readSavedRun, SAVED_RUN_KEY, serviceMode, startSavedRun } from "./persistent-mock";
 
@@ -130,39 +131,40 @@ function App() {
     [liveBusy, setLiveBusy] = useState(""),
     [liveError, setLiveError] = useState(""),
     [mockBusy, setMockBusy] = useState(false),
-    [mockError, setMockError] = useState(""),
+    [mockError, setMockError] = useState(() => runFromSearch(location.search).error),
     [savedMode, setSavedMode] = useState<"mock" | "live" | null>(null),
-    [savedRunId, setSavedRunId] = useState(() => localStorage.getItem(SAVED_RUN_KEY)),
-    [frameIndex, setFrameIndex] = useState(0),
-    [playing, setPlaying] = useState(false),
+    [savedRunId, setSavedRunId] = useState(() => {
+      const fromUrl = runFromSearch(location.search);
+      return new URLSearchParams(location.search).has("run") ? fromUrl.runId : localStorage.getItem(SAVED_RUN_KEY);
+    }),
     [candidate, setCandidate] = useState(""),
     [conditionKind, setConditionKind] = useState("core"),
     [expanded, setExpanded] = useState<string | null>(null);
-  const scenario = scenarioFile?.scenarios[frameIndex];
+  const scenario = scenarioFile?.scenarios[0];
   const live = scenarioFile?.data_mode === "live" || (!scenarioFile && savedMode === "live" && import.meta.env.VITE_PERSISTENT_SERVICE === "1");
   const persistedRun = fileName.startsWith("저장형 ");
   const result = scenario?.result;
   const expired = scenario?.session.status === "expired";
   function go(n: number) {
     setSection("analysis");
-    if (n === 0) setPlaying(false);
-    setPage(n >= 2 && (playing || !result || expired) ? 1 : n);
+    setPage(n >= 2 && (!result || expired) ? 1 : n);
     setExpanded(null);
   }
   function apply(parsed: ScenarioFile, label: string) {
     setScenarioFile(parsed);
     setFileName(label);
-    setFrameIndex(0);
     setCandidate(parsed.input.candidates[0].candidate_id);
     setConditionKind("core");
     setPage(0);
   }
   async function runLive(preset: string) {
     localStorage.removeItem(SAVED_RUN_KEY);
+    const url = new URL(location.href);
+    url.searchParams.delete("run");
+    history.replaceState(null, "", url);
     setSavedRunId(null);
     setLiveError("");
     setScenarioFile(null);
-    setPlaying(false);
     setLiveBusy(preset);
     try {
       const response = await fetch(`${API_BASE}/api/review`, {
@@ -178,7 +180,6 @@ function App() {
       // 실제 실행은 프레임이 하나다. 모의 시나리오처럼 자동 재생하지 않고
       // 방금 돌아간 단계를 바로 보여준다.
       setSection("analysis");
-      setPlaying(false);
       setPage(1);
     } catch (error) {
       setLiveError(
@@ -193,12 +194,12 @@ function App() {
   async function runSaved(input: ReviewInput, files: Map<string, File>) {
     setMockError("");
     setMockBusy(true);
-    setPlaying(false);
     try {
       const { session, run } = await startSavedRun(input, files);
       setSavedMode(run.data_mode as "mock" | "live");
       apply(savedFrame(input, session, run, null), run.data_mode === "live" ? "저장형 실제 실행" : "저장형 모의 실행");
       setPage(1);
+      history.pushState(null, "", runUrl(location.href, run.run_id));
       setSavedRunId(run.run_id);
     } catch (error) {
       setMockError(error instanceof Error ? error.message : "검토 실행을 접수하지 못했습니다.");
@@ -211,7 +212,20 @@ function App() {
     void serviceMode().then(setSavedMode).catch(() => setMockError("서비스 실행 모드를 확인하지 못했습니다."));
   }, []);
   useEffect(() => {
+    function navigate() {
+      const target = runFromSearch(location.search);
+      setScenarioFile(null);
+      setCandidate("");
+      setMockError(target.error);
+      setSavedRunId(target.runId);
+      setPage(target.runId ? 1 : 0);
+    }
+    window.addEventListener("popstate", navigate);
+    return () => window.removeEventListener("popstate", navigate);
+  }, []);
+  useEffect(() => {
     if (!savedRunId) return;
+    history.replaceState(null, "", runUrl(location.href, savedRunId));
     let active = true;
     let first = true;
     async function refresh() {
@@ -223,22 +237,32 @@ function App() {
         setSavedMode(current.data_mode as "mock" | "live");
         setFileName(current.data_mode === "live" ? "저장형 실제 실행" : "저장형 모의 실행");
         setCandidate((previous) => previous || current.input.candidates[0].candidate_id);
-        setFrameIndex(0);
         if (first) setPage(1);
         first = false;
       } catch (error) {
         if (!active) return;
         if (isSessionExpired(error)) {
-          setScenarioFile((previous) => expiredFrame(previous?.input, previous?.data_mode === "live" ? "live" : "mock"));
+          setScenarioFile((previous) => previous ? expiredFrame(previous.input, previous.data_mode === "live" ? "live" : "mock") : null);
           setFileName(savedMode === "live" ? "저장형 실제 실행" : "저장형 모의 실행");
-          setPage(1);
+          setMockError("조회 기간이 끝났습니다. 새 검토를 시작하세요.");
+          localStorage.removeItem(SAVED_RUN_KEY);
+          setPage(0);
         } else {
           setMockError(error instanceof Error ? error.message : "저장된 실행을 조회하지 못했습니다.");
         }
         if (isSessionExpired(error)) setSavedRunId(null);
+        if (error instanceof Error && (error as Error & { status?: number }).status === 404) {
+          setScenarioFile(null);
+          setSavedRunId(null);
+          setMockError("이 세션에서 조회할 수 없는 실행 주소입니다.");
+          setPage(0);
+        }
         if (error instanceof Error && (error as Error & { status?: number }).status === 401) {
           localStorage.removeItem(SAVED_RUN_KEY);
           setSavedRunId(null);
+          setScenarioFile(null);
+          setMockError("이 실행을 조회하려면 원래 브라우저 세션이 필요합니다.");
+          setPage(0);
         }
       }
     }
@@ -246,22 +270,6 @@ function App() {
     const interval = window.setInterval(() => void refresh(), 2000);
     return () => { active = false; window.clearInterval(interval); };
   }, [savedRunId]);
-  function advance() {
-    if (!scenarioFile || frameIndex >= scenarioFile.scenarios.length - 1) return;
-    setFrameIndex(frameIndex + 1);
-    setExpanded(null);
-    setConditionKind("core");
-    setPage(1);
-  }
-  useEffect(() => {
-    if (!playing || !scenarioFile) return;
-    if (frameIndex >= scenarioFile.scenarios.length - 1) {
-      setPlaying(false);
-      return;
-    }
-    const timeout = window.setTimeout(advance, 1800);
-    return () => window.clearTimeout(timeout);
-  }, [playing, scenarioFile, frameIndex]);
   return (
     <>
       <a className="skip" href="#main">
@@ -311,7 +319,7 @@ function App() {
               <button
                 key={p}
                 onClick={() => go(i)}
-                disabled={i >= 2 && (playing || !result || expired)}
+                disabled={i >= 2 && (!result || expired)}
                 aria-current={page === i ? "page" : undefined}
               >
                 <span>0{i + 1}</span>
@@ -363,7 +371,7 @@ function App() {
                             : "실행 범위와 후보별 의견, 근거·한계·다음 질문을 확인하세요."}
                       </p>
                     </div>
-                    <span className="tag">기록 {frameIndex + 1} / {scenarioFile.scenarios.length}{playing ? " · 모의 재생 중" : ""}{live ? " · 실제 실행" : persistedRun ? " · 저장형 모의 실행" : ""}</span>
+                    <span className="tag">기록 {1} / {scenarioFile.scenarios.length}{live ? " · 실제 실행" : persistedRun ? " · 저장형 모의 실행" : ""}</span>
                   </div>
                   <div className="notice">
                     <span className="tag">{live ? "실제 실행" : persistedRun ? "저장형 모의 실행" : "모의 재생"} · {labels[scenario.name] ?? scenario.name}</span>{" "}
@@ -410,11 +418,7 @@ function App() {
                           )}
                           <div className="actions end">
                             <span className="caption">{live ? "실제 분석을 실행한 결과입니다." : "저장된 상태를 보여줍니다. 실제 분석은 실행되지 않습니다."}</span>
-                            {frameIndex < scenarioFile.scenarios.length - 1 ? (
-                              <button className="primary" onClick={advance}>다음 기록 보기 →</button>
-                            ) : (
-                              <button className="primary" disabled={playing || !scenario.run.result_available} onClick={() => go(2)}>비교 결과 보기 ↗</button>
-                            )}
+                            <button className="primary" disabled={!scenario.run.result_available} onClick={() => go(2)}>비교 결과 보기 ↗</button>
                           </div>
                         </>
                       )}

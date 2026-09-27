@@ -33,3 +33,9 @@ python docs/topics/her2/assets/a01/fetch_sources.py
 2026-09-26 사용자가 첫 공개 구조 분석 범위를 채택했다. `a01-2` 입력은 HER2 UniProt 23–629, 1N8Z 중쇄 1–220·경쇄 1–214, 1S78 중쇄 1–226·경쇄 1–214를 명시한다. 전체 입력 서열·좌표 누락·구간 밖 대응표는 보존한다.
 각 assembly 1을 첫 분석에 사용하며 1S78 assembly 2는 같은 pertuzumab 후보의 대체 자료다. `analysis_ranges_approved=true`는 이 사용자 결정만 뜻하며, 최종 데모 선정·팀 소비 확인·첫 계산 완료를 뜻하지 않는다.
 전체 설명은 [bundle.json](generated/bundle.json), 기탁 잔기의 원자 존재·번호·UniProt 대응은 [residue-mapping.csv](generated/residue-mapping.csv), 원본 링크·해시는 [source-lock.json](source-lock.json)에 있다.
+
+## 현재 환경에서의 검사와 과거 산출물
+
+테스트는 임시 폴더에 현재 환경의 결과를 생성하고 독립 기대값·원자료 무결성·동일 환경 재생성을 확인한다. 기존 generated 결과는 당시 환경의 기록이며 덮어쓰지 않는다. 서로 다른 Python·라이브러리 환경의 byte 일치를 과학적 정확성 검사와 섞지 않는다. 수치 허용 오차를 늘리지 않았으며 기존 독립 기하·누락·대응 검사는 유지한다.
+
+기본 실행은 결과를 콘솔에만 출력한다. 검증 기록이 필요하면 테스트 명령에 `--report <기존 폴더의 새 JSON 경로>`를 지정한다. 과거 validation.json을 최신 실행 성공으로 덮어쓰지 않는다.
