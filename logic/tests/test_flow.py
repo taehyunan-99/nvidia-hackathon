@@ -43,6 +43,8 @@ def candidate(cid: str, name: str, heavy: str, light: str) -> dict:
 
 
 def make_request(candidates: list[dict], work_dir: Path, *, target_fasta: str | None = None) -> dict:
+    if target_fasta is None:
+        target_fasta = structures.her2_target_sequence()
     return {
         "schema_version": SCHEMA_VERSION,
         "run_id": "run-test",
@@ -244,15 +246,25 @@ def test_invalid_target_characters_fail_before_lookup(tmp_path):
     assert client.calls == 0
 
 
-@pytest.mark.parametrize("where", ["target", "heavy"])
-def test_residue_boltz2_rejects_holds_before_prediction(tmp_path, where):
-    """O·U·B·Z는 IUPAC 문자라 입력은 통과하지만 Boltz-2가 422로 거부한다.
-
-    유료 호출 전에 보류하고, 어떤 문자 때문인지 사유에 남겨야 한다.
-    """
+def test_wrong_target_cannot_use_matching_public_structure(tmp_path):
     from logic.tests.test_flow_decisions import _filler
 
-    target = _long("HERTWASEQ", 300)
+    cand = candidate("trastuzumab", "Trastuzumab Fab", entity_sequence(TRASTUZUMAB, "heavy"), entity_sequence(TRASTUZUMAB, "light"))
+    request = make_request([cand, _filler()], tmp_path)
+    request["input"]["target"]["fasta"] = ">other\n" + "A" * 607
+    _, flow = run_flow(request, client=StubClient())
+    progress = next(p for p in flow.candidate_progress() if p["candidate_id"] == "trastuzumab")
+    assert progress["status"] == "failed"
+    assert progress["steps"][0]["status"] == "failed"
+    assert not flow.structures
+
+
+@pytest.mark.parametrize("where", ["target", "heavy"])
+def test_residue_boltz2_rejects_holds_before_prediction(tmp_path, where):
+    """다른 표적은 입력에서 거부하고, 후보의 U는 예측 전에 보류한다."""
+    from logic.tests.test_flow_decisions import _filler
+
+    target = structures.her2_target_sequence()
     heavy = _long("ACDEFGHIKLMNPQRSTVWY")
     if where == "target":
         target = _long("HERTWOSEQ", 300)
@@ -266,11 +278,12 @@ def test_residue_boltz2_rejects_holds_before_prediction(tmp_path, where):
     assert client.calls == 0
     progress = next(p for p in flow.candidate_progress() if p["candidate_id"] == "novel-a")
     steps = {s["step_id"]: s["status"] for s in progress["steps"]}
-    assert progress["status"] == "partial"
-    assert steps["input_mapping"] == "completed"
-    assert steps["prediction"] == "held"
-    assert "Boltz-2" in progress["reason"]
-    assert ("O" if where == "target" else "U") in progress["reason"]
+    assert progress["status"] == ("failed" if where == "target" else "partial")
+    assert steps["input_mapping"] == ("failed" if where == "target" else "completed")
+    assert steps["prediction"] == ("skipped" if where == "target" else "held")
+    assert ("HER2" if where == "target" else "Boltz-2") in progress["reason"]
+    if where == "heavy":
+        assert "U" in progress["reason"]
 
 
 def test_missing_target_fails_every_candidate(tmp_path):
@@ -303,7 +316,7 @@ def test_prediction_path_records_returned_confidence(tmp_path):
         "confidence_scores": [0.77],
     }
     output, flow = run_flow(
-        make_request(_prediction_candidates(), tmp_path, target_fasta=_long("HERTWASEQ", 300)),
+        make_request(_prediction_candidates(), tmp_path, target_fasta=structures.her2_target_sequence()),
         client=StubClient(response=response),
     )
     validate(output, "LogicOutput")
@@ -348,7 +361,7 @@ def test_predicted_chain_mapping_uses_ids_from_the_response(tmp_path):
     보낸 id를 그대로 적으면 화면이 엉뚱한 사슬을 강조한다.
     """
     candidates = _prediction_candidates()
-    target = _long("HERTWASEQ", 300)
+    target = structures.her2_target_sequence()
     heavy = structures.normalize_sequence(candidates[0]["heavy_chain_fasta"])
     light = structures.normalize_sequence(candidates[0]["light_chain_fasta"])
     response = {
@@ -372,7 +385,7 @@ def test_predicted_chain_mapping_uses_ids_from_the_response(tmp_path):
 def test_unmatched_chain_is_left_null_not_guessed(tmp_path):
     """서열로 대응을 못 찾으면 지어내지 않고 비워 둔다."""
     candidates = _prediction_candidates()
-    target = _long("HERTWASEQ", 300)
+    target = structures.her2_target_sequence()
     response = {
         "structures": [{"structure": _boltz2_cif([("A", target)])}],
         "confidence_scores": [0.5],
@@ -392,7 +405,7 @@ def test_unmatched_chain_is_left_null_not_guessed(tmp_path):
 def test_prediction_without_confidence_is_unknown_not_zero(tmp_path):
     response = {"structures": [{"structure": "data_x\n#\n"}]}
     output, _ = run_flow(
-        make_request(_prediction_candidates(), tmp_path, target_fasta=_long("HERTWASEQ", 300)),
+        make_request(_prediction_candidates(), tmp_path, target_fasta=structures.her2_target_sequence()),
         client=StubClient(response=response),
     )
     confidences = [e for e in output["result"]["evidence"] if e["topic"] == "prediction_confidence"]
@@ -402,7 +415,7 @@ def test_prediction_without_confidence_is_unknown_not_zero(tmp_path):
 
 def test_failed_call_is_not_reported_as_analysis(tmp_path):
     output, flow = run_flow(
-        make_request(_prediction_candidates(), tmp_path, target_fasta=_long("HERTWASEQ", 300)),
+        make_request(_prediction_candidates(), tmp_path, target_fasta=structures.her2_target_sequence()),
         client=StubClient(error=CallFailed("HTTP 500", status=500)),
     )
     validate(output, "LogicOutput")
@@ -417,7 +430,7 @@ def test_failed_call_is_not_reported_as_analysis(tmp_path):
 
 def test_empty_structures_response_is_failure(tmp_path):
     output, flow = run_flow(
-        make_request(_prediction_candidates(), tmp_path, target_fasta=_long("HERTWASEQ", 300)),
+        make_request(_prediction_candidates(), tmp_path, target_fasta=structures.her2_target_sequence()),
         client=StubClient(response={"structures": [], "confidence_scores": [0.9]}),
     )
     assert flow.run_status() == "failed"
@@ -426,7 +439,7 @@ def test_empty_structures_response_is_failure(tmp_path):
 
 def test_missing_key_holds_rather_than_fails(tmp_path):
     output, flow = run_flow(
-        make_request(_prediction_candidates(), tmp_path, target_fasta=_long("HERTWASEQ", 300)),
+        make_request(_prediction_candidates(), tmp_path, target_fasta=structures.her2_target_sequence()),
         client=StubClient(error=MissingCredentials("NVIDIA_API_KEY가 없다")),
     )
     validate(output, "LogicOutput")
@@ -510,7 +523,7 @@ def test_partial_sequence_match_does_not_count_as_same_candidate(tmp_path):
         candidate("mock-b", "자료 부족 후보", "ACDE", "FGHI"),
     ]
     output, _ = run_flow(
-        make_request(candidates, tmp_path, target_fasta=_long("HERTWASEQ", 300)),
+        make_request(candidates, tmp_path, target_fasta=structures.her2_target_sequence()),
         client=StubClient(response={"structures": [{"structure": "data_x\n#\n"}]}),
     )
     made = [s for s in output["result"]["structures"] if s["candidate_id"] == "half-match"]

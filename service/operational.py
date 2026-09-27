@@ -22,6 +22,7 @@ from psycopg.types.json import Jsonb
 from starlette.datastructures import UploadFile
 
 from logic.contract import ContractError, SCHEMA_VERSION, now_rfc3339, validate
+from logic.structures import her2_target_sequence
 
 from .db import connect, require_schema
 
@@ -88,11 +89,10 @@ def _check_input(body: dict[str, Any]) -> None:
             if region and not (1 <= region["start"] <= region["end"] <= len(seq)):
                 _fail(422, "INPUT_INVALID", "후보 분석 구간을 확인하세요.", "fix_input")
     target = body["target"]
-    if target["fasta"]:
-        seq = _sequence(target["fasta"])
-        region = target["analysis_range"]
-        if region and not (1 <= region["start"] <= region["end"] <= len(seq)):
-            _fail(422, "INPUT_INVALID", "표적 분석 구간을 확인하세요.", "fix_input")
+    if target["identifier"] != "P04626" or not target["fasta"] or target["analysis_range"] is not None:
+        _fail(422, "INPUT_INVALID", "HER2 표적 ID와 검증된 세포외 구간 서열이 필요합니다.", "fix_input")
+    if _sequence(target["fasta"]).upper() != her2_target_sequence():
+        _fail(422, "INPUT_INVALID", "HER2 표적 서열이 검증된 세포외 구간과 일치하지 않습니다.", "fix_input")
 
 
 def _new_run(review_id: str, candidates: list[dict[str, Any]], mode: str) -> dict[str, Any]:

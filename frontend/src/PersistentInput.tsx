@@ -1,18 +1,17 @@
 import { useState } from "react";
+import publicReferenceInput from "../../docs/frontend-hosting/fixtures/public-reference-input.json";
 import type { ReviewInput } from "./scenario-file";
 
-type CandidateDraft = { name: string; heavy: string; light: string; file: File | null; role: "complex" | "context"; sourceTitle: string; sourceUrl: string };
-const emptyCandidate = (): CandidateDraft => ({ name: "", heavy: "", light: "", file: null, role: "complex", sourceTitle: "", sourceUrl: "" });
+type CandidateDraft = { name: string; heavy: string; light: string };
+const emptyCandidate = (): CandidateDraft => ({ name: "", heavy: "", light: "" });
 
 function validFasta(value: string): boolean {
   const lines = value.trim().split(/\r?\n/);
-  const sequence = (lines[0]?.startsWith(">") ? lines.slice(1) : lines).join("").replace(/\s/g, "");
-  return Boolean(sequence) && /^[ACDEFGHIKLMNPQRSTVWYBXZUO]+$/i.test(sequence);
+  const body = lines[0]?.startsWith(">") ? lines.slice(1) : lines;
+  return body.length > 0 && body.every((line) => /^[ACDEFGHIKLMNPQRSTVWYBXZUO]+$/i.test(line.trim())) && !body.some((line) => line.includes(">"));
 }
 
 export function PersistentInput({ busy, error, mode, onStart }: { busy: boolean; error: string; mode: "mock" | "live" | null; onStart: (input: ReviewInput, files: Map<string, File>) => void }) {
-  const [targetId, setTargetId] = useState("");
-  const [targetFasta, setTargetFasta] = useState("");
   const [candidates, setCandidates] = useState<CandidateDraft[]>([emptyCandidate(), emptyCandidate()]);
   const [confirmed, setConfirmed] = useState(false);
   const [fieldError, setFieldError] = useState("");
@@ -21,44 +20,29 @@ export function PersistentInput({ busy, error, mode, onStart }: { busy: boolean;
   }
   function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (!targetId.trim() && !validFasta(targetFasta)) return setFieldError("표적 ID 또는 올바른 FASTA 서열을 입력하세요.");
-    if (targetFasta.trim() && !validFasta(targetFasta)) return setFieldError("표적 FASTA 서열을 확인하세요.");
     for (const [index, candidate] of candidates.entries()) {
       if (!candidate.name.trim() || !validFasta(candidate.heavy) || !validFasta(candidate.light)) return setFieldError(`${index + 1}번 후보의 이름·중쇄·경쇄 FASTA를 확인하세요.`);
-      if (candidate.file && (!/\.(pdb|cif|mmcif)$/i.test(candidate.file.name) || !candidate.sourceTitle.trim() || !/^https?:\/\/\S+$/.test(candidate.sourceUrl))) return setFieldError(`${index + 1}번 후보의 구조 파일 형식과 출처 제목·URL을 확인하세요.`);
     }
     if (!confirmed) return setFieldError("공개 자료 사용 확인이 필요합니다.");
-    const files = new Map<string, File>();
-    const uploads: ReviewInput["uploads"] = [];
-    candidates.forEach((candidate, index) => {
-      if (!candidate.file) return;
-      const key = `structure_${index + 1}`;
-      files.set(key, candidate.file);
-      uploads.push({ upload_key: key, file_name: candidate.file.name, format: /\.pdb$/i.test(candidate.file.name) ? "pdb" : "mmcif", candidate_id: `candidate-${index + 1}`, role: candidate.role, source: { title: candidate.sourceTitle.trim(), url: candidate.sourceUrl.trim(), record_id: null } });
-    });
     const input: ReviewInput = {
       schema_version: "0.1.0", example_id: null, public_data_confirmed: true,
-      target: { identifier: targetId.trim() || null, fasta: targetFasta.trim() || null, analysis_range: null, sources: [] },
+      target: publicReferenceInput.target,
       candidates: candidates.map((candidate, index) => ({ candidate_id: `candidate-${index + 1}`, name: candidate.name.trim(), antibody_format: null, heavy_chain_fasta: candidate.heavy.trim(), light_chain_fasta: candidate.light.trim(), heavy_analysis_range: null, light_analysis_range: null, sources: [] })),
-      uploads,
+      uploads: [],
     };
     setFieldError("");
-    onStart(input, files);
+    onStart(input, new Map());
   }
   return <section className="analysis-launcher review-launcher" aria-label="새 검토 입력">
     <div className="launcher-heading">
       <div><span className="eyebrow">NEW REVIEW</span><h2>표적과 후보 입력</h2></div>
       <span className="tag">{mode === "live" ? "저장형 실제 실행" : mode === "mock" ? "저장형 모의 실행" : "저장형 검토"}</span>
     </div>
-    <p className="review-intro">표적과 후보 2~3개를 입력하세요. 구조 파일은 선택 사항입니다. {mode === "live" ? "실제 분석이 실행되며 결과는 같은 실행에 저장됩니다." : mode === "mock" ? "결과는 모의 데이터이며 실제 분석은 수행하지 않습니다." : "서비스 실행 모드를 확인하는 중입니다."}</p>
+    <p className="review-intro">HER2 표적은 검증된 세포외 구간으로 고정됩니다. 후보 2~3개의 공개 Fab 중쇄·경쇄 서열을 입력하세요. 50잔기 미만이거나 예측 모델이 받지 않는 문자는 예측을 보류할 수 있습니다. {mode === "live" ? "실제 분석이 실행되며 결과는 같은 실행에 저장됩니다." : mode === "mock" ? "결과는 모의 데이터이며 실제 분석은 수행하지 않습니다." : "서비스 실행 모드를 확인하는 중입니다."}</p>
     <form className="review-form" onSubmit={submit}>
       <section className="review-target" aria-labelledby="review-target-title">
-        <div className="review-section-heading"><h3 id="review-target-title">표적</h3><span>ID 또는 FASTA 중 하나는 필수</span></div>
-        <div className="review-target-fields">
-          <label>HER2 표적 ID<input value={targetId} onChange={(event) => setTargetId(event.target.value)} placeholder="예: UniProt ID" /></label>
-          <span className="review-or" aria-hidden="true">또는</span>
-          <label>표적 FASTA<textarea value={targetFasta} onChange={(event) => setTargetFasta(event.target.value)} placeholder={">target\nACDE..."} /></label>
-        </div>
+        <div className="review-section-heading"><h3 id="review-target-title">표적</h3><span>HER2 고정</span></div>
+        <p>HER2 (UniProt P04626), 세포외 구간 23–629 · {publicReferenceInput.target.fasta.split("\n")[1].length}잔기. <a href="https://www.uniprot.org/uniprotkb/P04626" target="_blank" rel="noreferrer">표적 서열 출처 ↗</a></p>
       </section>
       {candidates.map((candidate, index) => <fieldset key={index} className="review-candidate">
         <legend>항체 후보 {index + 1}</legend>
@@ -68,12 +52,6 @@ export function PersistentInput({ busy, error, mode, onStart }: { busy: boolean;
             <label>중쇄 FASTA<textarea value={candidate.heavy} onChange={(event) => update(index, { heavy: event.target.value })} required /></label>
             <label>경쇄 FASTA<textarea value={candidate.light} onChange={(event) => update(index, { light: event.target.value })} required /></label>
           </div>
-          <label><span>구조 파일 <span className="review-optional">선택 · PDB/mmCIF</span></span><input type="file" accept=".pdb,.cif,.mmcif" onChange={(event) => update(index, { file: event.target.files?.[0] ?? null })} /></label>
-          {candidate.file && <div className="review-form-grid review-file-details">
-            <label>파일 역할<select value={candidate.role} onChange={(event) => update(index, { role: event.target.value as CandidateDraft["role"] })}><option value="complex">복합체</option><option value="context">주변 구조</option></select></label>
-            <label>출처 제목<input value={candidate.sourceTitle} onChange={(event) => update(index, { sourceTitle: event.target.value })} required /></label>
-            <label className="review-full-width">출처 URL<input type="url" value={candidate.sourceUrl} onChange={(event) => update(index, { sourceUrl: event.target.value })} required /></label>
-          </div>}
         </div>
       </fieldset>)}
       <div className="review-add-row">

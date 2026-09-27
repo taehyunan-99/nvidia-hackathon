@@ -146,6 +146,21 @@ def test_bad_manifest_and_sequence_leave_no_review(client):
         assert conn.execute("SELECT count(*) AS n FROM reviews").fetchone()["n"] == 0
 
 
+@pytest.mark.parametrize("change", [
+    {"identifier": "P12345"},
+    {"fasta": None},
+    {"fasta": ">other\n" + "A" * 607},
+])
+def test_wrong_target_is_rejected_before_review(client, change):
+    client.post("/api/session")
+    body = experimental_demo()
+    body["target"].update(change)
+    response = client.post("/api/reviews", data={"metadata": json.dumps(body)})
+    assert response.status_code == 422
+    with connect(DSN) as conn:
+        assert conn.execute("SELECT count(*) AS n FROM reviews").fetchone()["n"] == 0
+
+
 def test_invalid_structure_is_rejected_without_file_or_db_row(client, tmp_path):
     client.post("/api/session")
     body = experimental_demo()
