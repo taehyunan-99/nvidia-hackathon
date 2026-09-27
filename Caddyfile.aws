@@ -1,0 +1,16 @@
+# HTTPS terminates at CloudFront. EC2 port 80 must accept only its origin prefix list.
+:80 {
+    @untrusted not header X-Bio3-Origin {$ORIGIN_VERIFY_SECRET}
+    handle @untrusted {
+        respond "Forbidden" 403
+    }
+    handle /api/* {
+        header Cache-Control "private, no-store"
+        reverse_proxy api:8000
+    }
+    handle {
+        root * /srv
+        try_files {path} /index.html
+        file_server
+    }
+}

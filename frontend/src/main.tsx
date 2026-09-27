@@ -6,7 +6,7 @@ import { ReviewOverview } from "./ReviewOverview";
 import { ReportView } from "./ReportView";
 import { parseScenarioFile, type ReviewInput, type ScenarioFile } from "./scenario-file";
 import PredictedStructure, { type PredictedView } from "./PredictedStructure";
-import { expiredFrame, isSessionExpired, savedFrame, readSavedRun, SAVED_RUN_KEY, serviceMode, startSavedRun } from "./persistent-mock";
+import { expiredFrame, isSessionExpired, savedFrame, readSavedRun, isSavedRunFinished, SAVED_RUN_KEY, serviceMode, startSavedRun } from "./persistent-mock";
 
 // 개발 중에는 vite와 실행부가 다른 포트에 뜬다. 배포 시 같은 출처면 빈 문자열로 둔다.
 const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8010";
@@ -198,10 +198,13 @@ function App() {
     if (!savedRunId) return;
     history.replaceState(null, "", runUrl(location.href, savedRunId));
     let active = true;
+    let previous: ScenarioFile | undefined;
+    let timer: number | undefined;
     async function refresh() {
       try {
-        const current = await readSavedRun(savedRunId!);
+        const current = await readSavedRun(savedRunId!, previous);
         if (!active) return;
+        previous = current;
         setScenarioFile(current);
         setMockError("");
         setSavedMode(current.data_mode as "mock" | "live");
@@ -232,11 +235,12 @@ function App() {
           setMockError("이 실행을 조회하려면 원래 브라우저 세션이 필요합니다.");
           setPage(0);
         }
+      } finally {
+        if (active) timer = window.setTimeout(() => void refresh(), isSavedRunFinished(previous) ? 60_000 : 2000);
       }
     }
     void refresh();
-    const interval = window.setInterval(() => void refresh(), 2000);
-    return () => { active = false; window.clearInterval(interval); };
+    return () => { active = false; window.clearTimeout(timer); };
   }, [savedRunId]);
   return (
     <>
