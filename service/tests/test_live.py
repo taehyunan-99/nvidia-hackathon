@@ -72,6 +72,26 @@ def test_public_structure_run_persists_progress_result_and_private_files(live_se
     assert stranger.get(f"/api/runs/{run_id}/artifacts/{ready[0]['artifact_id']}").status_code == 404
 
 
+def test_direct_input_uses_same_saved_live_result(live_service):
+    client, root = live_service
+    client.post("/api/session")
+    body = experimental_demo()
+    body["example_id"] = None
+    for index, candidate in enumerate(body["candidates"], 1):
+        candidate["candidate_id"] = f"candidate-{index}"
+        candidate["name"] = f"직접 입력 후보 {index}"
+        candidate["sources"] = []
+    accepted = client.post("/api/reviews", data={"metadata": json.dumps(body)})
+    assert accepted.status_code == 201, accepted.text
+    review_id = accepted.json()["review_id"]
+    run_id = client.post(f"/api/reviews/{review_id}/runs", json={"request_key": "direct-input"}).json()["run_id"]
+    assert process_one(DSN, data_root=root, mode="live") == run_id
+    assert client.get(f"/api/runs/{run_id}").json()["status"] == "completed"
+    result = client.get(f"/api/runs/{run_id}/result").json()
+    assert result["candidate_ids"] == ["candidate-1", "candidate-2"]
+    assert client.get(f"/api/reviews/{review_id}").json()["target"] == body["target"]
+
+
 def test_live_claim_limits_active_runs_globally(live_service):
     client, _ = live_service
     first = review(client)

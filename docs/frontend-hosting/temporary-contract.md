@@ -24,10 +24,10 @@ JSON Schema의 `$defs`에서 각 자료형을 참조한다. 예를 들어 입력
 |---|---|
 | `example_id` | 예제 선택이면 예제 ID, 직접 입력이면 null. 예제 선택도 같은 입력 규격으로 풀어 새 실행을 접수 |
 | `public_data_confirmed` | true여야 접수. 공개 자료 사용 확인이며 자료 공개 여부를 자동 판별한 결과는 아님 |
-| `target` | HER2 식별자 또는 FASTA와 분석 구간·sources. 둘 중 적어도 하나 필요, 둘 다 있으면 로직이 일치 여부 확인 |
+| `target` | 현재 영속 서비스는 HER2 P04626과 검증된 607잔기 세포외 구간 FASTA를 함께 요구한다. `analysis_range`는 null이며 직접 입력 화면이 서열과 출처를 자동 제공한다. 스키마의 넓은 허용 범위와 실제 접수 검증을 구분한다 |
 | `candidates` | 2–3개. 중복 없는 candidate_id, 표시 이름, 항체 형식, 중쇄·경쇄 FASTA, 각 분석 구간과 sources |
 | `analysis_range` | 입력 서열 기준 1부터 시작하는 양끝 포함 start/end 또는 null. 구조 잔기 번호와 별개이며 null은 미정이지 전체 분석 허가가 아님 |
-| `uploads` | 선택적인 파일 manifest. upload_key·원본 이름·pdb/mmcif 형식·후보·complex/context 역할·출처 |
+| `uploads` | 기존 API의 선택적인 파일 manifest. 저장·무결성 검사 대상이지만 현재 분석 로직은 사용하지 않으므로 직접 입력 화면에서는 제공하지 않는다 |
 
 `POST /api/reviews`는 multipart로 `metadata`에 ReviewInput JSON 문자열을, 각 파일은 manifest의 `upload_key`와 같은 part 이름으로 보낸다. `metadata`는 예약어이며 파일 key는 중복될 수 없다. 선택 자료가 없으면 파일 part를 보내지 않는다. 입력 manifest와 실제 파일 part는 정확히 대응해야 한다.
 

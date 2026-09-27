@@ -255,12 +255,14 @@ class Flow:
     def _check_input(self, candidate: dict[str, Any]) -> list[str]:
         problems: list[str] = []
         target = self.request["input"]["target"]
-        if not (target.get("identifier") or target.get("fasta")):
-            problems.append("표적 HER2의 식별자와 서열이 모두 없다.")
+        if target.get("identifier") != "P04626" or not target.get("fasta"):
+            problems.append("HER2 표적 ID와 검증된 세포외 구간 서열이 필요하다.")
         if target.get("fasta"):
             invalid = sorted(set(structures.sequence_body(target["fasta"])) - IUPAC_PROTEIN)
             if invalid:
                 problems.append(f"표적 서열에 아미노산이 아닌 문자가 있다: {''.join(invalid)}.")
+            elif structures.sequence_body(target["fasta"]) != structures.her2_target_sequence():
+                problems.append("표적 서열이 검증된 HER2 세포외 구간과 일치하지 않는다.")
         for label, key, range_key in (
             ("중쇄", "heavy_chain_fasta", "heavy_analysis_range"),
             ("경쇄", "light_chain_fasta", "light_analysis_range"),

@@ -107,7 +107,7 @@ def test_the_model_can_order_a_prediction_the_rule_would_have_skipped(tmp_path):
     client = ScriptedClient("predict", "reviewable")
 
     output, flow = run_flow(
-        make_request(_matched_candidate(), tmp_path, target_fasta=_long("HERTWASEQ", 300)),
+        make_request(_matched_candidate(), tmp_path, target_fasta=structures.her2_target_sequence()),
         client=client,
         decider=Decider(client, model="test-model"),
     )
@@ -122,7 +122,7 @@ def test_the_model_can_hold_a_candidate_the_rule_would_have_predicted(tmp_path):
     client = ScriptedClient("hold")
 
     output, flow = run_flow(
-        make_request(_unmatched_candidate(), tmp_path, target_fasta=_long("HERTWASEQ", 300)),
+        make_request(_unmatched_candidate(), tmp_path, target_fasta=structures.her2_target_sequence()),
         client=client,
         decider=Decider(client, model="test-model"),
     )
@@ -139,7 +139,7 @@ def test_the_rule_result_says_it_came_from_the_rule(tmp_path):
     client = ScriptedClient()  # 대본 없음 = 모델 사용 불가
 
     output, _ = run_flow(
-        make_request(_matched_candidate(), tmp_path, target_fasta=_long("HERTWASEQ", 300)),
+        make_request(_matched_candidate(), tmp_path, target_fasta=structures.her2_target_sequence()),
         client=client,
         decider=Decider(client, model="test-model"),
     )
@@ -154,7 +154,7 @@ def test_the_state_we_measured_is_what_the_model_was_asked_about(tmp_path):
     client = ScriptedClient("use_experimental", "reviewable")
 
     run_flow(
-        make_request(_matched_candidate(), tmp_path, target_fasta=_long("HERTWASEQ", 300)),
+        make_request(_matched_candidate(), tmp_path, target_fasta=structures.her2_target_sequence()),
         client=client,
         decider=Decider(client, model="test-model"),
     )
@@ -172,7 +172,7 @@ def test_every_decision_is_recorded_for_the_run(tmp_path):
     decider = Decider(client, model="test-model")
 
     run_flow(
-        make_request(_matched_candidate(), tmp_path, target_fasta=_long("HERTWASEQ", 300)),
+        make_request(_matched_candidate(), tmp_path, target_fasta=structures.her2_target_sequence()),
         client=client,
         decider=decider,
     )
@@ -196,7 +196,7 @@ def test_the_rule_agrees_with_the_model_instead_of_contradicting_it(tmp_path):
     client = ScriptedClient()  # 모델 사용 불가 = 규칙만으로 판단
 
     output, _ = run_flow(
-        make_request(_matched_candidate(), tmp_path, target_fasta=_long("HERTWASEQ", 300)),
+        make_request(_matched_candidate(), tmp_path, target_fasta=structures.her2_target_sequence()),
         client=client,
         decider=Decider(client, model="test-model"),
     )
@@ -222,7 +222,7 @@ def test_the_model_is_told_whether_prediction_is_even_possible(tmp_path):
     client = ScriptedClient("predict", "needs_confirmation")
 
     run_flow(
-        make_request(_unmatched_candidate(), tmp_path, target_fasta=_long("HERTWASEQ", 300)),
+        make_request(_unmatched_candidate(), tmp_path, target_fasta=structures.her2_target_sequence()),
         client=client,
         decider=Decider(client, model="test-model"),
     )
@@ -251,7 +251,7 @@ def test_the_raw_server_error_body_does_not_end_up_on_screen(tmp_path):
 
     client = Overloaded()
     output, _ = run_flow(
-        make_request(_matched_candidate(), tmp_path, target_fasta=_long("HERTWASEQ", 300)),
+        make_request(_matched_candidate(), tmp_path, target_fasta=structures.her2_target_sequence()),
         client=client,
         decider=Decider(client, model="test-model"),
     )

@@ -19,12 +19,13 @@ import asyncio
 import threading
 import time
 
+from logic import structures
 from logic.agent_session import CandidateSession, CandidateTools
 from logic.flow import Flow
 from logic.tests.test_flow import _long, candidate, make_request
 
 
-TARGET = _long("HERTWASEQ", 300)
+TARGET = structures.her2_target_sequence()
 
 
 def _filler():

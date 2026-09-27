@@ -78,6 +78,11 @@ def normalize_sequence(fasta_or_seq: str) -> str:
     return re.sub(r"[^A-Z]", "", sequence_body(fasta_or_seq))
 
 
+def her2_target_sequence() -> str:
+    """사이트가 분석에 사용하는 검증된 HER2 세포외 구간(1N8Z)."""
+    return load_catalog()["1N8Z"].by_role("target")[0].sequence
+
+
 # ---------------------------------------------------------------- mmCIF 최소 파서
 def _tokenize_loop_values(lines: list[str], start: int) -> tuple[list[str], int]:
     """loop_ 본문의 값 토큰을 순서대로 읽는다. 세미콜론 블록과 따옴표를 처리한다."""
