@@ -7,6 +7,7 @@ NAT에 의존하지 않는다. 규칙 경로(Flow._resume)와 에이전트 도�
 from __future__ import annotations
 
 import functools
+import copy
 import threading
 from dataclasses import dataclass, field
 from typing import Any
@@ -102,7 +103,9 @@ def _locked(method):
                      "held" if self.s.terminal == "partial" else "completed")
             available = sorted(allowed_tools(self.s))
             self.flow._activity(self.s.cid, "tool", method.__name__, phase, self.actor,
-                                available_tools=available, **({"next_action": "종료"} if not available else {}))
+                                available_tools=available,
+                                **({'reason': call['note'][:300]} if call and not call['accepted'] and call.get('note') else {}),
+                                **({"next_action": "종료"} if not available else {}))
             if not self.s.terminal and self.actor == "agent":
                 self.flow._activity(self.s.cid, "agent", "next_action", "running", "agent")
             return result
@@ -122,6 +125,42 @@ class CandidateTools:
             self.flow.states[self.s.cid].status = "running"
 
     # ---------------------------------------------------------- 관문
+    def model_tool_schemas(self, schemas: list[dict]) -> list[dict]:
+        """Expose the same state/argument constraints that execution validates.
+
+        The model chooses an action and a grounded reason, not new measurements.
+        Copy schemas because NAT binds its shared tool definitions only once.
+        """
+        allowed = allowed_tools(self.s)
+        exposed = []
+        for schema in schemas:
+            name = schema['function']['name']
+            if name not in allowed:
+                continue
+            schema = copy.deepcopy(schema)
+            properties = schema['function']['parameters'].get('properties', {})
+            if name == 'predict_structure':
+                reason = ('일치하는 실험 구조가 있지만 새 예측을 추가로 비교한다.' if self.s.match.complete else
+                          '공개 실험 구조가 현재 후보와 완전히 일치하지 않아 확인된 서열로 예측한다.')
+            elif name == 'use_experimental_structure':
+                reason = '후보 서열과 일치하는 공개 실험 구조를 사용한다.'
+            elif name == 'hold_candidate':
+                reason = self.s.match.blocked_reason or '현재 입력과 확보한 자료의 검토를 보류한다.'
+            elif name == 'submit_opinion':
+                _, measured, unmeasured = self.flow._opinion_facts(self.s.cid)
+                properties['decision']['enum'] = ['needs_confirmation'] if not measured or unmeasured else list(OPINIONS)
+                reason = ('확인된 근거를 기록하고 미확인 항목은 추가 확인으로 남긴다.' if not measured or unmeasured else
+                          '확인된 구조 근거를 항목별로 기록한다.')
+            else:
+                reason = None
+            if reason is not None:
+                properties['reason']['enum'] = [reason]
+                properties['reason']['description'] = '현재 상태에서 확인된 설명을 그대로 선택한다. 새로운 수치나 판정을 만들지 않는다.'
+            exposed.append(schema)
+        if {s['function']['name'] for s in exposed} != allowed:
+            raise ValueError('허용된 도구와 NAT 등록 목록이 일치하지 않는다.')
+        return exposed
+
     def _gate(self, name: str) -> str | None:
         allowed = allowed_tools(self.s)
         if name in allowed:
@@ -248,10 +287,12 @@ class CandidateTools:
         self._accept("compare_structure")
         self.flow._compare(self.s.cid, self.s.structure_id, self.s.match)
         self.s.compared = True
-        facts, _, _ = self.flow._opinion_facts(self.s.cid)
+        facts, measured, unmeasured = self.flow._opinion_facts(self.s.cid)
         self.s.shown_facts.extend(facts)
+        choices = ('needs_confirmation',) if not measured or unmeasured else OPINIONS
         return ("비교를 마쳤다. 확인된 사실:\n" + "\n".join(f"- {f}" for f in facts)
-                + f"\n다음은 submit_opinion. decision은 {' 또는 '.join(OPINIONS)} 중 하나.")
+                + f"\n다음은 submit_opinion. 현재 허용되는 decision: {' 또는 '.join(choices)}. "
+                + '종료 도구가 수락되기 전에는 최종 답변으로 끝내지 않는다.')
 
     @_locked
     def submit_opinion(self, decision: str, reason: str) -> str:

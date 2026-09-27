@@ -27,6 +27,8 @@ const topics: Record<string, string> = {
   surface_exposure: "관측 단백질 표면적",
   buried_sasa_sum: "양쪽 매몰 면적 합",
   observed_glycan_protein_sasa_reduction: "관측 당의 표면 감소량",
+  pose: "예측 간 자세 차이",
+  pose_consistency: "예측 간 항체 RMSD",
   whole_range_accessibility: "전체 구간 접근성",
   interface_review: "조건별 구조 근거",
 };
@@ -71,7 +73,7 @@ export function ReviewOverview({
     ) ?? opinions[0];
   const gaps = [...new Set(conditions.flatMap((c) => c.gaps))];
   const hasMeasuredEvidence = evidence.some((item) => item.measurement_state === "measured");
-  const selectedView = views.find((view) => view.candidateId === candidate && conditions.some((condition) => (condition.structure_ids as string[]).includes(view.structureId)));
+  const selectedView = views.find((view) => view.structureId === selected?.structure_id) ?? views.find((view) => view.candidateId === candidate && conditions.some((condition) => (condition.structure_ids as string[]).includes(view.structureId)));
   const evidenceView = selectedView && selected ? {
     ...selectedView,
     residues: (selected.residues as (PredictedView["residues"][number] & { has_coordinates?: boolean })[]).filter((r) => r.has_coordinates !== false),
@@ -191,7 +193,7 @@ export function ReviewOverview({
                   <dt>측정값</dt>
                   <dd>
                     {typeof selected.value === "number" ? Number(selected.value).toLocaleString("ko-KR", { maximumFractionDigits: 2 }) : "미제공"}
-                    {selected.unit ? ` ${selected.unit === "angstrom^2" ? "Å²" : selected.unit === "angstrom" ? "Å" : selected.unit}` : ""}
+                    {selected.unit ? ` ${selected.unit === "angstrom^2" ? "Å²" : selected.unit === "angstrom" ? "Å" : selected.unit === "atom_pair" ? "원자 쌍" : selected.unit}` : ""}
                   </dd>
                 </div>
                 <div>

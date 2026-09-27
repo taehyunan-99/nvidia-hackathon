@@ -309,7 +309,7 @@ class Flow:
         if s.terminal:
             return
         self.rule_finishes[s.cid] = why
-        self._activity(s.cid, "fallback", "continue_by_rule", "running", "rule")
+        self._activity(s.cid, "fallback", "continue_by_rule", "running", "rule", reason=why[:200])
         saved = self.decider
         previous = self._stage_actor
         self._stage_actor = "rule"
@@ -648,7 +648,7 @@ class Flow:
         ]
         self._activity(cid, "skill", "boltz2-nim", "running", "code", skill=runtime_skill.identity(), next_action="응답 검증")
         try:
-            response = self.client.predict_complex(polymers)
+            response = self.client.predict_complex(polymers, diffusion_samples=2)
         except MissingCredentials as exc:
             self._activity(cid, "skill", "boltz2-nim", "held", "code", skill=runtime_skill.identity(), reason="인증 정보가 없어 호출하지 못했습니다.", next_action="인증 확인")
             reason = str(exc)
@@ -748,11 +748,57 @@ class Flow:
         # 완료 통보는 기록이 다 끝난 뒤에 한다. 되돌리기(agent_session.predict_structure)는
         # 기록 리스트만 자르므로, 먼저 내보낸 completed 이벤트와 단계 상태는 복구되지 않는다.
         self._record_confidence(cid, structure_id, scores[selected])
+        self._record_pose_samples(cid, response, selected, sequences or {}, structure_id)
         self._emit(cid, "prediction", "completed",
                    f"응답 구조 {len(found)}개 중 {selected + 1}번째를 선택했다. "
                    + ("유효한 신뢰도 점수가 가장 높다." if scores[selected] is not None
                       else "신뢰도로 순위를 정할 수 없어 첫 유효 구조를 사용했다."))
         return structure_id
+
+    def _record_pose_samples(self, cid, response, selected, sequences, reference_id):
+        from .prediction_validation import validate_prediction
+        from .pose_analysis import compare
+        found = response.get('structures') or []
+        condition = next(c for c in self.conditions if c['condition_id'] == f'cond-{cid}-core')
+        source = next(s['source'] for s in self.structures if s['structure_id'] == reference_id)
+        measurement = analysis.Measurement(topic='pose_consistency', kind='computed', state='unknown',
+            reason='동일 입력의 검증된 예측 2샘플이 없어 자세 차이를 계산하지 않았다.', sources=[source])
+        evidence_structure = reference_id
+        if len(found) == 2:
+            other = 1 - selected
+            item = found[other]
+            try:
+                if item.get('format', 'mmcif') != 'mmcif':
+                    raise ValueError('지원하지 않는 예측 구조 형식이다.')
+                mapping = validate_prediction(item['structure'], sequences)
+                sample_id = f'st-{cid}-boltz2-sample-{other + 1}'
+                path = self.work_dir / f'{sample_id}.cif'
+                path.write_text(item['structure'], encoding='utf-8')
+                sample = {'structure_id': sample_id, 'candidate_id': cid, 'artifact_id': f'af-{sample_id}',
+                    'kind': 'predicted', 'source': source, 'model_number': 1, 'assembly_id': None,
+                    'chain_mapping': mapping, 'residue_mapping': [], 'alignment': None}
+                self.structures.append(sample)
+                self.artifacts.append({'artifact_id': sample['artifact_id'], 'role': 'structure', 'format': 'mmcif',
+                    'status': 'ready', 'file_name': path.name, 'size_bytes': path.stat().st_size,
+                    'sha256': structures.file_sha256(path), 'reason': None})
+                condition['structure_ids'].append(sample_id)
+                detail = compare(found[selected]['structure'], item['structure'], sequences)
+                reference = next(s for s in self.structures if s['structure_id'] == reference_id)
+                def target_residues(record):
+                    chain = next(m['label_asym_id'] for m in record['chain_mapping'] if m['role'] == 'target')
+                    return [analysis.residue(label_asym_id=chain, label_seq_id=n) for n in detail['target_positions']]
+                sample['alignment'] = {'reference_structure_id': reference_id, 'reference_residues': target_residues(reference),
+                    'mobile_residues': target_residues(sample), 'matrix': detail['matrix'], 'applied': False,
+                    'coordinate_unit': 'angstrom'}
+                evidence_structure = sample_id
+                measurement = analysis.Measurement(topic='pose_consistency', kind='computed', state='measured',
+                    value=detail['antibody_ca_rmsd'], unit='angstrom', sources=[source],
+                    definition=f"예측 2샘플의 공통 표적 Cα {detail['target_ca_count']}개 정렬 후 항체 Cα {detail['antibody_ca_count']}개의 RMSD. "
+                    f"표적 정렬 RMSD {detail['target_ca_rmsd']:.4f} Å. 공통 관측 잔기만 비교하며 일치도는 정확도·결합력 증거가 아니다. "
+                    f"참조 {reference_id}, 비교 {sample_id}; 원본 좌표는 보존하고 표시 시 정렬한다.")
+            except (ValueError, KeyError, TypeError) as exc:
+                measurement.state, measurement.reason = 'failed', f'복수 예측 비교 실패: {exc}'
+        self._add_evidence(cid, condition['condition_id'], evidence_structure, measurement)
 
     def _record_confidence(self, cid: str, structure_id: str, value: float | None) -> None:
         condition_id = f"cond-{cid}-core"
@@ -845,10 +891,16 @@ class Flow:
                     m = analysis.Measurement(topic=topic, kind="computed", state="unknown" if kind == "context" else "not_run",
                         reason=values.get("reason") or values["context_reason"])
                 self._add_evidence(cid, condition_id, structure_id, m)
-            for topic, reason in (("atom_clash", "정식 충돌 판정 기준이 없어 계산하지 않았다."),
-                                  ("whole_range_accessibility", "미관측 원자·당쇄·막 환경 때문에 전체 구간 접근성은 판단하지 않았다.")):
-                m = analysis.Measurement(topic=topic, kind="unknown", state="unknown" if topic == "whole_range_accessibility" else "not_run", reason=reason)
-                self._add_evidence(cid, condition_id, structure_id, m)
+            from .clash_analysis import calculate as calculate_clashes
+            if values[kind] is not None:
+                clash = calculate_clashes(path.read_text(encoding='utf-8'), record['chain_mapping'], values['residues'],
+                    values['context_chains'] if kind == 'context' else [], self.work_dir / f'clashes-{cid}-{kind}', source)
+            else:
+                clash = analysis.Measurement.not_run('atom_clash', values.get('reason') or values['context_reason'])
+            self._add_evidence(cid, condition_id, structure_id, clash)
+            self._add_evidence(cid, condition_id, structure_id, analysis.Measurement(
+                topic='whole_range_accessibility', kind='unknown', state='unknown',
+                reason='미관측 원자·당쇄·막 환경 때문에 전체 구간 접근성은 판단하지 않았다.'))
         self._emit(cid, "structure_comparison", "completed", None)
 
     # ------------------------------------------------------------ ⑥ 보고

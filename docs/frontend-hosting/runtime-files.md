@@ -8,6 +8,9 @@
 | [logic/agent.py](../../logic/agent.py) | model choice and rule fallback | flow / agent_session | static path review; product tests; persisted public image run (reachable branch only) |
 | [logic/agent_session.py](../../logic/agent_session.py) | tool ordering and candidate state | flow / nat_agent | static path review; product tests; persisted public image run (reachable branch only) |
 | [logic/analysis.py](../../logic/analysis.py) | coordinate evidence and independent reference contact comparison | flow; contact_measurement is regression-only | static path review; product tests; persisted public image run (reachable branch only) |
+| [logic/call_budget.py](../../logic/call_budget.py) | reserve physical provider requests, including retries, with SQLite | nvidia_client / nat_model | concurrent cap tests; shared budget in actual model verification |
+| [logic/clash_analysis.py](../../logic/clash_analysis.py) | Reduce/Probe all-atom contacts on an analysis copy, mapped back to original residues | flow / Docker-pinned tools | synthetic overlap, covalent and hydrogen-bond cases; official CCTBX count comparison; actual public structures |
+| [logic/pose_analysis.py](../../logic/pose_analysis.py) | target-aligned antibody C-alpha RMSD between two verified predictions | flow | known rigid motion and antibody-only displacement; sequence and degenerate-alignment rejection |
 | [logic/check_key.py](../../logic/check_key.py) | development credential diagnosis | explicit CLI; excluded from image | development only |
 | [logic/contacts.py](../../logic/contacts.py) | atom parsing and contact geometry | analysis / flow | static path review; product tests; persisted public image run (reachable branch only) |
 | [logic/contract.py](../../logic/contract.py) | JSON schema and timestamps | logic / API / worker | static path review; product tests; persisted public image run (reachable branch only) |

@@ -49,6 +49,11 @@ def main(argv: list[str] | None = None) -> int:
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
+    # Private run diagnostics: preserve guard rejections without exporting prompts,
+    # provider headers, or an invented successful model trace.
+    (args.out.parent / 'agent-trace.json').write_text(json.dumps({
+        'calls': flow.agent_traces, 'errors': flow.agent_errors, 'rule_finishes': flow.rule_finishes,
+    }, ensure_ascii=False, indent=2), encoding='utf-8')
 
     status = flow.run_status()
     print(f"실행 상태={status}", file=sys.stderr)

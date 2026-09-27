@@ -18,6 +18,8 @@ const topics: Record<string, string> = {
   interface_contact_residues: "접촉 잔기", atom_clash: "원자 간 충돌", surface_exposure: "관측 단백질 표면적",
   buried_sasa_sum: "양쪽 매몰 면적 합",
   observed_glycan_protein_sasa_reduction: "관측 당의 표면 감소량",
+  pose: "예측 간 자세 차이",
+  pose_consistency: "예측 간 항체 RMSD",
   whole_range_accessibility: "전체 구간 접근성",
   interface_review: "조건별 구조 근거",
 };
@@ -39,7 +41,7 @@ function SourceList({ sources }: { sources: Source[] }) {
 }
 function evidenceValue(item: Evidence): string {
   if (item.measurement_state !== "measured") return item.reason ?? "값이 제공되지 않았습니다.";
-  const unit = item.unit === "angstrom^2" ? "Å²" : item.unit === "angstrom" ? "Å" : item.unit;
+  const unit = item.unit === "angstrom^2" ? "Å²" : item.unit === "angstrom" ? "Å" : item.unit === "atom_pair" ? "원자 쌍" : item.unit;
   return `${item.value?.toLocaleString("ko-KR", { maximumFractionDigits: 2 })} ${unit}`;
 }
 

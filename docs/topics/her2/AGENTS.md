@@ -9,6 +9,7 @@ HER2와 항체 후보를 비교·검토하는 현재 프로젝트의 기능·판
 - [overview.md](overview.md) — 프로젝트 목적·입력·산출물·분석 경계
 - [agent-design.md](agent-design.md) — 상태에 따른 판단 분기·도구
 - [validation.md](validation.md) — 전체 데모·첫 기술 검증·미정 항목
+- [analysis-validation-contract.md](analysis-validation-contract.md) — 실제 모델·충돌·접근성·자세 일관성의 승인 계약과 검증 결과
 - [agent-evaluation-review.md](agent-evaluation-review.md) — main 기준 에이전트·기존 평가셋 리뷰, 오프라인 실패 재현과 평가 도구·데이터 조사 방향
 - [integration-review.md](integration-review.md) — 팀원 변경 통합 리뷰·근거 연결 수정·고정 평가 재점검과 성능 개선 우선순위
 - [agent-improvement-review.md](agent-improvement-review.md) — 항목별 판정·제한된 자동 검색의 전후 측정과 예측 정확도 개선의 중단·재개 기준
