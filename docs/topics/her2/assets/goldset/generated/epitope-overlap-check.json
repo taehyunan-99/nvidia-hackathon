@@ -55,10 +55,10 @@
       "case": "8JYR",
       "candidate_is_trastuzumab": false,
       "prediction_sha256": "2096f52c3905c596ad39815a94abc1c03a16c97c704bf35607ba2ee7607025b8",
-      "measurement_state": "measured",
-      "overlap_fraction": 0.0,
+      "measurement_state": "not_run",
+      "overlap_fraction": null,
       "overlapping_target_residues": [],
-      "reason": null
+      "reason": "제출된 표적 서열(202잔기)에 1N8Z 계면 잔기가 하나도 대응되지 않아 견줄 수 없다. 겹침이 0인 것이 아니라 잴 대상이 없다."
     },
     {
       "case": "3N85",

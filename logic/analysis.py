@@ -245,6 +245,16 @@ def reference_epitope_overlap_measurement(
         return Measurement.not_run(
             _OVERLAP_TOPIC, "예측 구조에서 표적 쪽 접촉 잔기를 찾지 못해 견줄 대상이 없다.")
     to_reference = contacts.sequence_position_map(sequence, reference_sequence)
+    # 표적 construct가 기준 에피토프를 담고 있지 않으면 0이 아니라 잴 대상이 없는 것이다.
+    # 실측: 8JYR은 도메인 I 202잔기만 제출해 기준 잔기 19개 중 0개가 대응된다. 그 입력에서
+    # 0.000을 내보내면 "다른 자리에 붙었다"로 읽힌다. 3N85는 624잔기라 19개가 모두 대응된다.
+    covered = sorted(reference & set(to_reference.values()))
+    if not covered:
+        return Measurement.not_run(
+            _OVERLAP_TOPIC,
+            f"제출된 표적 서열({len(sequence)}잔기)에 {REFERENCE_COMPLEX} 계면 잔기가 "
+            f"하나도 대응되지 않아 견줄 수 없다. 겹침이 0인 것이 아니라 잴 대상이 없다.",
+        )
     hits = [n for n in own if to_reference.get(n) in reference]
     return Measurement(
         topic=_OVERLAP_TOPIC,
@@ -255,6 +265,7 @@ def reference_epitope_overlap_measurement(
         definition=(
             f"예측 구조의 표적 쪽 접촉 잔기 {len(own)}개 중 {len(hits)}개가 "
             f"{REFERENCE_COMPLEX}(트라스투주맙-HER2) 실험 계면과 같은 자리다. "
+            f"제출된 표적에 대응되는 기준 계면 잔기는 {len(covered)}/{len(reference)}개다. "
             "서열 정렬로 번호를 맞춰 셌다. 후보가 트라스투주맙과 다른데 이 비율이 높으면 "
             "학습에서 본 계면을 재현한 예측일 수 있다. 결합력·효능 지표가 아니다."
         ),
