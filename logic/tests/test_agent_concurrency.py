@@ -51,10 +51,9 @@ class SlowCountingClient:
         time.sleep(0.05)
         with self._lock:
             self.predictions += 1
-        return {
-            "structures": [{"structure": "data_x\n#\n"}],
-            "confidence_scores": [0.87],
-        }
+        from logic.tests.test_flow import prediction_response
+        return prediction_response(polymers)
+
 
     def chat(self, model, messages, **kwargs):  # pragma: no cover - 이 시험에서는 안 쓴다
         raise AssertionError("이 시험은 모델을 부르지 않는다")

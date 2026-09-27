@@ -32,6 +32,7 @@ export async function loadMolecule(
   mode: string,
   residues: { chain: string; seq: number }[],
   chainIds?: string[],
+  contextChainIds?: string[],
 ) {
   const data = await plugin.builders.data.rawData({ data: cif, label: pdb });
   const trajectory = await plugin.builders.structure.parseTrajectory(
@@ -92,7 +93,7 @@ export async function loadMolecule(
     await plugin.builders.structure.tryCreateComponentFromExpression(
       structure,
       Q.struct.generator.atomGroups({
-        "chain-test": Q.core.logic.not([
+        "chain-test": contextChainIds ? Q.core.set.has([Q.set(...contextChainIds), Q.struct.atomProperty.macromolecular.label_asym_id()]) : Q.core.logic.not([
           Q.core.set.has([
             Q.set(...chains),
             Q.struct.atomProperty.macromolecular.label_asym_id(),

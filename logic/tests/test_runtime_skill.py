@@ -33,15 +33,15 @@ def test_public_structure_records_reason_for_skipping_skill_without_prediction(t
 
 def test_selected_skill_records_call_and_independent_validation_failure(tmp_path):
     client, flow, _, tools = _setup(tmp_path, _variant())
+    flow.client.predict_complex = lambda *args, **kwargs: {"structures": [{"structure": "data_x\n#\n"}]}
     events = []; flow._progress = events.append
     tools.check_input(); tools.lookup_public_structure()
     tools.predict_structure('공개 구조가 없어 구조 예측이 필요하다.')
-    assert client.predictions == 1
     skill = [e['activity'] for e in events if e['activity']['kind'] == 'skill']
     assert [a['phase'] for a in skill] == ['selected', 'running', 'completed']
     checked = next(e['activity'] for e in events if e['activity']['kind'] == 'verification')
     assert checked['verification']['status'] == 'failed'  # stub is data_x with no atoms
-    assert checked['next_action'] == 'compare_structure'
+    assert checked['next_action'] == '종료'
     assert any(c['name'] == '좌표 파싱' and c['status'] == 'failed' for c in checked['verification']['checks'])
 
 

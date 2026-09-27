@@ -28,6 +28,7 @@ from logic.tests.test_flow import (
     candidate,
     entity_sequence,
     make_request,
+    prediction_response,
 )
 
 PREDICTED = {
@@ -46,7 +47,7 @@ class ScriptedClient:
 
     def predict_complex(self, polymers, **kwargs):
         self.predictions += 1
-        return PREDICTED
+        return prediction_response(polymers)
 
     def chat(self, model, messages, **kwargs):
         self.asked.append(messages[1]["content"])

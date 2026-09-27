@@ -11,6 +11,8 @@ dependencies = [
   "gemmi>=0.7,<1",
   "requests>=2.32,<3",
   "nvidia-nat[langchain]>=1.9,<2",
+  "biopython==1.88",
+  "numpy>=2,<3",
 ]
 
 [dependency-groups]

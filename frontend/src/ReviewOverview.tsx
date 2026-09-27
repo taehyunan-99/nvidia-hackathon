@@ -22,7 +22,11 @@ const topics: Record<string, string> = {
   confidence: "구조 신뢰도",
   interface_contact_residues: "접촉 잔기",
   atom_clash: "원자 간 충돌",
-  surface_exposure: "표면 노출",
+  surface_exposure: "관측 단백질 표면적",
+  buried_sasa_sum: "양쪽 매몰 면적 합",
+  observed_glycan_protein_sasa_reduction: "관측 당의 표면 감소량",
+  whole_range_accessibility: "전체 구간 접근성",
+  interface_review: "조건별 구조 근거",
 };
 export function ReviewOverview({
   result,
@@ -147,7 +151,7 @@ export function ReviewOverview({
       <div
         className="compare-grid review-focus"
       >
-        {live ? selectedView ? <PredictedStructure key={selectedView.artifactId} view={selectedView} apiBase={apiBase} /> : <p className="panel">선택한 후보와 조건에 연결된 구조 파일이 없습니다.</p> : <Suspense fallback={<p>3D 준비 중…</p>}><StructurePreview /></Suspense>}
+        {live ? selectedView ? <PredictedStructure key={`${selectedView.artifactId}-${conditionKind}`} context={conditionKind === "context"} view={selectedView} apiBase={apiBase} /> : <p className="panel">선택한 후보와 조건에 연결된 구조 파일이 없습니다.</p> : <Suspense fallback={<p>3D 준비 중…</p>}><StructurePreview /></Suspense>}
         <section
           className="panel review-evidence"
           aria-live="polite"
@@ -178,8 +182,8 @@ export function ReviewOverview({
                 <div>
                   <dt>측정값</dt>
                   <dd>
-                    {selected.value ?? "미제공"}
-                    {selected.unit ? ` ${selected.unit}` : ""}
+                    {typeof selected.value === "number" ? Number(selected.value).toLocaleString("ko-KR", { maximumFractionDigits: 2 }) : "미제공"}
+                    {selected.unit ? ` ${selected.unit === "angstrom^2" ? "Å²" : selected.unit === "angstrom" ? "Å" : selected.unit}` : ""}
                   </dd>
                 </div>
                 <div>

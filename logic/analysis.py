@@ -4,10 +4,9 @@
 연결하는 자리이며, 아직 없는 계산은 `not_run`으로 남긴다. 여기서 임계값을
 정하거나 없는 값을 채우지 않는다.
 
-지금 실제로 사용할 수 있는 것은 팀이 미리 계산해 둔 접촉 잔기 선택뿐이다
-(frontend/public/structures/contacts.json). 그 파일의 생성 스크립트는 스스로를
-"proximity selections ... Not binding assessment"로 적고 있으므로, 결합력·효능이
-아니라 접촉 위치 근거로만 쓴다.
+공개·예측 구조의 표면 계산은 surface_analysis.py가 같은 좌표 기준으로 수행한다.
+이 모듈은 좌표의 접촉과 기준 계면 비교를 담당한다.
+계산값은 구조 근거이며 결합력·효능 판정이 아니다.
 """
 
 from __future__ import annotations
@@ -127,7 +126,7 @@ def contact_measurement(pdb_id: str, source: dict[str, Any], expected_sha256: st
 
 
 def predicted_contact_measurement(
-    path: Path, chain_mapping: list[dict[str, Any]], source: dict[str, Any]
+    path: Path, chain_mapping: list[dict[str, Any]], source: dict[str, Any], *, predicted: bool = True
 ) -> Measurement:
     """예측 구조의 접촉 잔기. 좌표에서 직접 고른다.
 
@@ -159,6 +158,11 @@ def predicted_contact_measurement(
             "interface_contact_residues",
             "예측 구조 파일에서 원자 좌표를 읽지 못했다.",
         )
+    if not ({target} | antibody).issubset({atom.label_asym_id for atom in atoms}):
+        return Measurement.not_run(
+            "interface_contact_residues",
+            "예측 구조에 표적·중쇄·경쇄 중 일부 사슬의 원자 좌표가 없어 접촉 잔기를 계산하지 않았다.",
+        )
     found = contacts.contact_residues(atoms, {target}, antibody)
     if not found:
         # 0건은 "계산했는데 접촉이 없다"이다. 미실행과 구분해서 내보낸다.
@@ -168,7 +172,7 @@ def predicted_contact_measurement(
             state="measured",
             value=0.0,
             unit="residue",
-            definition=_CONTACT_DEFINITION.format(cutoff=contacts.CUTOFF_ANGSTROM) + _PREDICTED_CONTACT_LIMIT,
+            definition=_CONTACT_DEFINITION.format(cutoff=contacts.CUTOFF_ANGSTROM) + (_PREDICTED_CONTACT_LIMIT if predicted else ""),
             sources=[source],
         )
     return Measurement(
@@ -177,7 +181,7 @@ def predicted_contact_measurement(
         state="measured",
         value=float(len(found)),
         unit="residue",
-        definition=_CONTACT_DEFINITION.format(cutoff=contacts.CUTOFF_ANGSTROM) + _PREDICTED_CONTACT_LIMIT,
+        definition=_CONTACT_DEFINITION.format(cutoff=contacts.CUTOFF_ANGSTROM) + (_PREDICTED_CONTACT_LIMIT if predicted else ""),
         residues=[residue(label_asym_id=c, label_seq_id=s) for c, s in found],
         sources=[source],
     )

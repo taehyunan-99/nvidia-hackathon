@@ -190,6 +190,21 @@ def test_zero_contacts_is_measured_not_unrun(tmp_path):
     assert m.residues == []
 
 
+def test_missing_antibody_coordinates_are_not_zero_contacts(tmp_path):
+    path = tmp_path / "target-only.cif"
+    path.write_text(
+        "data_x\nloop_\n_atom_site.type_symbol\n_atom_site.label_asym_id\n"
+        "_atom_site.label_seq_id\n_atom_site.Cartn_x\n_atom_site.Cartn_y\n_atom_site.Cartn_z\n"
+        "C A 1 0 0 0\n#\n", encoding="utf-8",
+    )
+    mapping = [{"role": role, "label_asym_id": chain}
+               for role, chain in (("target", "A"), ("heavy", "B"), ("light", "C"))]
+    result = analysis.predicted_contact_measurement(path, mapping, {})
+    assert result.state == "not_run"
+    assert result.value is None
+    assert result.reason
+
+
 def test_missing_file_fails_without_inventing_a_number(tmp_path):
     mapping = [
         {"role": "target", "label_asym_id": "A"},

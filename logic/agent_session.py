@@ -200,6 +200,9 @@ class CandidateTools:
         from .flow import _explain
         d = self._decision("structure_source", "use_experimental", reason, facts)
         self.s.structure_id = self.flow._record_experimental(self.s.cid, self.s.match)
+        if self.s.structure_id is None:
+            self.s.terminal = "failed"
+            return self.flow.states[self.s.cid].reason
         self.flow._emit(self.s.cid, "prediction", "skipped", _explain(d))
         return f"공개 실험 구조를 검토 구조로 정했다({self.s.structure_id}). 다음은 compare_structure."
 
