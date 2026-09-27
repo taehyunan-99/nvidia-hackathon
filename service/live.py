@@ -64,6 +64,8 @@ def run_process(request: dict, progress, alive) -> dict:
             while True:
                 if not alive():
                     raise InterruptedError("작업 점유권 또는 세션이 종료되었습니다.")
+                # Observe exit before reading so the final flushed events are drained.
+                returncode = process.poll()
                 if progress_path.exists():
                     with progress_path.open(encoding="utf-8") as stream:
                         stream.seek(offset)
@@ -76,7 +78,7 @@ def run_process(request: dict, progress, alive) -> dict:
                             update = json.loads(line)
                             validate(update, "ProgressUpdate")
                             progress(update)
-                if process.poll() is not None:
+                if returncode is not None:
                     break
                 time.sleep(1)
             if pending.strip():

@@ -51,6 +51,12 @@ def test_public_structure_run_persists_progress_result_and_private_files(live_se
     state = restarted.get(f"/api/runs/{run_id}").json()
     assert state["status"] == "completed", state
     assert state["result_available"]
+    events = state["activity_events"]
+    assert events and all(event["activity"]["kind"] in {"stage", "skill"} for event in events)
+    assert len([e for e in events if e["activity"]["kind"] == "skill" and e["activity"]["phase"] == "skipped"]) == 2
+    for candidate in state["candidates"]:
+        assert any(event["candidate_id"] == candidate["candidate_id"] and event["step_id"] == "reporting"
+                   and event["activity"]["phase"] == "completed" for event in events)
     assert [candidate["status"] for candidate in state["candidates"]] == ["completed", "completed"]
     assert all(any(step["status"] == "completed" for step in candidate["steps"]) for candidate in state["candidates"])
     result = restarted.get(f"/api/runs/{run_id}/result").json()
@@ -70,6 +76,7 @@ def test_public_structure_run_persists_progress_result_and_private_files(live_se
     stranger = TestClient(create_app(DSN, root, mode="live"))
     stranger.post("/api/session")
     assert stranger.get(f"/api/runs/{run_id}/artifacts/{ready[0]['artifact_id']}").status_code == 404
+    assert not list(root.glob("runs/*/call_log.jsonl")), "offline subprocess must not load local API credentials"
 
 
 def test_direct_input_uses_same_saved_live_result(live_service):

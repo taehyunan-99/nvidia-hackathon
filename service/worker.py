@@ -231,16 +231,24 @@ def save_progress(dsn: str, run_id: str, owner: str, update: dict) -> bool:
         candidate = next((item for item in state["candidates"] if item["candidate_id"] == candidate_id), None)
         if candidate is None:
             raise ValueError("진행 이벤트의 후보 ID가 일치하지 않습니다.")
-        step = next(item for item in candidate["steps"] if item["step_id"] == update["step_id"])
-        step.update(status=update["status"], reason=update["reason"])
-        candidate["current_step"] = update["step_id"] if update["status"] == "running" else None
-        if update["status"] == "running":
-            candidate["status"] = "running"
-        elif update["step_id"] == "reporting":
-            statuses = {item["status"] for item in candidate["steps"]}
-            candidate["status"] = "completed" if update["status"] == "completed" else "partial" if "held" in statuses else "failed"
-        if update["reason"] and update["status"] in {"held", "failed"}:
-            candidate["reason"] = update["reason"]
+        activity = update.get("activity")
+        if activity:
+            events = state.setdefault("activity_events", [])
+            if any(event.get("activity", {}).get("event_id") == activity["event_id"] for event in events):
+                return True
+            events.append(update)
+            state["activity_events"] = events[-200:]
+        if not activity or activity["kind"] == "stage":
+            step = next(item for item in candidate["steps"] if item["step_id"] == update["step_id"])
+            step.update(status=update["status"], reason=update["reason"])
+            candidate["current_step"] = update["step_id"] if update["status"] == "running" else None
+            if update["status"] == "running":
+                candidate["status"] = "running"
+            elif update["step_id"] == "reporting":
+                statuses = {item["status"] for item in candidate["steps"]}
+                candidate["status"] = "completed" if update["status"] == "completed" else "partial" if "held" in statuses else "failed"
+            if update["reason"] and update["status"] in {"held", "failed"}:
+                candidate["reason"] = update["reason"]
         state["updated_at"] = update["updated_at"]
         validate(state, "Run")
         conn.execute("UPDATE runs SET state_json = %s WHERE id = %s", (Jsonb(state), run_id))

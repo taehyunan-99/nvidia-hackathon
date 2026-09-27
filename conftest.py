@@ -40,5 +40,6 @@ def _no_live_credentials(request, monkeypatch):
     from logic import env
 
     for name in env.KEY_NAMES:
-        monkeypatch.delenv(name, raising=False)
+        # Empty inherited values also block .env reload in analysis subprocesses.
+        monkeypatch.setenv(name, "")
     monkeypatch.setattr(env, "ENV_PATH", env.REPO_ROOT / "does-not-exist.env")

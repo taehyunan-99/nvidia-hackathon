@@ -79,7 +79,7 @@
         "example_id": {"anyOf":[{"type":"string","minLength":1},{"type":"null"}]},
         "public_data_confirmed": {"const":true},
         "target": {"$ref":"#/$defs/Target"},
-        "candidates": {"type":"array","items":{"$ref":"#/$defs/Candidate"},"minItems":2,"maxItems":3},
+        "candidates": {"type":"array","items":{"$ref":"#/$defs/Candidate"},"minItems":2,"maxItems":4},
         "uploads": {"type":"array","items":{"$ref":"#/$defs/Upload"}}
       },
       "required": ["schema_version","example_id","public_data_confirmed","target","candidates","uploads"],
@@ -190,6 +190,7 @@
         "status": {"enum":["queued","running","completed","partial","failed","interrupted"]},
         "settings_version": {"type":"string","minLength":1},
         "candidates": {"type":"array","items":{"$ref":"#/$defs/CandidateProgress"}},
+        "activity_events": {"type":"array","maxItems":200,"items":{"allOf":[{"$ref":"#/$defs/ProgressUpdate"},{"required":["activity"]}]}},
         "created_at": {"type":"string","format":"date-time"},
         "started_at": {"anyOf":[{"type":"string","format":"date-time"},{"type":"null"}]},
         "finished_at": {"anyOf":[{"type":"string","format":"date-time"},{"type":"null"}]},
@@ -417,7 +418,7 @@
         "data_mode": {"enum":["mock","live"]},
         "run_id": {"type":"string","minLength":1},
         "review_id": {"type":"string","minLength":1},
-        "candidate_ids": {"type":"array","items":{"type":"string","minLength":1},"minItems":2,"maxItems":3,"uniqueItems":true},
+        "candidate_ids": {"type":"array","items":{"type":"string","minLength":1},"minItems":2,"maxItems":4,"uniqueItems":true},
         "created_at": {"type":"string","format":"date-time"},
         "settings_version": {"type":"string","minLength":1},
         "structures": {"type":"array","items":{"$ref":"#/$defs/Structure"}},
@@ -467,6 +468,23 @@
       "required": ["schema_version","run_id","review_id","input","settings_version","work_dir","uploads","data_mode"],
       "additionalProperties": false
     },
+    "AgentActivity": {
+      "type": "object",
+      "properties": {
+        "event_id": {"type":"string","minLength":1},
+        "kind": {"enum":["stage","tool","agent","fallback","skill","verification"]},
+        "name": {"type":"string","minLength":1},
+        "phase": {"enum":["pending","running","completed","skipped","held","failed","rejected","loaded","selected"]},
+        "actor": {"enum":["agent","code","rule","workflow"]},
+        "reason": {"type":"string","maxLength":1000},
+        "next_action": {"type":"string","maxLength":500},
+        "available_tools": {"type":"array","uniqueItems":true,"maxItems":7,"items":{"enum":["check_input","lookup_public_structure","use_experimental_structure","predict_structure","compare_structure","submit_opinion","hold_candidate"]}},
+        "skill": {"type":"object","properties":{"id":{"const":"boltz2-nim"},"revision":{"type":"string","pattern":"^[0-9a-f]{40}$"}},"required":["id","revision"],"additionalProperties":false},
+        "verification": {"type":"object","properties":{"status":{"enum":["passed","failed","unverified"]},"checks":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"status":{"enum":["passed","failed","unverified"]}},"required":["name","status"],"additionalProperties":false}}},"required":["status","checks"],"additionalProperties":false}
+      },
+      "required": ["event_id","kind","name","phase","actor"],
+      "additionalProperties": false
+    },
     "ProgressUpdate": {
       "type": "object",
       "properties": {
@@ -476,7 +494,8 @@
         "step_id": {"enum":["input_mapping","evidence_review","prediction","structure_comparison","reporting"]},
         "status": {"enum":["pending","running","completed","skipped","held","failed"]},
         "reason": {"anyOf":[{"type":"string","minLength":1},{"type":"null"}]},
-        "updated_at": {"type":"string","format":"date-time"}
+        "updated_at": {"type":"string","format":"date-time"},
+        "activity": {"$ref":"#/$defs/AgentActivity"}
       },
       "required": ["schema_version","run_id","candidate_id","step_id","status","reason","updated_at"],
       "additionalProperties": false

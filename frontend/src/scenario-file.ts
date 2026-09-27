@@ -36,7 +36,7 @@ export function parseScenarioFile(value: unknown): ScenarioFile {
   const mode = value.data_mode as DataMode;
   const input = value.input;
   const frames = value.scenarios;
-  if (!record(input) || !record(input.target) || !records(input.candidates) || input.candidates.length < 2 || input.candidates.length > 3 || !records(frames) || frames.length < 1) invalid();
+  if (!record(input) || !record(input.target) || !records(input.candidates) || input.candidates.length < 2 || input.candidates.length > 4 || !records(frames) || frames.length < 1) invalid();
   const ids = input.candidates.map((candidate) => {
     if (typeof candidate.candidate_id !== "string" || typeof candidate.name !== "string") invalid();
     return candidate.candidate_id;

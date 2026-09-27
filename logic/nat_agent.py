@@ -187,7 +187,9 @@ def run_candidate(flow, session: CandidateSession, *, config_path: Path = CONFIG
     tools = CandidateTools(flow, session)
     # ponytail: 결정론적 입력 검사는 모델 호출 전에 끝낸다. 오류 후보는 LLM을 쓰지 않는다.
     if not session.input_checked:
+        tools.actor = "code"
         tools.check_input()
+        tools.actor = "agent"
         session.calls[-1]["executed_by"] = "code"
     if session.terminal:
         return None
@@ -196,11 +198,16 @@ def run_candidate(flow, session: CandidateSession, *, config_path: Path = CONFIG
         token = _CURRENT.set(tools)
         try:
             async with load_workflow(config_path) as sm:
-                async with sm.run(_prompt(session)) as runner:
+                from .runtime_skill import load_boltz_skill, identity
+                instructions = load_boltz_skill()
+                flow._activity(session.cid, "skill", "boltz2-nim", "loaded", "code", skill=identity())
+                flow._activity(session.cid, "agent", "next_action", "running", "agent")
+                async with sm.run(_prompt(session) + instructions) as runner:
                     return await runner.result(to_type=str)
         finally:
             _CURRENT.reset(token)
 
+    flow._activity(session.cid, "agent", "next_action", "running", "agent")
     try:
         final = _run_sync(_go())
     except Exception as exc:

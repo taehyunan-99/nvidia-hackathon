@@ -19,11 +19,12 @@ from __future__ import annotations
 
 import math
 import os
+from uuid import uuid4
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 
-from . import analysis, structures
+from . import analysis, structures, runtime_skill
 from .agent import Decider, Decision, Option, RuleDecider
 from .agent_session import CandidateSession
 from .contract import SCHEMA_VERSION, now_rfc3339, validate
@@ -153,6 +154,7 @@ class Flow:
         # 분기 선택은 판단부가 한다. 모델을 못 부르면 아래 default로 돌아간다.
         self.decider = decider if decider is not None else Decider(self.client)
         self._progress = progress
+        self._stage_actor = "workflow"
 
         self.states: dict[str, _CandidateState] = {
             c["candidate_id"]: _CandidateState(
@@ -181,6 +183,23 @@ class Flow:
             "status": status,
             "reason": reason,
             "updated_at": now_rfc3339(),
+            "activity": {"event_id": uuid4().hex, "kind": "stage", "name": step_id,
+                         "phase": status, "actor": self._stage_actor},
+        }
+        validate(update, "ProgressUpdate")
+        if self._progress:
+            self._progress(update)
+
+    def _activity(self, cid: str, kind: str, name: str, phase: str, actor: str, **details) -> None:
+        # Observation only: never advance a stage or expose model prompts/raw tool output.
+        step = next((s for s in self.states[cid].steps.values() if s["status"] == "running"),
+                    self.states[cid].steps["input_mapping"])
+        update = {
+            "schema_version": SCHEMA_VERSION, "run_id": self.run_id, "candidate_id": cid,
+            "step_id": step["step_id"], "status": step["status"], "reason": None,
+            "updated_at": now_rfc3339(),
+            "activity": {"event_id": uuid4().hex, "kind": kind, "name": name,
+                         "phase": phase, "actor": actor, **details},
         }
         validate(update, "ProgressUpdate")
         if self._progress:
@@ -202,7 +221,12 @@ class Flow:
         return output
 
     def _run_candidate(self, candidate: dict[str, Any]) -> None:
-        self._resume(CandidateSession(candidate))
+        previous = self._stage_actor
+        self._stage_actor = "rule"
+        try:
+            self._resume(CandidateSession(candidate))
+        finally:
+            self._stage_actor = previous
 
     def _run_candidate_nat(self, candidate: dict[str, Any]) -> None:
         from . import nat_agent
@@ -245,6 +269,7 @@ class Flow:
         # ③ 분기: 기존 구조 / 예측 / 자료 부족 — 판단 주체는 self.decider
         if s.structure_id is None:
             choice = self._choose_source(cid, candidate, s.match)
+            self._skill_choice(cid, choice)
             if choice.action == "use_experimental":
                 s.structure_id = self._record_experimental(cid, s.match)
                 self._emit(cid, "prediction", "skipped", _explain(choice))
@@ -270,12 +295,16 @@ class Flow:
 
     def _continue_by_rule(self, s: CandidateSession, why: str) -> None:
         """에이전트가 끝내지 못한 후보를 규칙으로 마무리한다. 모델을 다시 부르지 않는다."""
+        self._activity(s.cid, "fallback", "continue_by_rule", "running", "rule")
         saved = self.decider
+        previous = self._stage_actor
+        self._stage_actor = "rule"
         self.decider = RuleDecider(why, decisions=saved.decisions, model=saved.model)
         try:
             self._resume(s)
         finally:
             self.decider = saved
+            self._stage_actor = previous
 
     # ------------------------------------------------------------ 입력 검사
     def _check_input(self, candidate: dict[str, Any]) -> list[str]:
@@ -492,11 +521,52 @@ class Flow:
             "operator_id": None,
         }
 
+    def _skill_choice(self, cid: str, decision: Decision) -> None:
+        phase = {"predict": "selected", "use_experimental": "skipped", "hold": "held"}[decision.action]
+        self._activity(cid, "skill", "boltz2-nim", phase,
+                       "agent" if decision.decided_by == "model" else "rule",
+                       skill=runtime_skill.identity(), reason=decision.reason[:1000],
+                       next_action={"predict": "predict_structure", "use_experimental": "compare_structure", "hold": "종료"}[decision.action])
+
+    def _verify_skill_result(self, cid: str, response: dict, structure_id: str | None) -> None:
+        from .contacts import parse_atoms
+        entries = response.get("structures") or []
+        structure = next((s for s in self.structures if s["structure_id"] == structure_id), None)
+        scores = response.get("confidence_scores")
+        confidence_ok = (isinstance(scores, list) and len(scores) == len(entries)
+                         and all(type(v) in (int, float) and math.isfinite(v) and 0 <= v <= 1 for v in scores))
+        atoms_ok = False
+        if structure:
+            try:
+                atoms_ok = bool(parse_atoms((self.work_dir / f"{structure_id}.cif").read_text()))
+            except (OSError, ValueError):
+                pass
+        mapping_ok = bool(structure and all(any(c["role"] == role and c.get("label_asym_id")
+                          for c in structure["chain_mapping"]) for role in ("target", "heavy", "light")))
+        checks = [{"name": name, "status": "passed" if passed else "failed"} for name, passed in [
+            ("요청한 구조 1개 반환", len(entries) == 1),
+            ("mmCIF 형식", bool(entries) and all(isinstance(e, dict) and e.get("format") == "mmcif" for e in entries)),
+            ("좌표 파싱", atoms_ok), ("입력 서열·사슬 대응", mapping_ok),
+        ]]
+        checks.append({"name": "구조별 신뢰도 범위·개수", "status": "passed" if confidence_ok else "unverified"})
+        status = "failed" if any(c["status"] == "failed" for c in checks) else "unverified" if not confidence_ok else "passed"
+        self._activity(cid, "verification", "boltz2-nim", "completed", "code",
+                       skill=runtime_skill.identity(), verification={"status": status, "checks": checks},
+                       reason="응답 형식과 입력 대응 확인이며 구조 정확도·결합력 검증은 아닙니다.",
+                       next_action="compare_structure" if structure_id else "종료")
+
     # ------------------------------------------------------------ 예측 경로
     def _predict(
         self, cid: str, candidate: dict[str, Any], match: structures.StructureMatch
     ) -> str | None:
         """예측을 시도한다. 자료가 부족하거나 호출이 막히면 None을 돌려 보류한다."""
+        try:
+            runtime_skill.load_boltz_skill()
+        except (OSError, ValueError, KeyError):
+            reason = "고정된 NVIDIA 스킬 파일을 검증하지 못해 호출을 보류합니다."
+            self._activity(cid, "skill", "boltz2-nim", "held", "code", skill=runtime_skill.identity(), reason=reason, next_action="스킬 파일 확인")
+            self._hold_candidate(cid, reason)
+            return None
         target_seq = structures.normalize_sequence(self.request["input"]["target"].get("fasta") or "")
         heavy = structures.normalize_sequence(candidate["heavy_chain_fasta"])
         light = structures.normalize_sequence(candidate["light_chain_fasta"])
@@ -517,6 +587,7 @@ class Flow:
                 )
         if missing:
             reason = " ".join(missing) + " 자료 보완 후 다시 실행해야 한다."
+            self._activity(cid, "skill", "boltz2-nim", "held", "code", skill=runtime_skill.identity(), reason=reason[:1000], next_action="입력 보완")
             self._emit(cid, "evidence_review", "held", reason)
             self._emit(cid, "prediction", "held", reason)
             for step in ("structure_comparison", "reporting"):
@@ -538,9 +609,11 @@ class Flow:
             {"id": "H", "molecule_type": "protein", "sequence": heavy},
             {"id": "L", "molecule_type": "protein", "sequence": light},
         ]
+        self._activity(cid, "skill", "boltz2-nim", "running", "code", skill=runtime_skill.identity(), next_action="응답 검증")
         try:
             response = self.client.predict_complex(polymers)
         except MissingCredentials as exc:
+            self._activity(cid, "skill", "boltz2-nim", "held", "code", skill=runtime_skill.identity(), reason="인증 정보가 없어 호출하지 못했습니다.", next_action="인증 확인")
             reason = str(exc)
             self._emit(cid, "prediction", "held", reason)
             for step in ("structure_comparison", "reporting"):
@@ -549,12 +622,14 @@ class Flow:
             self._hold_opinion(cid, "structure_availability", "hold", reason)
             return None
         except CallFailed as exc:
+            self._activity(cid, "skill", "boltz2-nim", "failed", "code", skill=runtime_skill.identity(), reason="예측 호출이 실패했습니다.", next_action="실패 기록 확인")
             self._fail_prediction(cid, str(exc))
             return None
 
-        return self._record_predicted(
-            cid, response, {"target": target_seq, "heavy": heavy, "light": light}
-        )
+        self._activity(cid, "skill", "boltz2-nim", "completed", "code", skill=runtime_skill.identity(), next_action="응답 검증")
+        structure_id = self._record_predicted(cid, response, {"target": target_seq, "heavy": heavy, "light": light})
+        self._verify_skill_result(cid, response, structure_id)
+        return structure_id
 
     def _fail_prediction(self, cid: str, reason: str) -> None:
         self._emit(cid, "prediction", "failed", reason)
