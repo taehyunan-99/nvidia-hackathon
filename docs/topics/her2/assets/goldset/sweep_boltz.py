@@ -83,6 +83,8 @@ def score_prediction(cif_text: str, ref_positions: set, ref_seq: str, target_seq
     if not t_chain or not ab_chains:
         return {"error": f"사슬을 찾지 못했다 target={t_chain} ab={sorted(ab_chains)}"}
     atoms = contacts.parse_atoms(cif_text)
+    if not atoms:
+        return {"error": "원자를 읽지 못했다. 접촉 0개로 채점하지 않는다."}
     pairs = contacts.contact_residues(atoms, {t_chain}, ab_chains)
     own = sorted(n for c, n in pairs if c == t_chain)
     pred = remap(target_seq, ref_seq, own)
