@@ -7,6 +7,10 @@
 > [후속 재검증](../../agent-performance-validation.md): mmCIF 파싱 오류를 수정했다.
 > 5샘플의 일반적인 우위와 0.923 상한 해석은 확인되지 않았다. 원본 보존·제품 코드 선택 검증은
 > `verify_prediction.py`를 사용한다. `generated/verified-*.json`이 수정 후 결과다.
+>
+> [샘플 간 일치도](../../agent-performance-validation.md): `check_sample_agreement.py`가 캐시된
+> 5샘플 응답 2건으로 샘플끼리 같은 자리에 붙는지 잰다. API를 부르지 않는다. 맞은 사례와
+> 틀린 사례가 갈리지 않아 **지표로 쓰지 않는다**. 결과는 `generated/sample-agreement-check.json`이다.
 
 에이전트가 내리는 판단을 **실제 결정 구조에 대고 채점**하기 위한 자료와 도구다.
 만든 날 2026-09-26. 배경과 결과 해석은 [judgment-scoring.md](../../judgment-scoring.md)에 있다.
@@ -94,6 +98,7 @@ Boltz-2는 스텁으로 막으므로 유료 예측 호출은 0회다. Nemotron�
 | `probe_match.py` | 구조 조회 판정 채점(모델·네트워크 없음) |
 | `gate_run.py` | 도구·관문을 실제 10건으로 끝까지 구동(모델 없음, 예측 스텁) |
 | `score_hold_vs_predict.py` | 보류 대 예측 갈림길을 실제 에이전트로 채점 |
+| `check_sample_agreement.py` | 같은 입력 5샘플의 에피토프가 서로 일치하는지 잰다(캐시만 사용) |
 | `generated/*.json` | 위 스크립트들의 결과 |
 
 ## 돌리는 법
@@ -108,6 +113,7 @@ python docs/topics/her2/assets/goldset/gate_run.py
 python docs/topics/her2/assets/goldset/calc_contacts.py     # cif/ 필요
 python docs/topics/her2/assets/goldset/epitope_overlap.py   # cif/ 필요
 python docs/topics/her2/assets/goldset/score_epitope.py
+python docs/topics/her2/assets/goldset/check_sample_agreement.py
 
 # Nemotron을 부른다 (유료 예측은 0회)
 python docs/topics/her2/assets/goldset/score_hold_vs_predict.py --sleep 300

@@ -1,0 +1,455 @@
+{
+  "definition": "같은 입력으로 나온 예측 구조들의 표적 쪽 접촉 잔기 집합을 짝마다 자카드로 견준 평균이다. 정답을 몰라도 잴 수 있다는 것이 이 지표를 시험한 이유다.",
+  "verdict": "지표로 쓸 수 없다. 맞은 사례(1N8Z)와 틀린 사례(1S78) 모두 평균 일치도가 0.05 이하이고 모든 샘플에 공통인 잔기가 0개여서 둘을 가르지 못한다.",
+  "note": "캐시된 응답만 쓴다. 새 API 호출 0회. 5샘플 응답이 있는 사례는 1N8Z·1S78뿐이라 8JYR·3N85는 여기서 잴 수 없다. 사례 2건·샘플 10개로 임계값을 정하지 않는다.",
+  "cases": [
+    {
+      "case": "1N8Z",
+      "candidate_is_trastuzumab": true,
+      "diffusion_samples": 5,
+      "mean_pairwise_agreement": 0.05,
+      "min_pairwise_agreement": 0.0,
+      "max_pairwise_agreement": 0.5,
+      "residues_in_every_sample": [],
+      "residues_in_any_sample": 56,
+      "consensus_fraction": 0.0,
+      "experimental_epitope_size": 19,
+      "selected_by_confidence": "prediction_model_0.cif",
+      "selected_agreement_with_experiment": 0.792,
+      "closest_to_experiment": "prediction_model_0.cif",
+      "closest_agreement_with_experiment": 0.792,
+      "confidence_rank_picks_closest": true,
+      "confidence_margin_over_runner_up": 0.0395,
+      "single_sample_run_file": "st-measured-boltz2.cif",
+      "single_sample_matches_selected": true,
+      "samples": [
+        {
+          "index": 0,
+          "source": "prediction_model_0.cif",
+          "confidence_score": 0.8499215245246887,
+          "iptm_score": 0.48980170488357544,
+          "sha256": "9b60bf8da46ad70558d5296733e003008741021f689f6500fe82a493ac0f6051",
+          "contact_residues": [
+            557,
+            558,
+            560,
+            561,
+            569,
+            570,
+            571,
+            572,
+            573,
+            579,
+            582,
+            585,
+            586,
+            587,
+            588,
+            591,
+            593,
+            596,
+            598,
+            600,
+            602,
+            603,
+            604,
+            605
+          ],
+          "contact_count": 24,
+          "agreement_with_experiment": 0.792,
+          "experimental_residues_recovered": 19,
+          "same_epitope_as_single_sample_run": true
+        },
+        {
+          "index": 1,
+          "source": "prediction_model_4.cif",
+          "confidence_score": 0.8047847747802734,
+          "iptm_score": 0.33733171224594116,
+          "sha256": "f1b45ecb1e8da08013f35664f8cef1331a45d1543b768f9d1cf86d96983c07ce",
+          "contact_residues": [
+            206,
+            210,
+            211,
+            212,
+            215,
+            216,
+            223,
+            224,
+            225,
+            226,
+            227
+          ],
+          "contact_count": 11,
+          "agreement_with_experiment": 0.0,
+          "experimental_residues_recovered": 0,
+          "same_epitope_as_single_sample_run": false
+        },
+        {
+          "index": 2,
+          "source": "prediction_model_3.cif",
+          "confidence_score": 0.805971086025238,
+          "iptm_score": 0.3370656669139862,
+          "sha256": "8886855cc864547b38def39aa9db7be0bcb101e4d24f0f937cdb837b73cb0a4a",
+          "contact_residues": [
+            32,
+            206,
+            211,
+            215,
+            223,
+            224,
+            225,
+            226,
+            227,
+            228,
+            229,
+            239,
+            241
+          ],
+          "contact_count": 13,
+          "agreement_with_experiment": 0.0,
+          "experimental_residues_recovered": 0,
+          "same_epitope_as_single_sample_run": false
+        },
+        {
+          "index": 3,
+          "source": "prediction_model_1.cif",
+          "confidence_score": 0.8104357123374939,
+          "iptm_score": 0.34919634461402893,
+          "sha256": "51579967a868bae534d2625c9fbc72c28ffc2902aa4e162b377b05d712fc45f8",
+          "contact_residues": [
+            101,
+            102,
+            103,
+            104,
+            448
+          ],
+          "contact_count": 5,
+          "agreement_with_experiment": 0.0,
+          "experimental_residues_recovered": 0,
+          "same_epitope_as_single_sample_run": false
+        },
+        {
+          "index": 4,
+          "source": "prediction_model_2.cif",
+          "confidence_score": 0.8095488548278809,
+          "iptm_score": 0.37326496839523315,
+          "sha256": "e51cec8617c5fad268a41fa19b29981913683c83472b7f1809921bb37a8d55a8",
+          "contact_residues": [
+            11,
+            87,
+            88,
+            89,
+            90,
+            128,
+            132,
+            161,
+            326,
+            329,
+            330
+          ],
+          "contact_count": 11,
+          "agreement_with_experiment": 0.0,
+          "experimental_residues_recovered": 0,
+          "same_epitope_as_single_sample_run": false
+        }
+      ],
+      "pairwise": [
+        {
+          "a": "prediction_model_0.cif",
+          "b": "prediction_model_4.cif",
+          "jaccard": 0.0
+        },
+        {
+          "a": "prediction_model_0.cif",
+          "b": "prediction_model_3.cif",
+          "jaccard": 0.0
+        },
+        {
+          "a": "prediction_model_0.cif",
+          "b": "prediction_model_1.cif",
+          "jaccard": 0.0
+        },
+        {
+          "a": "prediction_model_0.cif",
+          "b": "prediction_model_2.cif",
+          "jaccard": 0.0
+        },
+        {
+          "a": "prediction_model_4.cif",
+          "b": "prediction_model_3.cif",
+          "jaccard": 0.5
+        },
+        {
+          "a": "prediction_model_4.cif",
+          "b": "prediction_model_1.cif",
+          "jaccard": 0.0
+        },
+        {
+          "a": "prediction_model_4.cif",
+          "b": "prediction_model_2.cif",
+          "jaccard": 0.0
+        },
+        {
+          "a": "prediction_model_3.cif",
+          "b": "prediction_model_1.cif",
+          "jaccard": 0.0
+        },
+        {
+          "a": "prediction_model_3.cif",
+          "b": "prediction_model_2.cif",
+          "jaccard": 0.0
+        },
+        {
+          "a": "prediction_model_1.cif",
+          "b": "prediction_model_2.cif",
+          "jaccard": 0.0
+        }
+      ]
+    },
+    {
+      "case": "1S78",
+      "candidate_is_trastuzumab": false,
+      "diffusion_samples": 5,
+      "mean_pairwise_agreement": 0.005,
+      "min_pairwise_agreement": 0.0,
+      "max_pairwise_agreement": 0.027,
+      "residues_in_every_sample": [],
+      "residues_in_any_sample": 104,
+      "consensus_fraction": 0.0,
+      "experimental_epitope_size": 26,
+      "selected_by_confidence": "prediction_model_0.cif",
+      "selected_agreement_with_experiment": 0.0,
+      "closest_to_experiment": "prediction_model_2.cif",
+      "closest_agreement_with_experiment": 0.167,
+      "confidence_rank_picks_closest": false,
+      "confidence_margin_over_runner_up": 0.012,
+      "single_sample_run_file": "st-measured-boltz2.cif",
+      "single_sample_matches_selected": false,
+      "samples": [
+        {
+          "index": 0,
+          "source": "prediction_model_1.cif",
+          "confidence_score": 0.8100932240486145,
+          "iptm_score": 0.42847201228141785,
+          "sha256": "0176baee22414374219665521ca1b17329247fa276b30d7385334212e94bbe5c",
+          "contact_residues": [
+            256,
+            258,
+            259,
+            260,
+            261,
+            303,
+            555,
+            557,
+            558,
+            560,
+            561,
+            562,
+            563,
+            569,
+            570,
+            571,
+            572,
+            573,
+            587,
+            588,
+            589,
+            590,
+            593
+          ],
+          "contact_count": 23,
+          "agreement_with_experiment": 0.021,
+          "experimental_residues_recovered": 1,
+          "same_epitope_as_single_sample_run": true
+        },
+        {
+          "index": 1,
+          "source": "prediction_model_3.cif",
+          "confidence_score": 0.7927407622337341,
+          "iptm_score": 0.38445430994033813,
+          "sha256": "13304fe1a7bdb67296c5b87ab85f36364e995dd154ce8e63d7bd67dcadb84076",
+          "contact_residues": [
+            10,
+            11,
+            13,
+            42,
+            66,
+            86,
+            87,
+            89,
+            90,
+            96,
+            99,
+            101,
+            102,
+            134,
+            135,
+            161,
+            332,
+            356,
+            357,
+            360,
+            362,
+            363,
+            364,
+            365,
+            366,
+            389,
+            424
+          ],
+          "contact_count": 27,
+          "agreement_with_experiment": 0.0,
+          "experimental_residues_recovered": 0,
+          "same_epitope_as_single_sample_run": false
+        },
+        {
+          "index": 2,
+          "source": "prediction_model_0.cif",
+          "confidence_score": 0.8221117854118347,
+          "iptm_score": 0.5107623934745789,
+          "sha256": "a8c101f1115962678794460498e8390d5b7189fcca02106e48a93c6b019f58f3",
+          "contact_residues": [
+            141,
+            143,
+            144,
+            146,
+            148,
+            159,
+            160,
+            164,
+            166,
+            167,
+            168,
+            169,
+            170,
+            171,
+            172,
+            180,
+            181,
+            196
+          ],
+          "contact_count": 18,
+          "agreement_with_experiment": 0.0,
+          "experimental_residues_recovered": 0,
+          "same_epitope_as_single_sample_run": false
+        },
+        {
+          "index": 3,
+          "source": "prediction_model_2.cif",
+          "confidence_score": 0.7933087348937988,
+          "iptm_score": 0.3832898736000061,
+          "sha256": "44cf88a94a7b8d7979e52b826004059bb46806c48007db2ea36d64130aaea175",
+          "contact_residues": [
+            215,
+            216,
+            225,
+            226,
+            227,
+            228,
+            241,
+            243,
+            244,
+            245,
+            246,
+            247,
+            248,
+            251,
+            252,
+            253,
+            254,
+            255,
+            257,
+            260,
+            262,
+            263,
+            264
+          ],
+          "contact_count": 23,
+          "agreement_with_experiment": 0.167,
+          "experimental_residues_recovered": 7,
+          "same_epitope_as_single_sample_run": false
+        },
+        {
+          "index": 4,
+          "source": "prediction_model_4.cif",
+          "confidence_score": 0.7904362678527832,
+          "iptm_score": 0.34894776344299316,
+          "sha256": "5b81362e95d00482ac655a47bd8eb9506bdf8c285e04b7d2aa48cf53e26c22e5",
+          "contact_residues": [
+            495,
+            508,
+            509,
+            510,
+            511,
+            512,
+            524,
+            525,
+            536,
+            548,
+            549,
+            550,
+            551,
+            552,
+            563
+          ],
+          "contact_count": 15,
+          "agreement_with_experiment": 0.0,
+          "experimental_residues_recovered": 0,
+          "same_epitope_as_single_sample_run": false
+        }
+      ],
+      "pairwise": [
+        {
+          "a": "prediction_model_1.cif",
+          "b": "prediction_model_3.cif",
+          "jaccard": 0.0
+        },
+        {
+          "a": "prediction_model_1.cif",
+          "b": "prediction_model_0.cif",
+          "jaccard": 0.0
+        },
+        {
+          "a": "prediction_model_1.cif",
+          "b": "prediction_model_2.cif",
+          "jaccard": 0.022
+        },
+        {
+          "a": "prediction_model_1.cif",
+          "b": "prediction_model_4.cif",
+          "jaccard": 0.027
+        },
+        {
+          "a": "prediction_model_3.cif",
+          "b": "prediction_model_0.cif",
+          "jaccard": 0.0
+        },
+        {
+          "a": "prediction_model_3.cif",
+          "b": "prediction_model_2.cif",
+          "jaccard": 0.0
+        },
+        {
+          "a": "prediction_model_3.cif",
+          "b": "prediction_model_4.cif",
+          "jaccard": 0.0
+        },
+        {
+          "a": "prediction_model_0.cif",
+          "b": "prediction_model_2.cif",
+          "jaccard": 0.0
+        },
+        {
+          "a": "prediction_model_0.cif",
+          "b": "prediction_model_4.cif",
+          "jaccard": 0.0
+        },
+        {
+          "a": "prediction_model_2.cif",
+          "b": "prediction_model_4.cif",
+          "jaccard": 0.0
+        }
+      ]
+    }
+  ]
+}
