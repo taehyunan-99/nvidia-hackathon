@@ -5,7 +5,7 @@
 기준일: 2026-09-22. **공식 확인은 에이전트 데모 제출까지이며, 아래 기준은 조사 결과에 따른 제안이다.**
 영상 길이·저장소 공개·필수 파일 등은 [공식 신청서](https://docs.google.com/forms/d/e/1FAIpQLScyZ5GYYaCOycNUzXVUTenliEUmSEIdXelVdYphvMvLeLuiHA/viewform) 확인 전 확정할 수 없다.
 
-현재 HER2 프로젝트의 실제 목표 범위는 [입력부터 3D 비교·결과 보고까지의 검증 기준](../topics/her2/validation.md)을 따른다. 아래 내용은 범용 준비 참고자료다.
+현재 Bio-3 프로젝트의 실제 목표 범위는 [입력부터 3D 비교·결과 보고까지의 검증 기준](../topics/her2/validation.md)을 따른다. 아래 내용은 범용 준비 참고자료다.
 
 ## 권장하는 최소 완료 흐름 — 분석
 

@@ -7,6 +7,8 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
 
 from logic import structures
@@ -117,14 +119,38 @@ def _review_input(candidates: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def public_reference_demo() -> dict[str, Any]:
-    """사이트 기본 테스트 입력. 공개 구조에서 재생성하고 결과는 포함하지 않는다."""
+    """사이트의 실험 구조 비교 입력. 공개 구조에서 재생성하고 결과는 포함하지 않는다."""
     data = experimental_demo()
     data["example_id"] = "her2-public-reference-v1"
     return data
 
 
+def _deposited_candidate(pdb_id: str, cid: str, name: str, heavy: str, light: str) -> dict[str, Any]:
+    sequences = json.loads(Path(__file__).with_name('demo_sequences.json').read_text())[pdb_id]['entities']
+    return _candidate(cid, name, sequences[heavy], sequences[light], pdb_id)
+
+
+def public_prediction_demo() -> dict[str, Any]:
+    """실재하는 항체 단독 구조의 기탁 서열로 HER2 복합체를 예측한다."""
+    data = public_reference_demo()
+    data['example_id'] = 'her2-public-prediction-v1'
+    data['candidates'][1] = _deposited_candidate(
+        '6BHZ', 'trastuzumab-d185a', 'Trastuzumab Fab D185A', '1', '2')
+    return data
+
+
+def public_hold_demo() -> dict[str, Any]:
+    """예측 후보와 좌표 선택 문제로 계산이 보류되는 실제 Fab37을 함께 검토한다."""
+    data = public_prediction_demo()
+    data['example_id'] = 'her2-public-hold-v1'
+    data['candidates'].append(_deposited_candidate('3N85', 'fab37', 'Fab37', '3', '2'))
+    return data
+
+
 PRESETS = {
     "public-reference": public_reference_demo,
+    "public-prediction": public_prediction_demo,
+    "public-hold": public_hold_demo,
     "experimental": experimental_demo,
     "prediction": prediction_demo,
 }

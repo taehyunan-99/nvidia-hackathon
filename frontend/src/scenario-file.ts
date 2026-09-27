@@ -15,7 +15,7 @@ function record(value: unknown): value is Record<string, unknown> {
 }
 
 function invalid(): never {
-  throw new Error("v0.1.0 모의 시나리오 JSON 형식을 확인해 주세요.");
+  throw new Error("v0.1.0 검토 데이터 형식을 확인해 주세요.");
 }
 
 function records(value: unknown): value is Record<string, unknown>[] {

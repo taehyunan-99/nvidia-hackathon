@@ -6,6 +6,7 @@ RUN cd frontend && npm ci
 COPY frontend ./frontend
 COPY docs/frontend-hosting/fixtures/scenarios.json ./docs/frontend-hosting/fixtures/scenarios.json
 COPY docs/frontend-hosting/fixtures/public-reference-input.json ./docs/frontend-hosting/fixtures/public-reference-input.json
+COPY docs/frontend-hosting/fixtures/public-prediction-input.json docs/frontend-hosting/fixtures/public-hold-input.json ./docs/frontend-hosting/fixtures/
 RUN cd frontend && VITE_API_BASE='' VITE_PERSISTENT_SERVICE=1 npm run build
 
 FROM caddy:2-alpine

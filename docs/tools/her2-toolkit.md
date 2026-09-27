@@ -1,7 +1,7 @@
 # HER2 항체 후보 검토에 필요한 도구
 
 `nvidia/docs/18-bionemo-molecule-protein-skills-tools.md`(2026-09-22 조사)와 `24-her2-antibody-agent-design.md`(2026-09-24 설계)에서 관련 항목을 선별했다.
-편집일: 2026-09-24. 현재 HER2 프로젝트의 도구 참고자료이며, 설치·API 실행·성능 검증 결과는 아니다.
+편집일: 2026-09-24. 현재 Bio-3 프로젝트의 도구 참고자료이며, 설치·API 실행·성능 검증 결과는 아니다.
 
 ## 설계와 실행의 연결
 
@@ -12,10 +12,10 @@
 
 | 도구 / 스킬명 | 어떤 도구인가? | 입력 → 출력 | 가능한 활용 |
 |---|---|---|---|
-| [MSA-Search / `msa-search-nim`](https://github.com/NVIDIA-BioNeMo/bionemo-agent-toolkit/tree/main/nim-skills/msa-search-nim) | 유사 서열을 찾아 다중서열정렬 생성 | 단백질 서열 → A3M/FASTA 정렬 | 구조 예측용 진화 정보 준비, 복합체용 paired MSA |
-| [Boltz-2 / `boltz2-nim`](https://github.com/NVIDIA-BioNeMo/bionemo-agent-toolkit/tree/main/nim-skills/boltz2-nim) | 이 프로젝트에서는 HER2–항체 복합체 구조 예측에 사용 | HER2·항체 서열과 필요한 MSA 등 → mmCIF·구조 신뢰도 | 필요한 후보 복합체의 예측·구조 비교 |
+| [MSA-Search / `msa-search-nim`](https://github.com/NVIDIA-BioNeMo/bionemo-agent-toolkit/tree/main/nim-skills/msa-search-nim) | 유사 서열을 찾아 다중서열정렬 생성 | 단백질 서열 → A3M/FASTA 정렬 | 일반 기능은 진화 정보·paired MSA 준비. 현재 미연결·기본 실행 제외, 추가 검증 후 도입 검토 |
+| [Boltz-2 / `boltz2-nim`](https://github.com/NVIDIA-BioNeMo/bionemo-agent-toolkit/tree/main/nim-skills/boltz2-nim) | 이 프로젝트에서는 HER2–항체 복합체 구조 예측에 사용 | 현재 HER2·중쇄·경쇄 서열 → mmCIF·구조 신뢰도 (별도 MSA 미전달) | 필요한 후보 복합체의 예측·구조 비교 |
 
-MSA는 유사 서열의 정렬이며 PDB·mmCIF는 3D 구조 파일 형식이다.
+MSA는 유사 서열의 정렬이며 PDB·mmCIF는 3D 구조 파일 형식이다. MSA는 현재 미연결이며 기본 실행에서 제외한다. 다른 실제 후보에서 입력·사슬 순서·모델 설정을 통제한 추가 검증 후 도입을 검토한다. 고정된 NVIDIA 원본 스킬의 일반 MSA 지원 설명은 그대로 보존한다.
 Boltz-2의 소분자 친화도 기능을 항체–단백질 결합력 평가에 그대로 적용하지 않는다.
 인터페이스 신뢰도·구조 일관성은 후속 검토를 돕는 신호이며 실험적 결합·효능을 증명하지 않는다.
 [결과 해석의 원출처](https://github.com/NVIDIA-BioNeMo/bionemo-agent-toolkit/blob/main/nim-skills/boltz2-nim/references/science.md).

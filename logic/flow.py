@@ -396,6 +396,8 @@ class Flow:
             for label, n in self._lengths(candidate).items()
         ]
         facts.extend(match.notes)
+        if match.calculation_hold_reason:
+            facts.append(f'실험 구조 계산 보류: {match.calculation_hold_reason}')
         if match.blocked_reason:
             facts.append(match.blocked_reason)
         return facts
@@ -634,7 +636,9 @@ class Flow:
             return None
 
         partial_note = None
-        if match.pdb_id and (match.heavy_exact or match.light_exact):
+        if match.pdb_id and match.heavy_exact and match.light_exact and match.target_entity is None:
+            partial_note = f'{match.pdb_id}의 중쇄·경쇄 서열은 일치하지만 항체 단독 구조여서 HER2 복합체를 예측한다.'
+        elif match.pdb_id and (match.heavy_exact or match.light_exact) and not match.complete:
             partial_note = (
                 f"{match.pdb_id}과 한쪽 사슬만 서열이 일치한다. 같은 후보로 보지 않고 예측 경로로 진행했다."
             )
@@ -795,7 +799,7 @@ class Flow:
                     value=detail['antibody_ca_rmsd'], unit='angstrom', sources=[source],
                     definition=f"예측 2샘플의 공통 표적 Cα {detail['target_ca_count']}개 정렬 후 항체 Cα {detail['antibody_ca_count']}개의 RMSD. "
                     f"표적 정렬 RMSD {detail['target_ca_rmsd']:.4f} Å. 공통 관측 잔기만 비교하며 일치도는 정확도·결합력 증거가 아니다. "
-                    f"참조 {reference_id}, 비교 {sample_id}; 원본 좌표는 보존하고 표시 시 정렬한다.")
+                    f"참조 {reference_id}, 비교 {sample_id}; 원본 좌표는 보존하고 계산 시 표적을 정렬했다. 화면에서는 각 구조를 개별 표시한다.")
             except (ValueError, KeyError, TypeError) as exc:
                 measurement.state, measurement.reason = 'failed', f'복수 예측 비교 실패: {exc}'
         self._add_evidence(cid, condition['condition_id'], evidence_structure, measurement)

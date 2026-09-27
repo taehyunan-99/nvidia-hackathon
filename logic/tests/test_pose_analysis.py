@@ -61,6 +61,8 @@ def test_both_valid_samples_are_saved_with_alignment_and_private_artifacts(tmp_p
     pose = next(e for e in flow.evidence if e['topic'] == 'pose_consistency')
     assert pose['value'] == pytest.approx(5)
     assert pose['structure_id'] == second['structure_id']
+    assert '계산 시 표적을 정렬' in pose['definition'] and '개별 표시' in pose['definition']
+    assert '표시 시 정렬' not in pose['definition']
     assert len(verified_files({'result': {'artifacts': flow.artifacts, 'structures': flow.structures}, 'files': []}, tmp_path)) == 2
 
 

@@ -1,9 +1,33 @@
 import { useState } from "react";
 import publicReferenceInput from "../../docs/frontend-hosting/fixtures/public-reference-input.json";
+import publicPredictionInput from "../../docs/frontend-hosting/fixtures/public-prediction-input.json";
+import publicHoldInput from "../../docs/frontend-hosting/fixtures/public-hold-input.json";
+
 import type { ReviewInput } from "./scenario-file";
 import { PersistentInput } from "./PersistentInput";
 import "./about-page.css";
 import "./team-page.css";
+
+const testScenarios = [
+  { id: "public-prediction", label: "실험 구조와 예측 비교", summary: "Boltz-2 예측 포함", input: publicPredictionInput,
+    title: "실험 구조가 없는 복합체는 어떻게 검토할까요?",
+    description: "Trastuzumab의 실험 복합체와 D185A 항체의 새 HER2 복합체 예측을 비교합니다.",
+    evidence: "항체 단독 출처를 확인하고 Boltz-2 예측 두 구조의 신뢰도·자세 차이를 살펴봅니다." },
+  { id: "public-reference", label: "실험 구조 비교", summary: "예측 없이 실험 구조 재사용", input: publicReferenceInput,
+    title: "두 항체는 HER2의 어디에 결합할까요?",
+    description: "서로 다른 부위에 결합하는 Trastuzumab과 Pertuzumab의 공개 실험 구조를 비교합니다.",
+    evidence: "일치하는 실험 복합체를 재사용하고 새 예측을 생략한 이유를 확인합니다." },
+  { id: "public-hold", label: "예측과 계산 보류 확인", summary: "예측과 좌표 문제의 보류 확인", input: publicHoldInput,
+    title: "구조가 있어도 계산을 보류해야 할까요?",
+    description: "실험·예측 비교에 Fab37을 더해 좌표 선택 문제로 계산을 생략하는 이유를 확인합니다.",
+    evidence: "Fab37 실험 구조의 부분 점유율·대체 좌표와 계산 보류를 구분해 봅니다." },
+];
+const candidateNotes: Record<string, { label: string; description: string }> = {
+  trastuzumab: { label: "실험 복합체", description: "HER2의 세포막 가까운 영역에 결합한 공개 구조" },
+  pertuzumab: { label: "실험 복합체", description: "HER2 도메인 II에 결합한 공개 구조" },
+  "trastuzumab-d185a": { label: "복합체 예측 필요", description: "항체 단독 실험 구조의 서열을 사용해 HER2 복합체 예측" },
+  fab37: { label: "계산 보류 확인", description: "실험 복합체는 있으나 부분 점유율·대체 좌표 선택이 필요" },
+};
 export function AgentStart({
   onRunLive,
   onRunMock,
@@ -21,14 +45,16 @@ export function AgentStart({
   liveError: string;
   savedMode: "mock" | "live" | null;
 }) {
+  const [scenarioId, setScenarioId] = useState("public-prediction");
+  const scenario = testScenarios.find((item) => item.id === scenarioId)!;
   const [inputMode, setInputMode] = useState<"test" | "direct">("test");
   const persistent = import.meta.env.VITE_PERSISTENT_SERVICE === "1";
   const busy = mockBusy || Boolean(liveBusy);
   return (
     <section className="agent-start">
       <div className="agent-heading">
-        <span className="agent-kicker">HER2 RESEARCH AGENT</span>
-        <h1>HER2 항체 검토를 시작하세요</h1>
+        <span className="agent-kicker">Bio-3 RESEARCH AGENT</span>
+        <h1>Bio-3로 항체 검토를 시작하세요</h1>
         <p>준비된 테스트 데이터로 시작하거나, 직접 자료를 입력하세요.</p>
       </div>
       <div className="input-mode-switch" role="group" aria-label="입력 방식 선택">
@@ -37,30 +63,45 @@ export function AgentStart({
       </div>
       <div hidden={inputMode !== "test"}>
         <section className="analysis-launcher test-data-card" aria-label="테스트 데이터 소개">
-          <div className="launcher-heading">
-            <div><span className="eyebrow">공개 실험 데이터 · 항체 2종</span><h2>두 항체는 HER2의 어디에 결합할까요?</h2></div>
+          <div className="test-scenario-picker">
+            <span className="test-scenario-label">시나리오 선택</span>
+            <div className="test-scenario-cards" role="group" aria-label="시나리오 선택">
+              {testScenarios.map((item) => <button key={item.id} type="button" className="test-scenario-option"
+                aria-label={item.label} aria-pressed={scenarioId === item.id} disabled={busy} onClick={() => setScenarioId(item.id)}>
+                <span className="test-scenario-meta"><span>후보 {item.input.candidates.length}개</span><span>{scenarioId === item.id ? "✓ 선택됨" : "선택"}</span></span>
+                <strong>{item.label}</strong>
+                <span className="test-scenario-summary">{item.summary}</span>
+              </button>)}
+            </div>
           </div>
-          <p className="test-intro">같은 표적에 서로 다르게 결합하는 두 항체를 비교해 보세요.<br />검증된 공개 서열과 구조가 준비되어 있어, 파일 없이 시작할 수 있습니다.</p>
+          <div className="launcher-heading">
+            <div><span className="eyebrow">공개 데이터 · 후보 {scenario.input.candidates.length}개</span><h2>{scenario.title}</h2></div>
+          </div>
+          <p className="test-intro">{scenario.description}<br />공개 기탁 서열이 준비되어 있어 파일 없이 시작할 수 있습니다.</p>
           <div className="test-candidates">
-            <article><span className="test-site">막 인접 부위</span><h3>Trastuzumab <small>Fab</small></h3><p>HER2의 세포막 가까운 영역에 결합</p><a href="https://www.rcsb.org/structure/1N8Z" target="_blank" rel="noreferrer">구조 출처 · 1N8Z ↗</a></article>
-            <article><span className="test-site">도메인 II</span><h3>Pertuzumab <small>Fab</small></h3><p>HER2의 다른 결합 부위를 인식</p><a href="https://www.rcsb.org/structure/1S78" target="_blank" rel="noreferrer">구조 출처 · 1S78 ↗</a></article>
+            {scenario.input.candidates.map((candidate) => <article key={candidate.candidate_id}>
+              <span className="test-site">{candidateNotes[candidate.candidate_id].label}</span>
+              <h3>{candidate.name}</h3><p>{candidateNotes[candidate.candidate_id].description}</p>
+              <a href={candidate.sources[0].url} target="_blank" rel="noreferrer">구조 출처 · {candidate.sources[0].record_id} ↗</a>
+            </article>)}
           </div>
           <div className="test-data-guide"><h3>검토 후 확인할 수 있어요</h3><ol>
-            <li><strong>결합 위치 비교</strong><span>두 항체의 접촉 잔기를 3D 구조에서 살펴봅니다.</span></li>
-            <li><strong>판단에 사용한 근거</strong><span>어떤 실험 구조를 썼고, 왜 새 예측을 생략했는지 확인합니다.</span></li>
+            <li><strong>결합 위치 비교</strong><span>계산 가능한 후보의 접촉·표면·충돌 근거를 3D 구조와 연결합니다.</span></li>
+            <li><strong>판단에 사용한 근거</strong><span>{scenario.evidence}</span></li>
             <li><strong>다음에 확인할 질문</strong><span>당쇄·주변 환경에서 알려진 것과 부족한 자료를 구분합니다.</span></li>
           </ol></div>
           <p className="test-boundary">이 테스트는 구조 근거를 비교합니다. 항체의 결합력이나 치료 효과 순위를 정하지 않습니다.</p>
           {(persistent ? mockError : liveError) && <p role="alert" className="notice">{persistent ? mockError : liveError}</p>}
           <div className="launcher-action test-start-action">
             <span>{persistent && savedMode === null ? "서비스 연결을 확인하는 중입니다." : persistent && savedMode === "mock" ? "현재는 모의 실행 환경입니다. 실제 분석은 수행하지 않습니다." : "준비된 입력으로 새 검토를 실행합니다."}</span>
-            <button type="button" className="primary" disabled={busy || (persistent && savedMode === null)} onClick={() => persistent ? onRunMock(publicReferenceInput, new Map()) : onRunLive("public-reference")}>
+            <button type="button" className="primary" disabled={busy || (persistent && savedMode === null)} onClick={() => persistent ? onRunMock(scenario.input, new Map()) : onRunLive(scenario.id)}>
               {busy ? "접수·분석 중…" : persistent && savedMode === "mock" ? "테스트 데이터로 모의 검토 →" : "테스트 데이터로 검토 시작 →"}
             </button>
           </div>
           <details className="test-data-details"><summary>데이터 범위와 분석 한계</summary>
-            <p>표적 입력은 HER2 세포외 구간(P04626 23–629), 항체 입력은 전체 항체 중 결합을 담당하는 Fab의 기탁 서열입니다. 1N8Z는 2.52 Å, 1S78은 3.25 Å 해상도의 X선 결정 구조입니다.</p>
-            <p>관측된 당 성분은 전체 세포 환경을 대신하지 않습니다. 표면 노출·충돌 계산은 현재 연결되지 않아 미실행으로 표시되며, 결과에 추가 확인 의견이 나올 수 있습니다.</p>
+            <p>표적은 HER2 세포외 구간(P04626 23–629)의 607잔기이며, 후보는 Fab의 전체 기탁 중쇄·경쇄입니다. 좌표에 없는 잔기를 입력에서 삭제하지 않습니다.</p>
+            {scenarioId !== "public-reference" && <p>6BHZ는 HER2가 없는 항체 단독 구조입니다. 1N8Z와 경쇄 D185A뿐 아니라 중쇄 말단 5잔기도 달라 결과 차이를 한 변이의 효과로 단정하지 않습니다. 예측 결과는 실행마다 달라질 수 있습니다.</p>}
+            <p>접촉·표면·정식 충돌은 유효한 좌표와 도구가 확보된 범위에서 계산합니다. 관측 당 비교는 전체 당쇄·막 환경을 대신하지 않으며, 당이 없는 예측의 당 영향과 전체 접근성은 미확인으로 남깁니다.</p>
           </details>
         </section>
       </div>
@@ -76,7 +117,7 @@ export function About({ onStart }: { onStart: () => void }) {
     <div className="about-page">
       <section className="about-hero" aria-labelledby="about-title">
         <div className="about-hero-copy">
-          <span className="about-label">HER2 항체 후보 검토 에이전트 · 해커톤 데모</span>
+          <span className="about-label">Bio-3 · 항체 후보 검토 에이전트 · 해커톤 데모</span>
           <h1 id="about-title"><span>HER2 항체 후보를</span><span><em>근거부터 검토합니다</em></span></h1>
           <p>서열과 구조가 같은 후보를 가리키는지 확인하고, 자료에 맞는 분석 도구를 선택합니다. 3D 비교에서 확인한 근거와 보류 이유를 다음 확인 질문까지 연결합니다.</p>
           <button type="button" className="primary" onClick={onStart}>공개 구조 예제로 시작 <span aria-hidden="true">↗</span></button>
@@ -158,8 +199,8 @@ export function Team() {
   return (
     <section className="team-page" aria-labelledby="team-title">
       <div className="team-heading">
-        <span className="team-eyebrow">THE TEAM / HER2 RESEARCH AGENT</span>
-        <h1 id="team-title">HER2 항체 검토 에이전트를 만든 세 사람</h1>
+        <span className="team-eyebrow">THE TEAM / Bio-3 RESEARCH AGENT</span>
+        <h1 id="team-title">Bio-3를 만든 세 사람</h1>
         <p>서비스와 분석 로직을 나누어 개발하고 하나의 검토 흐름으로 연결했습니다.</p>
       </div>
       <div className="team-member-grid">

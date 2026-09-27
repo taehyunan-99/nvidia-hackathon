@@ -31,7 +31,7 @@ Windows 팀원이 있어 심볼릭 링크 없이 일반 파일·상대 경로를
 
 ## 7. COMMANDS — 검증 명령
 
-저장소 루트에서 `git diff --check`와 상대 링크·import 대상을 확인한다. handoff 실행 도구를 바꿀 때는 Python 3.11+ 환경에서 `python3 -m unittest discover -s .agents/skills/handoff/tests -p 'test_*.py'`와 `node --test .agents/skills/handoff/tests/parallel-wait.test.cjs`를 실행한다. 이는 공통 스킬 검사이며 HER2 제품 검사는 [서비스 가이드](../frontend-hosting/AGENTS.md)를 따른다.
+저장소 루트에서 `git diff --check`와 상대 링크·import 대상을 확인한다. handoff 실행 도구를 바꿀 때는 Python 3.11+ 환경에서 `python3 -m unittest discover -s .agents/skills/handoff/tests -p 'test_*.py'`와 `node --test .agents/skills/handoff/tests/parallel-wait.test.cjs`를 실행한다. 이는 공통 스킬 검사이며 Bio-3 제품 검사는 [서비스 가이드](../frontend-hosting/AGENTS.md)를 따른다.
 
 ## 8. ⚠️ LEARNED CAUTIONS — 학습된 주의사항
 

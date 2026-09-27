@@ -1,4 +1,4 @@
-# ARCHITECTURE — HER2 항체 후보 검토 웹 서비스
+# ARCHITECTURE — Bio-3 항체 후보 검토 웹 서비스
 
 작성일: 2026-09-25. 설계 초안. 2026-09-27 후속: 로컬 구현·격리 이미지 검증은 [실행 점검](frontend-hosting/runtime-audit.md)에 기록하며 공개 배포는 미검증이다. 아래 최초 설계와 현재 구현 차이를 구분한다.
 

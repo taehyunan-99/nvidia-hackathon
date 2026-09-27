@@ -145,7 +145,7 @@ def create_app(
 ) -> FastAPI:
     if mode not in {"mock", "live"} or min(max_upload_bytes, max_session_runs, max_active_runs, max_sessions, max_session_reviews, max_storage_bytes, max_request_bytes, requests_per_minute) <= 0 or not dsn:
         raise ValueError("DATABASE_URL, DATA_MODE, MAX_UPLOAD_BYTES 설정을 확인하세요.")
-    api = FastAPI(title="HER2 후보 검토 서비스", version=SCHEMA_VERSION)
+    api = FastAPI(title="Bio-3 후보 검토 서비스", version=SCHEMA_VERSION)
     data_root = Path(data_root).resolve()
     api.add_middleware(IntakeLimit, dsn=dsn, mode=mode, max_bytes=max_request_bytes,
                        requests_per_minute=requests_per_minute)

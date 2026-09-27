@@ -29,6 +29,8 @@ const topics: Record<string, string> = {
   observed_glycan_protein_sasa_reduction: "관측 당의 표면 감소량",
   pose: "예측 간 자세 차이",
   pose_consistency: "예측 간 항체 RMSD",
+  prediction_confidence: "예측 신뢰도",
+  predicted_epitope_overlap_with_reference: "참조 구조와 예측 접촉의 중복",
   whole_range_accessibility: "전체 구간 접근성",
   interface_review: "조건별 구조 근거",
 };
@@ -114,21 +116,20 @@ export function ReviewOverview({
           </select>
         </label>
       </div>
-      <div className="review-control-field">
-        <span>확인할 근거 선택</span>
-        <div className="evidence-categories" role="group" aria-label="확인할 근거 선택">
+      <label className="review-control-field">
+        확인할 근거 선택
+        <select
+          value={selected?.evidence_id ?? ""}
+          disabled={!evidence.length}
+          onChange={(event) => onSelect(candidate, conditionKind, event.target.value)}
+        >
           {evidence.length ? evidence.map((item) => (
-            <button
-              key={item.evidence_id}
-              title={`${topics[item.topic] ?? item.topic} · ${states[item.measurement_state] ?? item.measurement_state}`}
-              aria-pressed={selected?.evidence_id === item.evidence_id}
-              onClick={() => onSelect(candidate, conditionKind, item.evidence_id)}
-            >
+            <option key={item.evidence_id} value={item.evidence_id}>
               {topics[item.topic] ?? item.topic}
-            </button>
-          )) : <span>이 조건에 연결된 근거가 없습니다.</span>}
-        </div>
-      </div>
+            </option>
+          )) : <option value="">이 조건에 연결된 근거가 없습니다.</option>}
+        </select>
+      </label>
     </div>
   );
   return (
@@ -257,7 +258,7 @@ export function ReviewOverview({
       </div>
       </section>
       <details className="review-matrix-details">
-        <summary>두 후보의 자료 준비 상태 비교</summary>
+        <summary>후보별 자료 준비 상태 비교</summary>
         <div className="matrix-scroll">
           <table className="review-matrix">
             <caption>선택한 검토 조건에 기록된 {live ? "실제 실행" : "모의 자료"}의 상태입니다.</caption>

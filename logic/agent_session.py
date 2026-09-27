@@ -141,6 +141,8 @@ class CandidateTools:
             properties = schema['function']['parameters'].get('properties', {})
             if name == 'predict_structure':
                 reason = ('일치하는 실험 구조가 있지만 새 예측을 추가로 비교한다.' if self.s.match.complete else
+                          '중쇄·경쇄가 일치하는 항체 단독 출처에는 HER2 복합체가 없어 확인된 서열로 예측한다.'
+                          if self.s.match.heavy_exact and self.s.match.light_exact and self.s.match.target_entity is None else
                           '공개 실험 구조가 현재 후보와 완전히 일치하지 않아 확인된 서열로 예측한다.')
             elif name == 'use_experimental_structure':
                 reason = '후보 서열과 일치하는 공개 실험 구조를 사용한다.'

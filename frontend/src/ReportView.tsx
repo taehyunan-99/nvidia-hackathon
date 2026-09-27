@@ -20,6 +20,8 @@ const topics: Record<string, string> = {
   observed_glycan_protein_sasa_reduction: "관측 당의 표면 감소량",
   pose: "예측 간 자세 차이",
   pose_consistency: "예측 간 항체 RMSD",
+  prediction_confidence: "예측 신뢰도",
+  predicted_epitope_overlap_with_reference: "참조 구조와 예측 접촉의 중복",
   whole_range_accessibility: "전체 구간 접근성",
   interface_review: "조건별 구조 근거",
 };
@@ -39,6 +41,13 @@ function SourceList({ sources }: { sources: Source[] }) {
     return <li key={`${source.url}-${index}`}>{href ? <a href={href} target="_blank" rel="noopener noreferrer">{source.title}</a> : source.title}{source.record_id && <span> · {source.record_id}</span>}</li>;
   })}</ul>;
 }
+function evidenceKind(item: Evidence): string {
+  if (item.kind !== "computed") return evidenceKinds[item.kind] ?? item.kind;
+  if (item.measurement_state !== "measured") return "계산값 없음";
+  if (item.topic === "prediction_confidence") return "모델이 제공한 신뢰도";
+  return item.structure_id ? "구조에서 계산한 값" : "계산 결과";
+}
+
 function evidenceValue(item: Evidence): string {
   if (item.measurement_state !== "measured") return item.reason ?? "값이 제공되지 않았습니다.";
   const unit = item.unit === "angstrom^2" ? "Å²" : item.unit === "angstrom" ? "Å" : item.unit === "atom_pair" ? "원자 쌍" : item.unit;
@@ -81,7 +90,7 @@ export function ReportView({ result, input, run, persistedMock, apiBase }: {
       <dl className="report-facts">
         <div><dt>비교 판단</dt><dd>{comparisonStatus}</dd></div>
         <div><dt>추가 확인 의견</dt><dd>{pendingOpinions}건</dd></div>
-        <div><dt>보류·실패 후보</dt><dd>{failedCandidates}개</dd></div>
+        <div><dt>실행 보류·실패 후보</dt><dd>{failedCandidates}개</dd></div>
       </dl>
     </section>
 
@@ -116,7 +125,7 @@ export function ReportView({ result, input, run, persistedMock, apiBase }: {
           <p className="report-reason">{opinion.reason}</p>
           {condition?.gaps.length ? <div className="report-gap"><strong>자료 공백</strong><ul>{unique(condition.gaps).map((gap) => <li key={gap}>{gap}</li>)}</ul></div> : null}
           <div className="report-evidence-grid">
-            <div><h4>연결 근거</h4>{evidence.length ? <ul className="report-evidence-list">{evidence.map((item) => <li key={item.evidence_id}><strong>{topics[item.topic] ?? item.topic} · {measurements[item.measurement_state] ?? item.measurement_state}</strong><small>{item.kind === "computed" && item.structure_id ? "구조에서 계산한 값" : evidenceKinds[item.kind] ?? item.kind}</small><span>{evidenceValue(item)}</span>{item.measurement_state === "measured" && item.definition && <small>정의: {item.definition}</small>}<SourceList sources={item.sources} /></li>)}</ul> : <p className="report-muted">연결된 근거 기록이 없습니다.</p>}</div>
+            <div><h4>연결 근거</h4>{evidence.length ? <ul className="report-evidence-list">{evidence.map((item) => <li key={item.evidence_id}><strong>{topics[item.topic] ?? item.topic} · {measurements[item.measurement_state] ?? item.measurement_state}</strong><small>{evidenceKind(item)}</small><span>{evidenceValue(item)}</span>{item.measurement_state === "measured" && item.definition && <small>정의: {item.definition}</small>}<SourceList sources={item.sources} /></li>)}</ul> : <p className="report-muted">연결된 근거 기록이 없습니다.</p>}</div>
             <div><h4>해석 범위와 다음 확인</h4>{opinion.limitations.length ? <ul>{unique(opinion.limitations).map((item) => <li key={item}>{item}</li>)}</ul> : <p className="report-muted">기록된 한계 없음</p>}<h4>다음 질문</h4>{opinion.follow_up_questions.length ? <ul>{unique(opinion.follow_up_questions).map((item) => <li key={item}>{item}</li>)}</ul> : <p className="report-muted">기록된 질문 없음</p>}</div>
           </div>
           {conflicts.length > 0 && <div className="report-conflict"><strong>상충 근거</strong><ul>{conflicts.map((item) => <li key={item.evidence_id}>{topics[item.topic] ?? item.topic} · {evidenceValue(item)}</li>)}</ul></div>}
@@ -126,12 +135,17 @@ export function ReportView({ result, input, run, persistedMock, apiBase }: {
       {unlinkedEvidence.length > 0 && <div className="report-unlinked"><h3>의견에 연결되지 않은 근거</h3><p>아래 기록은 검토 의견을 뒷받침하는 근거로 연결되지 않았습니다.</p><ul>{unlinkedEvidence.map((item) => <li key={item.evidence_id}><strong>{topics[item.topic] ?? item.topic} · {measurements[item.measurement_state] ?? item.measurement_state}</strong><span>{evidenceValue(item)}</span><SourceList sources={item.sources} /></li>)}</ul></div>}
     </section>
 
-    <section className="report-section" aria-labelledby="report-files-title">
-      <div className="report-section-heading"><span className="eyebrow">03 / FILES</span><h2 id="report-files-title">결과 파일</h2><p>준비된 파일만 열 수 있습니다. 모의 파일과 누락 파일은 생성된 결과로 표시하지 않습니다.</p></div>
-      {run && <div className="actions">{(["json", "csv"] as const).map((format) => <a key={format} className="secondary" href={`${apiBase}/api/runs/${encodeURIComponent(result.run_id)}/report.${format}`} download={`report.${format}`}>{result.data_mode === "mock" ? "모의 기록" : "결과"} {format.toUpperCase()} 내려받기 ↓</a>)}</div>}
+    <section className="report-section report-files" aria-labelledby="report-files-title">
+      <div className="report-section-heading"><span className="eyebrow">03 / FILES</span><h2 id="report-files-title">결과 파일</h2><p>준비된 보고서와 구조 파일을 내려받을 수 있습니다. 이용할 수 없는 파일은 상태를 표시합니다.</p></div>
+      {run && <div className="report-export">
+        <div><strong>보고서 내보내기</strong><span>같은 검토 결과를 두 형식으로 제공합니다.</span></div>
+        <div className="report-export-actions">{(["json", "csv"] as const).map((format) => <a key={format} className="report-download-link" href={`${apiBase}/api/runs/${encodeURIComponent(result.run_id)}/report.${format}`} download={`report.${format}`}>{result.data_mode === "mock" ? "모의 기록" : "결과"} {format.toUpperCase()} <span aria-hidden="true">↓</span></a>)}</div>
+      </div>}
       <div className="report-file-list">{result.artifacts.length ? result.artifacts.map((artifact) => {
         const url = artifactUrl(artifact);
-        return <div className="report-file" key={artifact.artifact_id}><div><strong>{files[artifact.role] ?? artifact.role}</strong><span>{artifact.file_name} · {artifact.format.toUpperCase()}</span><small>{url ? "조회 가능" : artifact.reason ?? (artifact.status === "ready" ? "파일 경로가 연결되지 않았습니다." : "파일 없음")}</small></div>{url ? <a className="secondary" href={url} download={artifact.file_name}>내려받기 ↓</a> : <span className="report-file-status">{artifact.status === "mock" ? "모의 항목" : "이용 불가"}</span>}</div>;
+        const structure = structures.find((item) => item.artifact_id === artifact.artifact_id);
+        const title = structure ? `${label(structure.candidate_id)} · ${structure.kind === "experimental" ? "실험 구조" : "예측 구조"}` : files[artifact.role] ?? artifact.role;
+        return <div className="report-file" key={artifact.artifact_id}><div className="report-file-info"><strong>{title}</strong><span>{artifact.file_name}</span><small>{url ? "조회 가능" : artifact.reason ?? (artifact.status === "ready" ? "파일 경로가 연결되지 않았습니다." : "파일 없음")}</small></div><span className="report-file-format">{artifact.format.toUpperCase()}</span>{url ? <a className="report-download-link" href={url} download={artifact.file_name}>내려받기 <span aria-hidden="true">↓</span></a> : <span className="report-file-status">{artifact.status === "mock" ? "모의 항목" : "이용 불가"}</span>}</div>;
       }) : <p className="report-muted">등록된 결과 파일이 없습니다.</p>}</div>
     </section>
 
