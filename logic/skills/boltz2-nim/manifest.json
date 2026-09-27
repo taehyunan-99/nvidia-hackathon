@@ -1,0 +1,14 @@
+{
+  "skill_id": "boltz2-nim",
+  "revision": "061bec95a9a19370a13d0cea1fddc0a355471999",
+  "source": "https://github.com/NVIDIA-BioNeMo/bionemo-agent-toolkit/tree/061bec95a9a19370a13d0cea1fddc0a355471999/nim-skills/boltz2-nim",
+  "license": "Apache-2.0 AND CC-BY-4.0",
+  "files": {
+    "SKILL.md": "3cc6c5868cbf132e6c38898fd471aaebc3b57cd34170a90974605f1207d043a7",
+    "references/api.md": "c8a62e0a8f3b1a52751ad21821e424c52168309317084c397dd1f0faefc3911c",
+    "references/science.md": "048f7a5ef31051051ccb61f976509d5968c797b3acbae8118fe8b1a5bd65da9c",
+    "references/parameters.md": "131b8a9ecd6c13bce6b741eef237e42ad82b084d760fed9fb9385f6fa3eac30d",
+    "references/validation.md": "0940c9a8ca5b65a07f1cb862386d0a77d89da63986233b691674bd8b0a913493",
+    "references/examples.md": "01eb5749cbf60296792891f170c8003174423c8e0382eb82f83f9f34cb619124"
+  }
+}

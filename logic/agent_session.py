@@ -88,7 +88,22 @@ def _locked(method):
     @functools.wraps(method)
     def wrapper(self: "CandidateTools", *args, **kwargs):
         with self._lock:
-            return method(self, *args, **kwargs)
+            before = len(self.s.calls)
+            try:
+                result = method(self, *args, **kwargs)
+            except Exception:
+                self.flow._activity(self.s.cid, "tool", method.__name__, "failed", self.actor)
+                raise
+            call = self.s.calls[-1] if len(self.s.calls) > before else None
+            phase = ("rejected" if call and not call["accepted"] else
+                     "failed" if self.s.terminal == "failed" else
+                     "held" if self.s.terminal == "partial" else "completed")
+            available = sorted(allowed_tools(self.s))
+            self.flow._activity(self.s.cid, "tool", method.__name__, phase, self.actor,
+                                available_tools=available, **({"next_action": "종료"} if not available else {}))
+            if not self.s.terminal and self.actor == "agent":
+                self.flow._activity(self.s.cid, "agent", "next_action", "running", "agent")
+            return result
 
     return wrapper
 
@@ -100,6 +115,7 @@ class CandidateTools:
         self.flow = flow
         self.s = session
         self._lock = threading.Lock()
+        self.actor = "agent"
         if not session.terminal:
             self.flow.states[self.s.cid].status = "running"
 
@@ -117,11 +133,14 @@ class CandidateTools:
 
     def _accept(self, name: str) -> None:
         self.s.calls.append({"tool": name, "accepted": True})
+        self.flow._activity(self.s.cid, "tool", name, "running", self.actor)
 
     def _decision(self, step: str, action: str, reason: str, facts: list[str]) -> Decision:
         d = Decision(step=step, action=action, reason=reason, decided_by="model",
                      model=self.flow.decider.model, facts=facts)
         self.flow.decider.decisions.append(d)
+        if step == "structure_source":
+            self.flow._skill_choice(self.s.cid, d)
         return d
 
     def _check_reason(self, name: str, reason: str, facts: list[str]) -> str | None:

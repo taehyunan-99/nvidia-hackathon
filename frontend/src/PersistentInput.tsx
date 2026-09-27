@@ -38,7 +38,7 @@ export function PersistentInput({ busy, error, mode, onStart }: { busy: boolean;
       <div><span className="eyebrow">NEW REVIEW</span><h2>표적과 후보 입력</h2></div>
       <span className="tag">{mode === "live" ? "저장형 실제 실행" : mode === "mock" ? "저장형 모의 실행" : "저장형 검토"}</span>
     </div>
-    <p className="review-intro">HER2 표적은 검증된 세포외 구간으로 고정됩니다. 후보 2~3개의 공개 Fab 중쇄·경쇄 서열을 입력하세요. 50잔기 미만이거나 예측 모델이 받지 않는 문자는 예측을 보류할 수 있습니다. {mode === "live" ? "실제 분석이 실행되며 결과는 같은 실행에 저장됩니다." : mode === "mock" ? "결과는 모의 데이터이며 실제 분석은 수행하지 않습니다." : "서비스 실행 모드를 확인하는 중입니다."}</p>
+    <p className="review-intro">HER2 표적은 검증된 세포외 구간으로 고정됩니다. 후보 2~4개의 공개 Fab 중쇄·경쇄 서열을 입력하세요. 50잔기 미만이거나 예측 모델이 받지 않는 문자는 예측을 보류할 수 있습니다. {mode === "live" ? "실제 분석이 실행되며 결과는 같은 실행에 저장됩니다." : mode === "mock" ? "결과는 모의 데이터이며 실제 분석은 수행하지 않습니다." : "서비스 실행 모드를 확인하는 중입니다."}</p>
     <form className="review-form" onSubmit={submit}>
       <section className="review-target" aria-labelledby="review-target-title">
         <div className="review-section-heading"><h3 id="review-target-title">표적</h3><span>HER2 고정</span></div>
@@ -55,8 +55,8 @@ export function PersistentInput({ busy, error, mode, onStart }: { busy: boolean;
         </div>
       </fieldset>)}
       <div className="review-add-row">
-        {candidates.length < 3 ? <button type="button" className="secondary" onClick={() => setCandidates((old) => [...old, emptyCandidate()])}>+ 세 번째 후보 추가</button>
-          : <button type="button" className="secondary" onClick={() => setCandidates((old) => old.slice(0, 2))}>세 번째 후보 제거</button>}
+        {candidates.length < 4 && <button type="button" className="secondary" onClick={() => setCandidates((old) => [...old, emptyCandidate()])}>+ {candidates.length + 1}번째 후보 추가</button>}
+        {candidates.length > 2 && <button type="button" className="secondary" onClick={() => setCandidates((old) => old.slice(0, -1))}>마지막 후보 제거</button>}
       </div>
       <div className="review-submit">
         <label className="review-confirm"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />입력 자료를 사용할 권한과 공개 자료 여부를 확인했습니다.</label>
