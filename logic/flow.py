@@ -272,6 +272,9 @@ class Flow:
             self._skill_choice(cid, choice)
             if choice.action == "use_experimental":
                 s.structure_id = self._record_experimental(cid, s.match)
+                if s.structure_id is None:
+                    s.terminal = "failed"
+                    return
                 self._emit(cid, "prediction", "skipped", _explain(choice))
             elif choice.action == "hold":
                 self._hold_candidate(cid, _explain(choice))
@@ -438,7 +441,7 @@ class Flow:
         )
 
     # ------------------------------------------------------------ 기존 구조 경로
-    def _record_experimental(self, cid: str, match: structures.StructureMatch) -> str:
+    def _record_experimental(self, cid: str, match: structures.StructureMatch) -> str | None:
         catalog = structures.load_catalog()
         public = catalog[match.pdb_id]
         structure_id = f"st-{cid}-{public.pdb_id.lower()}"
@@ -453,6 +456,15 @@ class Flow:
             self._chain("light", match.light_entity),
         ]
         actual_sha = structures.file_sha256(public.path)
+        if actual_sha != public.verified_sha256:
+            reason = "공개 구조 파일의 해시가 검증된 원본과 다르다."
+            self._emit(cid, "evidence_review", "failed", reason)
+            for step in ("prediction", "structure_comparison", "reporting"):
+                self._emit(cid, step, "skipped", reason)
+            self.states[cid].status = "failed"
+            self.states[cid].reason = reason
+            self._hold_opinion(cid, "structure_availability", "not_assessed", reason)
+            return None
         self.structures.append(
             {
                 "structure_id": structure_id,
@@ -544,8 +556,8 @@ class Flow:
         mapping_ok = bool(structure and all(any(c["role"] == role and c.get("label_asym_id")
                           for c in structure["chain_mapping"]) for role in ("target", "heavy", "light")))
         checks = [{"name": name, "status": "passed" if passed else "failed"} for name, passed in [
-            ("요청한 구조 1개 반환", len(entries) == 1),
-            ("mmCIF 형식", bool(entries) and all(isinstance(e, dict) and e.get("format") == "mmcif" for e in entries)),
+            ("응답 구조 존재", len(entries) >= 1),
+            ("mmCIF 형식", bool(entries) and all(isinstance(e, dict) and e.get("format", "mmcif") == "mmcif" for e in entries)),
             ("좌표 파싱", atoms_ok), ("입력 서열·사슬 대응", mapping_ok),
         ]]
         checks.append({"name": "구조별 신뢰도 범위·개수", "status": "passed" if confidence_ok else "unverified"})
@@ -639,34 +651,6 @@ class Flow:
         self.states[cid].reason = reason
         self._hold_opinion(cid, "structure_availability", "not_assessed", reason)
 
-    def _predicted_chain_mapping(
-        self, path: Path, sequences: dict[str, str]
-    ) -> list[dict[str, Any]]:
-        """반환된 mmCIF에서 실제 사슬 ID를 읽는다.
-
-        요청에 보낸 id를 그대로 믿지 않는다. 실제 응답에서 Boltz-2는 보낸
-        A·H·L을 순서대로 A·B·C로 다시 붙였다. 서열로 대응을 찾고, 찾지
-        못하면 지어내지 않고 null로 둔다.
-        """
-        by_sequence: dict[str, str] = {}
-        try:
-            entities, _ = structures.parse_entities(path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeDecodeError):
-            entities = ()
-        for entity in entities:
-            if entity.sequence and entity.strand_ids:
-                by_sequence.setdefault(entity.sequence, entity.strand_ids[0])
-        return [
-            {
-                "role": role,
-                "model_number": 1,
-                "label_asym_id": by_sequence.get(sequences.get(role, "")),
-                "auth_asym_id": None,
-                "operator_id": None,
-            }
-            for role in ("target", "heavy", "light")
-        ]
-
     def _record_predicted(
         self, cid: str, response: dict[str, Any], sequences: dict[str, str] | None = None
     ) -> str | None:
@@ -685,6 +669,14 @@ class Flow:
         structure_id = f"st-{cid}-boltz2"
         artifact_id = f"af-{structure_id}"
         path = self.work_dir / f"{structure_id}.cif"
+        from .prediction_validation import validate_prediction
+        try:
+            if found[selected].get("format", "mmcif") != "mmcif":
+                raise ValueError("지원하지 않는 예측 구조 형식이다.")
+            mapping = validate_prediction(found[selected]["structure"], sequences or {})
+        except ValueError as exc:
+            self._fail_prediction(cid, str(exc))
+            return None
         path.write_text(found[selected]["structure"], encoding="utf-8")
         self.structures.append(
             {
@@ -699,7 +691,7 @@ class Flow:
                 },
                 "model_number": 1,
                 "assembly_id": None,
-                "chain_mapping": self._predicted_chain_mapping(path, sequences or {}),
+                "chain_mapping": mapping,
                 "residue_mapping": [],
                 "alignment": None,
             }
@@ -778,54 +770,55 @@ class Flow:
 
     # ------------------------------------------------------------ ⑤ 비교
     def _compare(self, cid: str, structure_id: str, match: structures.StructureMatch) -> None:
+        from . import surface_analysis
         self._emit(cid, "structure_comparison", "running", None)
-        condition_id = f"cond-{cid}-core"
-        measurements: list[analysis.Measurement] = []
-
-        if match.complete:
-            public = structures.load_catalog()[match.pdb_id]
-            source = {
-                "title": f"RCSB PDB {public.pdb_id}",
-                "url": public.source_url,
-                "record_id": public.pdb_id,
-            }
-            measurements.append(
-                analysis.contact_measurement(
-                    public.pdb_id, source, structures.file_sha256(public.path)
-                )
-            )
-        else:
-            # 예측 구조는 실행할 때마다 새로 생기므로 미리 계산해 둔 결과가 없다.
-            # 실험 구조 후보와 같은 기준으로 좌표에서 직접 고른다.
-            record = next(
-                (s for s in self.structures if s["structure_id"] == structure_id), None
-            )
-            predicted_path = self.work_dir / f"{structure_id}.cif"
-            predicted_mapping = record["chain_mapping"] if record else []
-            predicted_source = {
-                "title": "NVIDIA Boltz-2 NIM 예측 구조에서 직접 계산",
-                "url": "https://build.nvidia.com/mit/boltz2",
-                "record_id": self.run_id,
-            }
-            measurements.append(
-                analysis.predicted_contact_measurement(
-                    predicted_path, predicted_mapping, predicted_source
-                )
-            )
-            # 새 항체를 이미 본 트라스투주맙 자리에 붙인 예측이 있었다. 그 비율을
-            # 근거로 남긴다 (agent-benchmark-report.md의 구조 정확도 절).
-            measurements.append(
-                analysis.reference_epitope_overlap_measurement(
-                    predicted_path,
-                    predicted_mapping,
-                    self.request["input"]["target"].get("fasta") or "",
-                    predicted_source,
-                )
-            )
-        measurements.extend(analysis.pending_measurements("예측·실험 구조 공통으로"))
-
-        for m in measurements:
-            self._add_evidence(cid, condition_id, structure_id, m)
+        core_id = f"cond-{cid}-core"
+        record = next(s for s in self.structures if s["structure_id"] == structure_id)
+        predicted = record["kind"] == "predicted"
+        path = (self.work_dir / f"{structure_id}.cif" if predicted else
+                structures.load_catalog()[record["source"]["record_id"]].path)
+        source = record["source"]
+        contact = analysis.predicted_contact_measurement(path, record["chain_mapping"], source, predicted=predicted)
+        self._add_evidence(cid, core_id, structure_id, contact)
+        if predicted:
+            self._add_evidence(cid, core_id, structure_id, analysis.reference_epitope_overlap_measurement(
+                path, record["chain_mapping"], self.request["input"]["target"]["fasta"], source))
+        candidate = next(c for c in self.request["input"]["candidates"] if c["candidate_id"] == cid)
+        values = surface_analysis.calculate(path.read_text(encoding="utf-8"), record["chain_mapping"], {
+            "target": self.request["input"]["target"]["fasta"],
+            "heavy": candidate["heavy_chain_fasta"], "light": candidate["light_chain_fasta"],
+        })
+        record["residue_mapping"] = values["residues"]
+        record["chain_mapping"] = [m for m in record["chain_mapping"] if m["role"] != "context"] + [
+            {"role": "context", "model_number": 1, "label_asym_id": chain, "auth_asym_id": None, "operator_id": None}
+            for chain in values["context_chains"]]
+        context_id = f"cond-{cid}-context"
+        if not any(c["condition_id"] == context_id for c in self.conditions):
+            self.conditions.append({"condition_id": context_id, "candidate_id": cid, "kind": "context",
+                "structure_ids": [structure_id], "included_components": ["target", "heavy", "light"],
+                "gaps": [], "sources": [source]})
+        definitions = {
+            "surface_exposure": "선택한 관측 단백질 원자만의 용매 접근 표면적",
+            "buried_sasa_sum": "같은 좌표의 표적 단독+Fab 단독−복합체 SASA. 양쪽 감소량의 합이며 2로 나누지 않음",
+            "observed_glycan_protein_sasa_reduction": "동일 단백질 좌표의 core SASA−관측 NAG를 포함한 context의 단백질 SASA",
+        }
+        for kind, condition_id, topics in (("core", core_id, ("surface_exposure", "buried_sasa_sum")),
+                                           ("context", context_id, ("surface_exposure", "observed_glycan_protein_sasa_reduction"))):
+            condition = next(c for c in self.conditions if c["condition_id"] == condition_id)
+            condition["gaps"] = values["gaps"] + ["미관측 원자·전체 당쇄·세포막은 복원하지 않았다. 관측 좌표에 한정한 기하학 계산이다."]
+            condition["included_components"] = ["target", "heavy", "light"] + (["glycan"] if kind == "context" and values[kind] else [])
+            for topic in topics:
+                if values[kind] is not None:
+                    m = analysis.Measurement(topic=topic, kind="computed", state="measured", value=values[kind][topic],
+                        unit="angstrom^2", definition=definitions[topic] + " (Shrake–Rupley, probe 1.4 Å, 960점, C/N/O/S 반지름). 결합력·효능·전체 접근성 지표가 아니다.", sources=[source])
+                else:
+                    m = analysis.Measurement(topic=topic, kind="computed", state="unknown" if kind == "context" else "not_run",
+                        reason=values.get("reason") or values["context_reason"])
+                self._add_evidence(cid, condition_id, structure_id, m)
+            for topic, reason in (("atom_clash", "정식 충돌 판정 기준이 없어 계산하지 않았다."),
+                                  ("whole_range_accessibility", "미관측 원자·당쇄·막 환경 때문에 전체 구간 접근성은 판단하지 않았다.")):
+                m = analysis.Measurement(topic=topic, kind="unknown", state="unknown" if topic == "whole_range_accessibility" else "not_run", reason=reason)
+                self._add_evidence(cid, condition_id, structure_id, m)
         self._emit(cid, "structure_comparison", "completed", None)
 
     # ------------------------------------------------------------ ⑥ 보고
@@ -839,7 +832,9 @@ class Flow:
             # 숫자 바로 뒤에 영문 단위를 붙이면("39residue") 식별자로 오인돼
             # invented_numbers가 값 주장으로 보지 않는다. 공백으로 떼어 둔다.
             suffix = f" {unit}" if unit else ""
-            return f"{e['topic']}: {value}{suffix} ({e['definition']})"
+            condition = next(c for c in self.conditions if c['condition_id'] == e['condition_id'])
+            label = "관측 당 포함" if condition['kind'] == 'context' else "단백질 중심"
+            return f"[{label}] {e['topic']}: {value}{suffix} ({e['definition']})"
 
         facts = [
             f"계산해 확보한 근거 {len(measured)}건, 아직 계산하지 않은 항목 {len(unmeasured)}건.",
@@ -856,7 +851,6 @@ class Flow:
         verdict: Decision | None = None,
     ) -> None:
         self._emit(cid, "reporting", "running", None)
-        condition_id = f"cond-{cid}-core"
         facts, measured, unmeasured = self._opinion_facts(cid)
 
         # ⑥ 두 번째 분기. 지금까지 모은 근거로 검토 의견을 낼 수 있는가?
@@ -883,32 +877,36 @@ class Flow:
                 default="reviewable" if measured and not unmeasured else "needs_confirmation",
             )
 
-        self.opinions.append(
-            {
-                "opinion_id": f"op-{cid}-core",
-                "candidate_id": cid,
-                "condition_id": condition_id,
-                "topic": "interface_review",
-                "decision": verdict.action,
-                "evidence_ids": [e["evidence_id"] for e in measured],
-                "conflicting_evidence_ids": [],
-                "reason": _explain(verdict),
-                "limitations": [e["reason"] for e in unmeasured if e["reason"]],
-                "follow_up_questions": self._follow_ups(match),
-            }
-        )
+        for condition in (c for c in self.conditions if c["candidate_id"] == cid):
+            items = [e for e in self.evidence if e["condition_id"] == condition["condition_id"]]
+            available = [e for e in items if e["measurement_state"] == "measured"]
+            missing = [e for e in items if e["measurement_state"] != "measured"]
+            condition_name = "관측 당 포함" if condition["kind"] == "context" else "단백질 중심"
+            summary = f"{condition_name} 조건에서 확인된 계산 근거 {len(available)}건을 정리했다."
+            if missing:
+                summary += " 미확인 항목은 별도로 확인해야 한다."
+            # Only execution attribution is retained; model-written scientific claims are not published.
+            attribution = (f"판단: 모델 {verdict.model}" if verdict.decided_by == "model"
+                           else f"판단: 규칙 — {(verdict.fallback_reason or '조건별 근거 확인')[:80]}")
+            questions = []
+            topics = {e["topic"] for e in available}
+            if "buried_sasa_sum" in topics:
+                questions.append("누락 잔기·원자가 관측 구조의 매몰 면적 해석에 영향을 줄 수 있는가?")
+            if "observed_glycan_protein_sasa_reduction" in topics:
+                questions.append("관측되지 않은 당쇄를 포함해도 같은 표면 차이가 유지되는가?")
+            if missing:
+                questions.append("미실행 충돌·전체 접근성을 확인하려면 어떤 추가 구조·계산이 필요한가?")
+            self.opinions.append({
+                "opinion_id": f"op-{cid}-{condition['kind']}", "candidate_id": cid,
+                "condition_id": condition["condition_id"], "topic": "interface_review",
+                "decision": "needs_confirmation" if missing or not available else verdict.action,
+                "evidence_ids": [e["evidence_id"] for e in available], "conflicting_evidence_ids": [],
+                "reason": f"{summary} ({attribution})",
+                "limitations": list(dict.fromkeys([e["reason"] for e in missing if e["reason"]]
+                    + condition["gaps"] + ["구조 기반 계산이며 결합력·치료 효능·안전성 판단이 아니다."])),
+                "follow_up_questions": questions,
+            })
         self._emit(cid, "reporting", "completed", None)
-
-    def _follow_ups(self, match: structures.StructureMatch) -> list[str]:
-        questions = [
-            "접촉 잔기 선택 기준(4.5 Å)을 이 비교의 판정 기준으로 쓸 것인지 확정이 필요하다.",
-            "충돌·표면 노출 계산의 정의와 제외 규칙을 A-02에서 확정해야 한다.",
-        ]
-        if match.complete and structures.load_catalog()[match.pdb_id].glycan_descriptions:
-            questions.append(
-                "구조에 포함된 당쇄를 표면 노출 계산에 넣을지, 넣는다면 원자 반지름을 어떻게 둘지 정해야 한다."
-            )
-        return questions
 
     # ------------------------------------------------------------ 보조
     def _add_evidence(
@@ -919,7 +917,7 @@ class Flow:
         m: analysis.Measurement,
     ) -> None:
         evidence = {
-            "evidence_id": f"ev-{cid}-{m.topic}",
+            "evidence_id": f"ev-{cid}-{condition_id.rsplit('-', 1)[-1]}-{m.topic}",
             "candidate_id": cid,
             "condition_id": condition_id,
             "structure_id": structure_id,

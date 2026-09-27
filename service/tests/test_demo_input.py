@@ -41,7 +41,7 @@ def test_website_input_produces_contacts_and_honest_limits(tmp_path):
         assert contact['measurement_state'] == 'measured'
         assert contact['value'] == count and len(contact['residues']) == count
         assert contact['sources']
-        for topic in ['atom_clash', 'surface_exposure']:
+        for topic in ['atom_clash']:
             item = next(e for e in evidence if e['topic'] == topic)
             assert item['value'] is None and item['measurement_state'] == 'not_run'
         opinion = next(o for o in result['opinions'] if o['candidate_id'] == cid)

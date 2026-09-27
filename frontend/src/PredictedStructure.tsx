@@ -22,6 +22,7 @@ export type PredictedView = {
   sha256: string;
   /** chain_mapping에서 뽑은 표적·중쇄·경쇄 순서. null이 있으면 넘겨받지 않는다. */
   chains: string[];
+  contextChains?: string[];
   residues: Residue[];
   /** 접촉 잔기를 계산하지 못한 경우의 이유. 있으면 강조 없이 전체만 띄운다. */
   unmeasuredReason: string | null;
@@ -40,9 +41,11 @@ async function sha256(text: string) {
 export default function PredictedStructure({
   apiBase,
   view,
+  context = false,
 }: {
   apiBase: string;
   view: PredictedView;
+  context?: boolean;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const activePlugin = useRef<PluginContext | null>(null);
@@ -51,7 +54,8 @@ export default function PredictedStructure({
   const [count, setCount] = useState(0);
   const [retry, setRetry] = useState(0);
   const [mode, setMode] = useState("mixed");
-  const [options, setOptions] = useState<ViewOptions>(defaults);
+  const initialOptions = { ...defaults, context: context && (view.contextChains === undefined || view.contextChains.length > 0) };
+  const [options, setOptions] = useState<ViewOptions>(initialOptions);
   const optionsRef = useRef(options);
   const [hasContext, setHasContext] = useState(false);
   const [message, setMessage] = useState("");
@@ -92,8 +96,8 @@ export default function PredictedStructure({
     actions.current = null;
     setStatus("loading");
     setMessage("");
-    setOptions(defaults);
-    optionsRef.current = defaults;
+    setOptions(initialOptions);
+    optionsRef.current = initialOptions;
 
     async function start() {
       try {
@@ -135,10 +139,11 @@ export default function PredictedStructure({
           mode,
           residues,
           view.chains,
+          view.contextChains,
         );
         if (cancelled) return;
         actions.current = loaded;
-        await loaded.update(defaults, true);
+        await loaded.update(initialOptions, true);
         if (cancelled) return;
         setCount(loaded.count);
         setHasContext(loaded.hasContext);
@@ -195,7 +200,7 @@ export default function PredictedStructure({
         <div className="structure-control-group">
           <strong>구조 성분</strong>
           <div className="structure-components" role="group" aria-label="구조 성분 선택">
-            <button className="structure-context-toggle" disabled={!ready || !hasContext} aria-pressed={options.context}
+            <button className="structure-context-toggle" disabled={!ready || !hasContext || view.contextChains !== undefined} aria-pressed={options.context}
               aria-label={options.context ? "당·기타 성분 표시 중" : "당·기타 성분 보기"}
               onClick={() => void change({ context: !options.context, view: options.context ? "overview" : "context" }, true)}>
               {options.context ? "성분 표시 중" : "당·기타 성분"}
@@ -247,7 +252,7 @@ export default function PredictedStructure({
       <section className="structure-source" aria-label="표현·출처·표시 범위">
         <h4>표현·출처·표시 범위</h4>
         <p>{sourceUrl ? <a href={sourceUrl} target="_blank" rel="noreferrer">{view.source.title}</a> : view.source.title}{view.source.record_id ? ` · ${view.source.record_id}` : ""} · {view.kind === "experimental" ? "실험 구조" : "예측 구조"}</p>
-        <p>{options.context ? "파일에 포함된 당·기타 성분을 표시합니다." : "당·기타 성분은 숨겨져 있습니다. 없다는 뜻은 아닙니다."} 전체 IgG·세포막·완전한 당쇄를 표현하지 않습니다.</p>
+        <p>{context && view.contextChains?.length === 0 ? "이 조건에는 표시할 수 있는 관측 당 좌표가 제공되지 않았습니다." : options.context ? "계산 조건에 포함된 관측 당을 표시합니다." : "당·기타 성분은 숨겨져 있습니다. 없다는 뜻은 아닙니다."} 전체 IgG·세포막·완전한 당쇄를 표현하지 않습니다.</p>
         <p>이번 실행의 파일과 잔기 대응을 표시합니다. 구조 간 정렬 비교는 제공하지 않습니다.</p>
       </section>
     </article>

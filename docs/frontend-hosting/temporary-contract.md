@@ -136,6 +136,10 @@ LogicOutput의 파일은 서비스가 배정한 work_dir 안에 있어야 하며
 
 ## 8. 검증 실행과 범위
 
+2026-09-27 공통 좌표 계산 연결: 공개·직접 입력 모두 동일한 계산 경로를 사용한다. `surface_exposure`는 선택된 관측 단백질 원자만의 SASA, `buried_sasa_sum`은 같은 좌표에서 표적 단독+Fab 단독−복합체 SASA의 양쪽 합, `observed_glycan_protein_sasa_reduction`은 동일 단백질의 core/context 차이다. 단위는 `angstrom^2`이며 화면에서 Å²와 소수 두 자리로 표시한다. 수치 비교가 후보 우열·친화도·완전한 접근성 판정은 아니다.
+
+의견의 `evidence_ids`는 같은 후보·조건 안에서만 연결한다. 모델의 자유 설명은 진단용 판단 기록에 남기며 결과 보고의 과학적 문장으로 직접 저장하지 않는다. 보고 설명은 검증된 근거와 실행 주체로 구성한다. `chain_mapping`의 `context` 역할은 계산에 포함한 관측 당 사슬만 전달하며, 3D 성분은 선택 조건과 동기화한다. 없는 당은 영향 0으로 만들지 않는다. 부분 점유율·대체 좌표·미검증 당 종류 등은 공개·예측 모두에서 동일하게 보류한다.
+
 저장소 루트에서 `uv run --no-project --with jsonschema python docs/frontend-hosting/contracts/validate-contract.py`를 실행한다. uv가 없는 환경에서는 jsonschema가 설치된 Python으로 같은 파일을 실행할 수 있다.
 
 2026-09-25 검증: JSON Schema 자체와 9개 모의 시나리오가 통과했고, 중복 후보·다른 실행의 결과·다른 후보의 근거·없는 근거 참조·결과 존재 표시 오류·미확인 값의 0 변환·mock/live 혼동·만료 후 내용 노출·보류 이유 누락의 9개 잘못된 변형을 거부했다. 별도로 측정된 값 0은 스키마가 허용하는 것을 확인했다.

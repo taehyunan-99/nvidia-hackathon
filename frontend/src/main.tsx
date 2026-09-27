@@ -55,6 +55,7 @@ function resultViews(result: any, candidates: any[]): PredictedView[] {
       source: s.source,
       sha256: artifact.sha256,
       chains: chains as string[],
+      contextChains: (s.chain_mapping ?? []).filter((c: any) => c.role === "context").map((c: any) => c.label_asym_id).filter(Boolean),
       residues: contact?.residues ?? [],
       unmeasuredReason:
         contact && contact.measurement_state === "measured"

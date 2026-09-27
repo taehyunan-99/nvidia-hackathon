@@ -317,7 +317,7 @@ def test_prediction_path_records_returned_confidence(tmp_path):
     }
     output, flow = run_flow(
         make_request(_prediction_candidates(), tmp_path, target_fasta=structures.her2_target_sequence()),
-        client=StubClient(response=response),
+        client=CoordinateClient(0.77),
     )
     validate(output, "LogicOutput")
     assert flow.run_status() == "completed"
@@ -328,7 +328,7 @@ def test_prediction_path_records_returned_confidence(tmp_path):
     assert {s["kind"] for s in output["result"]["structures"]} == {"predicted"}
     # 예측 구조의 접촉 계산은 아직 없으므로 미실행으로 남아야 한다.
     contacts = [e for e in output["result"]["evidence"] if e["topic"] == "interface_contact_residues"]
-    assert all(e["measurement_state"] == "not_run" and e["value"] is None for e in contacts)
+    assert contacts and all(e["measurement_state"] == "measured" for e in contacts)
 
 
 def _boltz2_cif(sequences: list[tuple[str, str]]) -> str:
@@ -350,8 +350,36 @@ def _boltz2_cif(sequences: list[tuple[str, str]]) -> str:
     ]
     for i, (asym, seq) in enumerate(sequences, 1):
         head += [f"{i} {asym}", f";{seq}", ";", ""]
-    head.append("#")
-    return "\n".join(head) + "\n"
+    head += ["#", "loop_", "_struct_asym.id", "_struct_asym.entity_id"]
+    head += [f"{chain} {i}" for i, (chain, _) in enumerate(sequences, 1)]
+    head += ["#", "loop_", "_atom_site.label_asym_id", "_atom_site.label_entity_id",
+             "_atom_site.label_seq_id", "_atom_site.label_comp_id", "_atom_site.type_symbol",
+             "_atom_site.label_atom_id", "_atom_site.Cartn_x", "_atom_site.Cartn_y",
+             "_atom_site.Cartn_z", "_atom_site.pdbx_PDB_model_num", "_atom_site.occupancy", "_atom_site.label_alt_id"]
+    codes = dict(zip("ACDEFGHIKLMNPQRSTVWY", "ALA CYS ASP GLU PHE GLY HIS ILE LYS LEU MET ASN PRO GLN ARG SER THR VAL TRP TYR".split()))
+    for i, (chain, sequence) in enumerate(sequences, 1):
+        head += [f"{chain} {i} {n} {codes[aa]} C CA {n * 10} {i * 3} 0 1 1 ."
+                 for n, aa in enumerate(sequence, 1)]
+    return "\n".join(head + ["#", ""])
+
+
+def prediction_response(polymers, confidence=0.87):
+    """Synthetic coordinates for contract tests; never a biological prediction."""
+    text = _boltz2_cif([(c, p['sequence']) for c, p in zip(('A', 'B', 'C'), polymers)])
+    response = {"structures": [{"structure": text, "format": "mmcif"}]}
+    if confidence is not None:
+        response['confidence_scores'] = [confidence]
+    return response
+
+
+class CoordinateClient(StubClient):
+    def __init__(self, confidence=0.87):
+        super().__init__()
+        self.confidence = confidence
+
+    def predict_complex(self, polymers, **kwargs):
+        self.calls += 1
+        return prediction_response(polymers, self.confidence)
 
 
 def test_predicted_chain_mapping_uses_ids_from_the_response(tmp_path):
@@ -397,16 +425,16 @@ def test_unmatched_chain_is_left_null_not_guessed(tmp_path):
     )
     validate(output, "LogicOutput")
 
-    made = next(s for s in output["result"]["structures"] if s["candidate_id"] == "novel-a")
-    mapping = {c["role"]: c["label_asym_id"] for c in made["chain_mapping"]}
-    assert mapping == {"target": "A", "heavy": None, "light": None}
+    assert not output["result"]["structures"]
+    assert not output["result"]["artifacts"]
+    assert all(o["decision"] == "not_assessed" for o in output["result"]["opinions"])
 
 
 def test_prediction_without_confidence_is_unknown_not_zero(tmp_path):
     response = {"structures": [{"structure": "data_x\n#\n"}]}
     output, _ = run_flow(
         make_request(_prediction_candidates(), tmp_path, target_fasta=structures.her2_target_sequence()),
-        client=StubClient(response=response),
+        client=CoordinateClient(None),
     )
     confidences = [e for e in output["result"]["evidence"] if e["topic"] == "prediction_confidence"]
     assert confidences and all(e["measurement_state"] == "unknown" for e in confidences)
@@ -524,7 +552,7 @@ def test_partial_sequence_match_does_not_count_as_same_candidate(tmp_path):
     ]
     output, _ = run_flow(
         make_request(candidates, tmp_path, target_fasta=structures.her2_target_sequence()),
-        client=StubClient(response={"structures": [{"structure": "data_x\n#\n"}]}),
+        client=CoordinateClient(),
     )
     made = [s for s in output["result"]["structures"] if s["candidate_id"] == "half-match"]
     assert made and made[0]["kind"] == "predicted"

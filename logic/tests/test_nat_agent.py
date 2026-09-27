@@ -175,7 +175,8 @@ def test_error_after_submission_is_retained_without_replacing_the_opinion(tmp_pa
     output, flow = run_flow(_request(tmp_path), client=ScriptedClient())
     assert "429" in flow.agent_errors["cand-t"]
     assert flow.states["cand-t"].status == "completed"
-    assert _opinion_for(output, "cand-t")["reason"].startswith("미계산 항목")
+    assert "판단: 모델" in _opinion_for(output, "cand-t")["reason"]
+    assert "429" not in _opinion_for(output, "cand-t")["reason"]
     from logic import measure_agent
     monkeypatch.setattr(measure_agent, "run_flow", lambda request: (output, flow))
     row = measure_agent._one("trastuzumab", "nat")
