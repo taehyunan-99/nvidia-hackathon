@@ -1,0 +1,86 @@
+{
+  "reference_complex": "1N8Z",
+  "note": "캐시된 응답만 쓴다. 새 API 호출 0회. 겹침 비율은 예측 접촉이 틀렸다는 판정이 아니라, 후보가 트라스투주맙과 다른데 비율이 높으면 학습에서 본 계면을 재현한 예측일 수 있다는 신호다.",
+  "cases": [
+    {
+      "case": "1N8Z",
+      "candidate_is_trastuzumab": true,
+      "prediction_sha256": "7f65ff3a20b9d0926fd758d40b3863f1aa0ea1fd76d69e4a03df2b9a91721df9",
+      "measurement_state": "measured",
+      "overlap_fraction": 0.792,
+      "overlapping_target_residues": [
+        557,
+        558,
+        560,
+        561,
+        569,
+        570,
+        571,
+        572,
+        573,
+        579,
+        591,
+        593,
+        596,
+        598,
+        600,
+        602,
+        603,
+        604,
+        605
+      ],
+      "reason": null
+    },
+    {
+      "case": "1S78",
+      "candidate_is_trastuzumab": false,
+      "prediction_sha256": "c8115fcad8855fffe2a7df0f0ed6f3687e3abb017ad19125e86759d7f0f32864",
+      "measurement_state": "measured",
+      "overlap_fraction": 0.435,
+      "overlapping_target_residues": [
+        557,
+        558,
+        560,
+        561,
+        569,
+        570,
+        571,
+        572,
+        573,
+        593
+      ],
+      "reason": null
+    },
+    {
+      "case": "8JYR",
+      "candidate_is_trastuzumab": false,
+      "prediction_sha256": "2096f52c3905c596ad39815a94abc1c03a16c97c704bf35607ba2ee7607025b8",
+      "measurement_state": "measured",
+      "overlap_fraction": 0.0,
+      "overlapping_target_residues": [],
+      "reason": null
+    },
+    {
+      "case": "3N85",
+      "candidate_is_trastuzumab": false,
+      "prediction_sha256": "f550899a879b131c0378e37fee24c4fb0c56f2b2ee1cf4d2aff16d3eb5053a65",
+      "measurement_state": "measured",
+      "overlap_fraction": 0.545,
+      "overlapping_target_residues": [
+        558,
+        560,
+        569,
+        570,
+        571,
+        572,
+        573,
+        593,
+        598,
+        600,
+        602,
+        603
+      ],
+      "reason": null
+    }
+  ]
+}

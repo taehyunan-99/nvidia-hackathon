@@ -17,6 +17,7 @@ LogicRequest를 받아 후보별로 다섯 단계를 진행하고 LogicOutput을
 
 from __future__ import annotations
 
+import math
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -106,6 +107,29 @@ class _CandidateState:
         }
 
 
+def select_structure(response: dict[str, Any]) -> tuple[int | None, list[float | None]]:
+    """쓸 구조의 인덱스와 구조별 신뢰도를 함께 돌려준다.
+
+    비어 있지 않은 구조 중 유효한 [0,1] 신뢰도가 가장 높은 것을 고른다.
+    인덱스를 함께 돌려주는 이유: 같은 본문이 두 번 오면(실측에서 반복본이
+    sha256까지 같았다) 파일을 대조해 어느 것을 골랐는지 되찾을 수 없다.
+    """
+    found = response.get("structures") or []
+    usable = [i for i, item in enumerate(found) if isinstance(item, dict)
+              and isinstance(item.get("structure"), str) and item["structure"].strip()]
+    scores = response.get("confidence_scores")
+    if isinstance(scores, (int, float)) and len(found) == 1:
+        scores = [scores]
+    # ponytail: 대응이 불명확한 점수 배열은 순위를 추정하지 않고 unknown으로 남긴다.
+    if not isinstance(scores, list) or len(scores) != len(found):
+        scores = [None] * len(found)
+    scores = [float(s) if type(s) in (int, float) and math.isfinite(s) and 0 <= s <= 1
+              else None for s in scores]
+    if not usable:
+        return None, scores
+    return max(usable, key=lambda i: scores[i] if scores[i] is not None else -1), scores
+
+
 class Flow:
     """한 번의 실행. 인스턴스는 재사용하지 않는다."""
 
@@ -143,6 +167,7 @@ class Flow:
         self.opinions: list[dict[str, Any]] = []
         self.artifacts: list[dict[str, Any]] = []
         self.agent_traces: dict[str, list[dict[str, Any]]] = {}
+        self.agent_errors: dict[str, str] = {}
 
     # ------------------------------------------------------------ 진행 보고
     def _emit(self, candidate_id: str | None, step_id: str, status: str, reason: str | None) -> None:
@@ -190,6 +215,7 @@ class Flow:
             why = "NAT를 불러오지 못했다"
         self.agent_traces[session.cid] = session.calls
         if why:
+            self.agent_errors[session.cid] = why
             self._continue_by_rule(session, why)
 
     def _resume(self, s: CandidateSession) -> None:
@@ -570,7 +596,8 @@ class Flow:
         self, cid: str, response: dict[str, Any], sequences: dict[str, str] | None = None
     ) -> str | None:
         found = response.get("structures") or []
-        if not found:
+        selected, scores = select_structure(response)
+        if selected is None:
             reason = "예측 호출은 성공했지만 응답에 구조가 없다."
             self._emit(cid, "prediction", "failed", reason)
             for step in ("structure_comparison", "reporting"):
@@ -583,7 +610,7 @@ class Flow:
         structure_id = f"st-{cid}-boltz2"
         artifact_id = f"af-{structure_id}"
         path = self.work_dir / f"{structure_id}.cif"
-        path.write_text(found[0]["structure"], encoding="utf-8")
+        path.write_text(found[selected]["structure"], encoding="utf-8")
         self.structures.append(
             {
                 "structure_id": structure_id,
@@ -625,19 +652,17 @@ class Flow:
                 "sources": [],
             }
         )
-        self._emit(cid, "prediction", "completed", None)
-
         # 응답이 실제로 준 신뢰도만 근거로 남긴다. 주지 않은 지표는 만들지 않는다.
-        self._record_confidence(cid, structure_id, response)
+        # 완료 통보는 기록이 다 끝난 뒤에 한다. 되돌리기(agent_session.predict_structure)는
+        # 기록 리스트만 자르므로, 먼저 내보낸 completed 이벤트와 단계 상태는 복구되지 않는다.
+        self._record_confidence(cid, structure_id, scores[selected])
+        self._emit(cid, "prediction", "completed",
+                   f"응답 구조 {len(found)}개 중 {selected + 1}번째를 선택했다. "
+                   + ("유효한 신뢰도 점수가 가장 높다." if scores[selected] is not None
+                      else "신뢰도로 순위를 정할 수 없어 첫 유효 구조를 사용했다."))
         return structure_id
 
-    def _record_confidence(self, cid: str, structure_id: str, response: dict[str, Any]) -> None:
-        scores = response.get("confidence_scores")
-        value = None
-        if isinstance(scores, list) and scores and isinstance(scores[0], (int, float)):
-            value = float(scores[0])
-        elif isinstance(scores, (int, float)):
-            value = float(scores)
+    def _record_confidence(self, cid: str, structure_id: str, value: float | None) -> None:
         condition_id = f"cond-{cid}-core"
         if value is None:
             self._add_evidence(
@@ -663,7 +688,7 @@ class Flow:
                 value=value,
                 unit="score",
                 definition=(
-                    "Boltz-2가 반환한 confidence_scores의 첫 값. "
+                    "선택한 Boltz-2 구조에 대응하는 confidence_scores 값. "
                     "구조 예측의 자기 평가이며 결합력·효능 지표가 아니다."
                 ),
                 sources=[
@@ -700,15 +725,26 @@ class Flow:
             record = next(
                 (s for s in self.structures if s["structure_id"] == structure_id), None
             )
+            predicted_path = self.work_dir / f"{structure_id}.cif"
+            predicted_mapping = record["chain_mapping"] if record else []
+            predicted_source = {
+                "title": "NVIDIA Boltz-2 NIM 예측 구조에서 직접 계산",
+                "url": "https://build.nvidia.com/mit/boltz2",
+                "record_id": self.run_id,
+            }
             measurements.append(
                 analysis.predicted_contact_measurement(
-                    self.work_dir / f"{structure_id}.cif",
-                    record["chain_mapping"] if record else [],
-                    {
-                        "title": "NVIDIA Boltz-2 NIM 예측 구조에서 직접 계산",
-                        "url": "https://build.nvidia.com/mit/boltz2",
-                        "record_id": self.run_id,
-                    },
+                    predicted_path, predicted_mapping, predicted_source
+                )
+            )
+            # 새 항체를 이미 본 트라스투주맙 자리에 붙인 예측이 있었다. 그 비율을
+            # 근거로 남긴다 (agent-benchmark-report.md의 구조 정확도 절).
+            measurements.append(
+                analysis.reference_epitope_overlap_measurement(
+                    predicted_path,
+                    predicted_mapping,
+                    self.request["input"]["target"].get("fasta") or "",
+                    predicted_source,
                 )
             )
         measurements.extend(analysis.pending_measurements("예측·실험 구조 공통으로"))
@@ -759,7 +795,8 @@ class Flow:
                 ),
                 facts=facts,
                 options=[
-                    Option("reviewable", "확보한 근거로 구조상 검토 의견을 낼 수 있다."),
+                    *([Option("reviewable", "확보한 근거로 구조상 검토 의견을 낼 수 있다.")]
+                      if measured and not unmeasured else []),
                     Option("needs_confirmation", "근거가 모자라 사람의 확인이 필요하다."),
                 ],
                 # 규칙의 기본값을 모델의 입장에 맞춘다.

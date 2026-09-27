@@ -1,0 +1,39 @@
+{
+  "verified_at": "2026-09-26T14:58:23.876930+00:00",
+  "case": "1N8Z",
+  "diffusion_samples": 1,
+  "http_seconds": 27.284,
+  "response_sha256": "ed3f8e2eb0f32c14f139f4ec3250b622bd44aa9ab53430994209029e3183b85b",
+  "response_path": "/Volumes/Extreme SSD/nvidia/agent-performance/work/quality/1N8Z-1/boltz2_response.json",
+  "reference_url": "https://files.rcsb.org/download/1N8Z.cif",
+  "reference_sha256": "9f22f02b6e514de56dab8a48bc31a16302a51397779e64c398ad3a7f05cb19a2",
+  "sequence_sha256": {
+    "target": "ae38d43ea82403ec59e716cdfe9c5d3d27cb911a968e3cd9a2172ec8b554c78d",
+    "heavy": "333ef9a6e212d5d812057b329c5c026315079e676b939d7665003b218a22a179",
+    "light": "0f847c39eaff090a7f9198e71cf17124e1624b165e94e5714a70f50760a63238"
+  },
+  "returned_structures": 1,
+  "selected_index": 0,
+  "selected_confidence": 0.847710132598877,
+  "selected_score": {
+    "precision": 0.792,
+    "recall": 1.0,
+    "f1": 0.884,
+    "tp": 19,
+    "pred_n": 24,
+    "gold_n": 19,
+    "predicted_contacts_target_side": 24
+  },
+  "per_structure": [
+    {
+      "precision": 0.792,
+      "recall": 1.0,
+      "f1": 0.884,
+      "tp": 19,
+      "pred_n": 24,
+      "gold_n": 19,
+      "predicted_contacts_target_side": 24
+    }
+  ],
+  "limitation": "Retrospective known structures; no independent seed/model-version control or affinity validation."
+}

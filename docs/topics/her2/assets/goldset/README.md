@@ -1,5 +1,13 @@
 # 판단 채점용 평가셋 (goldset)
 
+> [기준 계면 겹침 검산](../../agent-benchmark-report.md): `check_epitope_overlap.py`가 캐시된 예측 4건으로
+> `predicted_epitope_overlap_with_reference` 근거를 검산한다. API를 부르지 않는다.
+> 결과는 `generated/epitope-overlap-check.json`이다.
+>
+> [후속 재검증](../../agent-performance-validation.md): mmCIF 파싱 오류를 수정했다.
+> 5샘플의 일반적인 우위와 0.923 상한 해석은 확인되지 않았다. 원본 보존·제품 코드 선택 검증은
+> `verify_prediction.py`를 사용한다. `generated/verified-*.json`이 수정 후 결과다.
+
 에이전트가 내리는 판단을 **실제 결정 구조에 대고 채점**하기 위한 자료와 도구다.
 만든 날 2026-09-26. 배경과 결과 해석은 [judgment-scoring.md](../../judgment-scoring.md)에 있다.
 

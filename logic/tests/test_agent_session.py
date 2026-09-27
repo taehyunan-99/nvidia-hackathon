@@ -173,8 +173,21 @@ def test_opinion_reason_may_cite_a_number_shown_earlier_by_lookup(tmp_path):
     assert "1N8Z" in lookup_out
     tools.use_experimental_structure("일치한다.")
     tools.compare_structure()
-    out = tools.submit_opinion("reviewable", "1N8Z 구조와 접촉 잔기 39개로 충분하다.")
+    out = tools.submit_opinion("needs_confirmation", "1N8Z 접촉 잔기 39개를 확인했으나 미계산 항목을 확인해야 한다.")
     assert not out.startswith("거부:")
+    assert session.terminal == "completed"
+
+
+def test_unmeasured_evidence_cannot_be_submitted_as_reviewable(tmp_path):
+    _, flow, session, tools = _setup(tmp_path, _trastuzumab())
+    tools.check_input()
+    tools.lookup_public_structure()
+    tools.use_experimental_structure("일치한다.")
+    tools.compare_structure()
+    assert tools.submit_opinion("reviewable", "추가 검증이 필요 없다.").startswith("거부:")
+    assert session.terminal is None
+    assert not flow.opinions
+    assert not tools.submit_opinion("needs_confirmation", "미계산 항목을 확인해야 한다.").startswith("거부:")
     assert session.terminal == "completed"
 
 
@@ -251,3 +264,32 @@ def test_rule_finish_after_predict_failure_does_not_repredict(tmp_path, monkeypa
     validate(output, "LogicOutput")
     assert client.predictions == 1
     assert flow.states["cand-v"].status == "failed"
+
+
+def test_prediction_step_is_never_reported_completed_when_recording_fails(tmp_path, monkeypatch):
+    """M2: 기록이 터진 예측 단계를 completed로 먼저 알리면 화면이 성공으로 보인다.
+
+    되돌리기는 기록 리스트만 자르므로, 이미 나간 진행 이벤트와 단계 상태는
+    복구되지 않는다. 그러니 기록이 끝난 뒤에 완료를 알려야 한다.
+    """
+    def _boom(*_args, **_kwargs):
+        raise OSError("근거를 쓰지 못했다")
+
+    updates = []
+    client = ScriptedClient()
+    flow = Flow(make_request([_variant(), _filler()], tmp_path, target_fasta=TARGET),
+                client=client, progress=updates.append)
+    session = CandidateSession(_variant())
+    tools = CandidateTools(flow, session)
+    tools.check_input()
+    tools.lookup_public_structure()
+    monkeypatch.setattr(flow, "_record_confidence", _boom)
+
+    out = tools.predict_structure("일치하는 공개 구조가 없어 새로 만든다.")
+
+    assert client.predictions == 1
+    assert "OSError" in out and session.terminal == "failed"
+    steps = [(u["step_id"], u["status"]) for u in updates]
+    assert ("prediction", "completed") not in steps
+    assert ("prediction", "failed") in steps
+    assert flow.states[session.cid].steps["prediction"]["status"] == "failed"

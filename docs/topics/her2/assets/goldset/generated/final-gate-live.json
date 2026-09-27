@@ -1,0 +1,88 @@
+{
+  "kind": "post-final-gate-live-validation",
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "live_cases": 2,
+  "submitted_expected_decision": 2,
+  "clean_workflow_completions": 1,
+  "boltz_calls": 0,
+  "source_sha256": {
+    "logic/agent_session.py": "2a4879d2876e3ba6baa01c027c3b918da744ade8c15219426496dd7185081bac",
+    "logic/nat_agent.py": "0857a81664079722ca8c211f7007840fd3b3bb8ecfcc9dbf32a98be3ff2d6ce5",
+    "logic/nat_workflow.yml": "ae497cf53fda394986b3fd5b33930151f602d7e93c8fecee5773935cf09cd83d",
+    "logic/flow.py": "a1df01f59d3010cc0e7d2fb8bb1f1d2598046a4a8e4932e63d01de0b4be50dd7",
+    "logic/measure_agent.py": "570da928163e5047013d926adb675c3ef1a41321faf03ad4dc1a4ca0408781f7"
+  },
+  "results": [
+    {
+      "at": "2026-09-27T00:12:11",
+      "scenario": "trastuzumab",
+      "mode": "nat",
+      "seconds": 13.3,
+      "reason": "interface_contact_residues는 계산되었으나, atom_clash와 surface_exposure는 아직 계산되지 않았습니다. 이들 항목을 확인하기 전까지는 구조 검토를 완료할 수 없습니다. (판단: nvidia/nemotron-3-super-120b-a12b)",
+      "agent_errors": {},
+      "rate_limited": false,
+      "code_calls": 1,
+      "calls": 5,
+      "refused": 0,
+      "rule_finish": false,
+      "hit_limit": false,
+      "status": "completed",
+      "decision": "needs_confirmation",
+      "trace": [
+        "check_input",
+        "lookup_public_structure",
+        "use_experimental_structure",
+        "compare_structure",
+        "submit_opinion"
+      ],
+      "notes": []
+    },
+    {
+      "at": "2026-09-27T00:12:32",
+      "scenario": "invalid",
+      "mode": "nat",
+      "seconds": 1.2,
+      "reason": "중쇄 서열에 아미노산이 아닌 문자가 있다: 123. 경쇄 서열에 아미노산이 아닌 문자가 있다: !.",
+      "agent_errors": {},
+      "rate_limited": false,
+      "code_calls": 1,
+      "calls": 1,
+      "refused": 0,
+      "rule_finish": false,
+      "hit_limit": false,
+      "status": "failed",
+      "decision": "hold",
+      "trace": [
+        "check_input"
+      ],
+      "notes": []
+    },
+    {
+      "at": "2026-09-27T00:14:20",
+      "scenario": "pertuzumab",
+      "mode": "nat",
+      "seconds": 16.8,
+      "reason": "interface_contact_residues는 56 잔기로 계산되었으나, atom_clash와 surface_exposure는 아직 계산되지 않았다. 이에 대한 확인이 필요하여 검토를 보류한다. (판단: nvidia/nemotron-3-super-120b-a12b)",
+      "agent_errors": {
+        "cand-p": "에이전트 실행 오류: Exception: [429] Too Many Requests\n{'status': 429, 'title': 'Too Many Requests'}"
+      },
+      "rate_limited": true,
+      "code_calls": 1,
+      "calls": 5,
+      "refused": 0,
+      "rule_finish": false,
+      "hit_limit": false,
+      "status": "completed",
+      "decision": "needs_confirmation",
+      "trace": [
+        "check_input",
+        "lookup_public_structure",
+        "use_experimental_structure",
+        "compare_structure",
+        "submit_opinion"
+      ],
+      "notes": []
+    }
+  ],
+  "limitation": "Two cases only. This checks the incomplete-evidence decision constraint, not biological accuracy or population-level reliability."
+}

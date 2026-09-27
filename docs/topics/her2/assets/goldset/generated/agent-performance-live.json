@@ -1,0 +1,74 @@
+[
+  {
+    "at": "2026-09-26T23:52:08",
+    "scenario": "trastuzumab",
+    "mode": "nat",
+    "seconds": 14.1,
+    "reason": "실험 구조 1N8Z를 사용해 중쇄·경쇄가 정확히 일치하며, 인터페이스 접촉 잔기 39개를 확보하여 구조적 검토에 충분한 근거가 있다. (판단: nvidia/nemotron-3-super-120b-a12b)",
+    "rate_limited": false,
+    "calls": 5,
+    "refused": 0,
+    "rule_finish": false,
+    "hit_limit": false,
+    "status": "completed",
+    "decision": "reviewable",
+    "trace": [
+      "check_input",
+      "lookup_public_structure",
+      "use_experimental_structure",
+      "compare_structure",
+      "submit_opinion"
+    ],
+    "notes": [],
+    "evaluation_run": "baseline-live-network",
+    "log_contains_429": true,
+    "caution": "Historical meter read only the selected opinion. Logs also contain errors after submission or from filler."
+  },
+  {
+    "at": "2026-09-26T23:54:56",
+    "scenario": "trastuzumab",
+    "mode": "nat",
+    "seconds": 3.6,
+    "reason": "코드에 정해 둔 규칙대로 진행했다. (판단: 규칙 — 에이전트 실행 오류: Exception: [429] Too Many Requests\n{'status': 429, 'title': 'Too Man…)",
+    "rate_limited": true,
+    "calls": 2,
+    "refused": 0,
+    "rule_finish": true,
+    "hit_limit": false,
+    "status": "completed",
+    "decision": "needs_confirmation",
+    "trace": [
+      "check_input",
+      "lookup_public_structure"
+    ],
+    "notes": [],
+    "evaluation_run": "after-live",
+    "log_contains_429": true,
+    "caution": "Historical meter read only the selected opinion. Logs also contain errors after submission or from filler."
+  },
+  {
+    "at": "2026-09-26T23:57:30",
+    "scenario": "trastuzumab",
+    "mode": "nat",
+    "seconds": 12.5,
+    "reason": "실험 구조 1N8Z를 사용해 계면 접촉 잔기 39개를 확보했으며, 추가 구조 검증이 필요 없는 수준의 구조 정보를 얻었다. (판단: nvidia/nemotron-3-super-120b-a12b)",
+    "rate_limited": false,
+    "calls": 5,
+    "refused": 0,
+    "rule_finish": false,
+    "hit_limit": false,
+    "status": "completed",
+    "decision": "reviewable",
+    "trace": [
+      "check_input",
+      "lookup_public_structure",
+      "use_experimental_structure",
+      "compare_structure",
+      "submit_opinion"
+    ],
+    "notes": [],
+    "evaluation_run": "after-live-retry",
+    "log_contains_429": true,
+    "caution": "Historical meter read only the selected opinion. Logs also contain errors after submission or from filler."
+  }
+]

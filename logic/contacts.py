@@ -23,6 +23,7 @@
 
 from __future__ import annotations
 
+import difflib
 import math
 from collections import defaultdict
 from dataclasses import dataclass
@@ -43,73 +44,43 @@ class Atom:
     z: float
 
 
-def parse_atoms(text: str, *, model_number: int = 1) -> list[Atom]:
-    """mmCIF `_atom_site` loop에서 중원자 좌표를 읽는다.
+def sequence_position_map(seq_from: str, seq_to: str) -> dict[int, int]:
+    """두 표적 서열을 맞춰 1-기반 잔기 번호 대응을 만든다.
 
-    `structures._read_loop`을 쓰지 않는다. 원자 행은 수만 줄이고 따옴표·
-    세미콜론 블록이 없는 고정 모양이라, 줄 단위로 바로 쪼개는 쪽이 빠르다.
-
-    `label_seq_id`가 숫자가 아닌 행(물·당쇄 같은 비중합체)은 버린다. 잔기
-    번호가 없으면 접촉 잔기로 지목할 수 없다.
+    구조마다 표적 construct가 달라 같은 자리가 다른 번호를 갖는다. 서로 다른
+    구조의 에피토프를 견주려면 먼저 한 번호 체계로 옮겨야 한다.
     """
-    lines = text.splitlines()
-    columns: list[str] = []
-    index = 0
-    # _atom_site loop의 열 이름을 모은다.
-    for i, line in enumerate(lines):
-        if line.strip().startswith("_atom_site."):
-            j = i
-            while j < len(lines) and lines[j].strip().startswith("_atom_site."):
-                columns.append(lines[j].strip())
-                j += 1
-            index = j
-            break
-    if not columns:
-        return []
+    matcher = difflib.SequenceMatcher(None, seq_from, seq_to, autojunk=False)
+    return {a + k + 1: b + k + 1
+            for a, b, size in matcher.get_matching_blocks() for k in range(size)}
 
+
+def parse_atoms(text: str, *, model_number: int = 1) -> list[Atom]:
+    """mmCIF의 줄바꿈·따옴표를 보존해 label 기준 중원자 좌표를 읽는다."""
+    import gemmi
+
+    # ponytail: 설치된 CIF 파서가 행 경계와 토큰을 처리한다. 직접 split하지 않는다.
     try:
-        col = {
-            "asym": columns.index("_atom_site.label_asym_id"),
-            "seq": columns.index("_atom_site.label_seq_id"),
-            "element": columns.index("_atom_site.type_symbol"),
-            "x": columns.index("_atom_site.Cartn_x"),
-            "y": columns.index("_atom_site.Cartn_y"),
-            "z": columns.index("_atom_site.Cartn_z"),
-        }
-    except ValueError:
-        # 필요한 열이 없으면 지어내지 않고 빈 결과를 낸다.
+        block = gemmi.cif.read_string(text).sole_block()
+    except (ValueError, RuntimeError):
         return []
-    model_col = (
-        columns.index("_atom_site.pdbx_PDB_model_num")
-        if "_atom_site.pdbx_PDB_model_num" in columns
-        else None
-    )
-    width = len(columns)
-
-    atoms: list[Atom] = []
-    for line in lines[index:]:
-        stripped = line.strip()
-        if stripped.startswith("#") or stripped.startswith("loop_"):
-            break
-        if not stripped:
+    names = ("label_asym_id", "label_seq_id", "type_symbol", "Cartn_x", "Cartn_y", "Cartn_z")
+    columns = [block.find_values("_atom_site." + name) for name in names]
+    if not all(len(c) for c in columns):
+        return []
+    models = block.find_values("_atom_site.pdbx_PDB_model_num")
+    atoms = []
+    for i, (chain, seq, element, x, y, z) in enumerate(zip(*columns)):
+        if models and gemmi.cif.as_string(models[i]) != str(model_number):
             continue
-        if not (stripped.startswith("ATOM") or stripped.startswith("HETATM")):
-            break
-        parts = stripped.split()
-        if len(parts) != width:
-            continue
-        if model_col is not None and parts[model_col] != str(model_number):
-            continue
-        if parts[col["element"]].upper() in _EXCLUDED_ELEMENTS:
+        if element.upper() in _EXCLUDED_ELEMENTS:
             continue
         try:
-            seq = int(parts[col["seq"]])
-            x = float(parts[col["x"]])
-            y = float(parts[col["y"]])
-            z = float(parts[col["z"]])
+            atom = Atom(gemmi.cif.as_string(chain), int(seq), float(x), float(y), float(z))
         except ValueError:
             continue
-        atoms.append(Atom(parts[col["asym"]], seq, x, y, z))
+        if all(math.isfinite(v) for v in (atom.x, atom.y, atom.z)):
+            atoms.append(atom)
     return atoms
 
 

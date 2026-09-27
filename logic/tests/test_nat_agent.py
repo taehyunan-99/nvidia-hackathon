@@ -140,6 +140,49 @@ def test_workflow_config_loads_with_registered_tools():
     assert config.workflow.max_empty_response_retries == 2
 
 
+def test_invalid_input_never_loads_a_model_workflow(tmp_path, monkeypatch):
+    from logic.agent_session import CandidateSession
+    from logic.flow import Flow
+
+    def unexpected(*args, **kwargs):
+        raise AssertionError("잘못된 입력에 모델 워크플로를 열었다")
+
+    monkeypatch.setattr(nat_agent, "load_workflow", unexpected)
+    flow = Flow(_request(tmp_path), client=ScriptedClient())
+    session = CandidateSession(_filler())
+    assert nat_agent.run_candidate(flow, session) is None
+    assert session.terminal == "failed"
+    assert session.calls == [{"tool": "check_input", "accepted": True, "executed_by": "code"}]
+
+
+def test_error_after_submission_is_retained_without_replacing_the_opinion(tmp_path, monkeypatch):
+    from logic.agent_session import CandidateTools
+
+    def agent(flow, session):
+        tools = CandidateTools(flow, session)
+        tools.check_input()
+        if session.terminal:
+            return None
+        tools.lookup_public_structure()
+        tools.use_experimental_structure("일치한다.")
+        tools.compare_structure()
+        tools.submit_opinion("needs_confirmation", "미계산 항목을 확인해야 한다.")
+        return "에이전트 실행 오류: 429 Too Many Requests"
+
+    monkeypatch.setenv("LOGIC_AGENT_MODE", "nat")
+    monkeypatch.setattr(nat_agent, "NAT_AVAILABLE", True)
+    monkeypatch.setattr(nat_agent, "run_candidate", agent)
+    output, flow = run_flow(_request(tmp_path), client=ScriptedClient())
+    assert "429" in flow.agent_errors["cand-t"]
+    assert flow.states["cand-t"].status == "completed"
+    assert _opinion_for(output, "cand-t")["reason"].startswith("미계산 항목")
+    from logic import measure_agent
+    monkeypatch.setattr(measure_agent, "run_flow", lambda request: (output, flow))
+    row = measure_agent._one("trastuzumab", "nat")
+    assert row["rate_limited"] is True
+    assert row["rule_finish"] is False
+
+
 @pytest.mark.live
 @pytest.mark.skipif(os.getenv("RUN_LIVE_NAT") != "1", reason="실제 Nemotron 호출은 RUN_LIVE_NAT=1에서만")
 def test_live_agent_reviews_experimental_candidate(tmp_path, monkeypatch):
@@ -148,3 +191,39 @@ def test_live_agent_reviews_experimental_candidate(tmp_path, monkeypatch):
     trace = flow.agent_traces["cand-t"]
     assert trace[0]["tool"] == "check_input"
     assert flow.states["cand-t"].status == "completed"
+
+
+def test_a_control_candidates_error_is_not_charged_to_the_measured_one(tmp_path, monkeypatch):
+    """측정 행은 후보 하나의 기록이다. 같은 흐름의 다른 후보 오류를 끌어오면 안 된다."""
+    from logic import measure_agent
+
+    output, flow = run_flow(_request(tmp_path), client=ScriptedClient())
+    flow.agent_errors = {"filler": "에이전트 실행 오류: 429 Too Many Requests"}
+    monkeypatch.setattr(measure_agent, "run_flow", lambda request: (output, flow))
+
+    row = measure_agent._one("trastuzumab", "nat")
+
+    assert row["agent_error"] is None
+    assert row["rate_limited"] is False
+
+
+def test_the_measurement_row_separates_recovered_429_from_a_failed_run(tmp_path, monkeypatch):
+    """인계서 우선순위 2: 복구된 429·빈 200 응답·미처리 오류를 각각 센다."""
+    from logic import measure_agent, nat_model
+
+    output, flow = run_flow(_request(tmp_path), client=ScriptedClient())
+
+    def _run(_request_unused):
+        for status, emitted in ((429, False), (200, False), (200, True)):
+            nat_model.record_attempt(status=status, attempt=1, emitted=emitted,
+                                     started_at="now", headers={})
+        return output, flow
+
+    monkeypatch.setattr(measure_agent, "run_flow", _run)
+
+    row = measure_agent._one("trastuzumab", "nat")
+
+    assert row["http_statuses"] == {"200": 2, "429": 1}
+    assert row["http_429_recovered"] is True
+    assert row["http_empty_responses"] == 1
+    assert row["rate_limited"] is False

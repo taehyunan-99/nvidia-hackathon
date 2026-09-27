@@ -72,13 +72,13 @@
   "sha256": "660b41e29117bd29501f0c43593f33f7b66309282af7d433fc1c6539c7e2335c"
  },
  {
-  "precision": 0.0,
-  "recall": 0.0,
-  "f1": 0.0,
-  "tp": 0,
-  "pred_n": 0,
+  "precision": 0.095,
+  "recall": 0.105,
+  "f1": 0.1,
+  "tp": 2,
+  "pred_n": 21,
   "gold_n": 19,
-  "predicted_contacts_target_side": 0,
+  "predicted_contacts_target_side": 21,
   "name": "openfold3_msa",
   "label": "OpenFold3 + MSA",
   "sha256": "81150d737a9a365073e2a7ca0be49cbe874107257d00b5dbf76073f3ce69d74b"

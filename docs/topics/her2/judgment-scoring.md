@@ -1,5 +1,9 @@
 # 에이전트 판단 채점 — 실제 자료 평가셋 구축과 시험 결과
 
+> 후속 검증에서 파싱 오류와 비교 조건 차이가 확인됐다. 아래 §5-2의
+> “diffusion_samples=1이 병목”, OpenFold3 접촉 0, 세션 차이 원인, 성능 천장 해석은
+> 최종 결론으로 사용하지 않는다. [재검증·수정 결과](agent-performance-validation.md)를 우선한다.
+
 작성 2026-09-26 22시대. 담당 로직 B.
 자료와 도구는 [assets/goldset/](assets/goldset/)에 있다(돌리는 법은 그 폴더의 README).
 구조 파일 `assets/goldset/cif/`만 용량 때문에 git 제외이며 `fetch_cif.sh`로 다시 받는다.

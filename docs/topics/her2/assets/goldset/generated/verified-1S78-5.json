@@ -1,0 +1,75 @@
+{
+  "verified_at": "2026-09-26T14:58:24.816427+00:00",
+  "case": "1S78",
+  "diffusion_samples": 5,
+  "http_seconds": 14.225,
+  "response_sha256": "7fca5b838a588c812e43e466c2f8f6ea06a5e8d0026bfd8e89f7ff51e70a6539",
+  "response_path": "/Volumes/Extreme SSD/nvidia/agent-performance/work/quality/1S78-5/boltz2_response.json",
+  "reference_url": "https://files.rcsb.org/download/1S78.cif",
+  "reference_sha256": "468b0fa0d3368c1d8971d26e896a7ed8b938437dfa5eb55132ef24ef0033d9f0",
+  "sequence_sha256": {
+    "target": "19cc0d0ceb51716c97d454d8460e04e7d7d0f358f29743e500bda8b6413bf066",
+    "heavy": "df1e14dea3dd1d5878071c51aac02f2024acb3555d88ce42a47a34430693d272",
+    "light": "70ab76825a1e1cf761b4c0c14dee9dc98a327307c460b19826dd08dd56a53d27"
+  },
+  "returned_structures": 5,
+  "selected_index": 2,
+  "selected_confidence": 0.8221117854118347,
+  "selected_score": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "tp": 0,
+    "pred_n": 18,
+    "gold_n": 26,
+    "predicted_contacts_target_side": 18
+  },
+  "per_structure": [
+    {
+      "precision": 0.043,
+      "recall": 0.038,
+      "f1": 0.041,
+      "tp": 1,
+      "pred_n": 23,
+      "gold_n": 26,
+      "predicted_contacts_target_side": 23
+    },
+    {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "tp": 0,
+      "pred_n": 27,
+      "gold_n": 26,
+      "predicted_contacts_target_side": 27
+    },
+    {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "tp": 0,
+      "pred_n": 18,
+      "gold_n": 26,
+      "predicted_contacts_target_side": 18
+    },
+    {
+      "precision": 0.304,
+      "recall": 0.269,
+      "f1": 0.286,
+      "tp": 7,
+      "pred_n": 23,
+      "gold_n": 26,
+      "predicted_contacts_target_side": 23
+    },
+    {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "tp": 0,
+      "pred_n": 15,
+      "gold_n": 26,
+      "predicted_contacts_target_side": 15
+    }
+  ],
+  "limitation": "Retrospective known structures; no independent seed/model-version control or affinity validation."
+}

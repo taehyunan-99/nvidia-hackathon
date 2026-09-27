@@ -1,0 +1,61 @@
+{
+  "baseline_commit": "0691dc8",
+  "cases": [
+    {
+      "case_setting": "1N8Z-1",
+      "response_sha256": "ed3f8e2eb0f32c14f139f4ec3250b622bd44aa9ab53430994209029e3183b85b",
+      "before_atoms": [
+        7969
+      ],
+      "after_atoms": [
+        7969
+      ]
+    },
+    {
+      "case_setting": "1N8Z-5",
+      "response_sha256": "c5b97cee1b23e33425b4e4322acd00ac5d7f86d9a71c486e66be39e0e641aa88",
+      "before_atoms": [
+        7969,
+        7969,
+        7969,
+        7969,
+        7969
+      ],
+      "after_atoms": [
+        7969,
+        7969,
+        7969,
+        7969,
+        7969
+      ]
+    },
+    {
+      "case_setting": "1S78-1",
+      "response_sha256": "dac9849fc8ae4594a718e737486eea3d1aa333a9bcdf6c88cb8da8f46c44227b",
+      "before_atoms": [
+        0
+      ],
+      "after_atoms": [
+        8149
+      ]
+    },
+    {
+      "case_setting": "1S78-5",
+      "response_sha256": "7fca5b838a588c812e43e466c2f8f6ea06a5e8d0026bfd8e89f7ff51e70a6539",
+      "before_atoms": [
+        8149,
+        8149,
+        8149,
+        8149,
+        8149
+      ],
+      "after_atoms": [
+        8149,
+        8149,
+        8149,
+        8149,
+        8149
+      ]
+    }
+  ]
+}

@@ -16,6 +16,9 @@ HER2와 항체 후보를 비교·검토하는 현재 프로젝트의 기능·판
 - [logic-b-handoff.md](logic-b-handoff.md) — 로직 B 실행부의 현재 동작 범위와 D3–D6 인계 초안
 - [nat-agent-loop.md](nat-agent-loop.md) — 로직 B를 NAT tool-calling 루프로 바꾸는 설계, A→B 전환 기준과 로드맵. 구현·측정 완료, 기본 모드 `nat`로 전환
 - [nat-agent-loop-plan.md](nat-agent-loop-plan.md) — 위 설계의 태스크별 구현 계획 (Task 1–7, 6B 조건부)
+- [agent-performance-validation.md](agent-performance-validation.md) — 실응답 재채점, mmCIF 파싱 수정, 생성 수 비교와 실모델 한계
+- [agent-benchmark-report.md](agent-benchmark-report.md) — 고정 8사례의 실제 에이전트·규칙 비교, 신규 항체 2건의 독립 접촉 채점
+- [claude-handoff.md](claude-handoff.md) — Claude 인계: 작업 경로, 미커밋 변경, 실측 근거, 남은 과제와 재현 명령
 
 형식: Markdown 중심. 웹 서비스 기술 선택·잠정안은 [ARCHITECTURE](../../ARCHITECTURE.md)와 [ADR](../../ADR.md)을 따른다. 구현·배포는 미검증이다.
 

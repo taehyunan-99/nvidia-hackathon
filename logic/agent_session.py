@@ -238,9 +238,13 @@ class CandidateTools:
             note = f"거부: decision은 {' 또는 '.join(OPINIONS)} 중 하나여야 한다. 받은 값: {decision!r}."
             self.s.calls.append({"tool": "submit_opinion", "accepted": False, "note": note})
             return note
-        facts, _, _ = self.flow._opinion_facts(self.s.cid)
+        facts, measured, unmeasured = self.flow._opinion_facts(self.s.cid)
         if (r := self._check_reason("submit_opinion", reason, facts)):
             return r
+        if decision == "reviewable" and (not measured or unmeasured):
+            note = "거부: 미계산 근거가 있거나 측정된 근거가 없다. needs_confirmation으로 남은 확인 사항을 적는다."
+            self.s.calls.append({"tool": "submit_opinion", "accepted": False, "note": note})
+            return note
         self._accept("submit_opinion")
         verdict = self._decision("review_opinion", decision, reason, facts)
         self.flow._report(self.s.cid, self.s.structure_id, self.s.match, verdict=verdict)
