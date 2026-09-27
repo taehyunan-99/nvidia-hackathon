@@ -181,11 +181,17 @@ def test_opinion_reason_may_cite_a_number_shown_earlier_by_lookup(tmp_path):
 
 def test_unmeasured_evidence_cannot_be_submitted_as_reviewable(tmp_path):
     _, flow, session, tools = _setup(tmp_path, _trastuzumab())
+    events = []
+    flow._progress = events.append
     tools.check_input()
     tools.lookup_public_structure()
     tools.use_experimental_structure("일치한다.")
-    tools.compare_structure()
+    reply = tools.compare_structure()
+    assert '현재 허용되는 decision: needs_confirmation.' in reply
+    assert 'reviewable 또는' not in reply
     assert tools.submit_opinion("reviewable", "추가 검증이 필요 없다.").startswith("거부:")
+    assert 'needs_confirmation' in next(e['activity']['reason'] for e in events
+        if e['activity']['name'] == 'submit_opinion' and e['activity']['phase'] == 'rejected')
     assert session.terminal is None
     assert not flow.opinions
     assert not tools.submit_opinion("needs_confirmation", "미계산 항목을 확인해야 한다.").startswith("거부:")

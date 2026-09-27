@@ -66,6 +66,8 @@ services:
       NVIDIA_API_KEY: ${NVIDIA_API_KEY:-}
       LOGIC_AGENT_MODE: ${LOGIC_AGENT_MODE:-nat}
       PDB_SEARCH_ENABLED: ${PDB_SEARCH_ENABLED:-1}
+      MODEL_BUDGET_PATH: ${MODEL_BUDGET_PATH:-}
+      NEMOTRON_REQUEST_LIMIT: ${NEMOTRON_REQUEST_LIMIT:-40}
     volumes:
       - uploads:/data
     depends_on:

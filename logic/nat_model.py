@@ -88,6 +88,9 @@ class PacedNIM(ChatNVIDIA):
     request_interval: float = Field(default=15.0, ge=0, exclude=True)
 
     async def _astream(self, messages, stop=None, run_manager=None, **kwargs):
+        # Nemotron 3 defaults can spend the entire 1024-token response on reasoning,
+        # truncating before any tool call. Use its documented direct-response mode.
+        kwargs.setdefault('chat_template_kwargs', {'enable_thinking': False})
         from .nat_agent import _CURRENT
         tools = _CURRENT.get(None)
         if tools is not None and tools.s.terminal:
@@ -95,8 +98,20 @@ class PacedNIM(ChatNVIDIA):
             log.info("nim_terminal_no_request")
             yield ChatGenerationChunk(message=AIMessageChunk(content="검토를 끝냈다."))
             return
+        if tools is not None and hasattr(tools, 'model_tool_schemas'):
+            kwargs['tools'] = tools.model_tool_schemas(kwargs.get('tools', []))
+            kwargs['tool_choice'] = 'required'
+            recent = tools.s.calls[-2:]
+            if len(recent) == 2 and all(c.get('accepted') is False for c in recent) and \
+                    (recent[0].get('tool'), recent[0].get('note')) == (recent[1].get('tool'), recent[1].get('note')):
+                from .nvidia_client import CallFailed
+                raise CallFailed('동일한 도구 요청이 같은 사유로 두 번 거부되어 추가 모델 호출을 중단했다: '
+                                 + str(recent[-1].get('note', ''))[:200])
         for attempt in range(MAX_ATTEMPTS):
             await _pace(self.request_interval)
+            if tools is not None and hasattr(tools, 'flow'):
+                from .call_budget import reserve
+                reserve('nemotron', tools.flow.work_dir)
             started = datetime.now(timezone.utc).isoformat()
             emitted = False
             self._async_client.last_response = None

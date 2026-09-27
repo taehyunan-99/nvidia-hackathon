@@ -123,7 +123,7 @@ def test_fallback_reason_detects_iteration_limit_by_call_count(tmp_path):
     for _ in range(10):
         session.calls.append({"tool": "compare_structure", "accepted": False, "note": "거부: …"})
     changed = "문구가 바뀐 상한 메시지"
-    assert nat_agent._fallback_reason(session, changed, max_iterations=10) == "에이전트 반복 상한"
+    assert nat_agent._fallback_reason(session, changed, max_iterations=10) == "에이전트 반복 상한 — 마지막 거부: 거부: …"
     assert nat_agent._fallback_reason(session, changed, max_iterations=11).startswith(
         "에이전트가 종료 도구 없이 끝났다")
 

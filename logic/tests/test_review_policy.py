@@ -36,6 +36,13 @@ def test_measured_zero_remains_a_reviewable_observation():
     assert '결합력·치료 효능·안전성 판단이 아니다.' in ' '.join(result[0]['limitations'])
 
 
+def test_measured_clash_requires_location_review_without_biological_rejection():
+    result = opinions([evidence('atom_clash', value=1)])
+    assert result[0]['decision'] == 'needs_confirmation'
+    assert '생물학적 부적합을 뜻하지 않는다' in ' '.join(result[0]['limitations'])
+    assert opinions([evidence('atom_clash', value=0)])[0]['decision'] == 'reviewable'
+
+
 def test_incomplete_surface_group_cannot_approve_the_missing_metric():
     result=opinions([evidence('surface_exposure')])
     assert result[0]['decision']=='needs_confirmation'

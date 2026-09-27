@@ -1,4 +1,17 @@
+FROM debian:bookworm-slim AS validation-tools
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential git ca-certificates && rm -rf /var/lib/apt/lists/*
+WORKDIR /build
+RUN git clone https://github.com/rlabduke/reduce.git && cd reduce && git checkout 3cef69cecc8e5fcfff236a2e64166cce601e5e0c && make -j2
+RUN git clone https://github.com/rlabduke/probe.git && cd probe && git checkout 835c2c63dd14b8c30599900b07c2296925cc933c && make -j2
+
 FROM python:3.13-slim
+
+COPY --from=validation-tools /build/reduce/reduce_src/reduce /usr/local/bin/reduce
+COPY --from=validation-tools /build/probe/probe /usr/local/bin/probe
+COPY --from=validation-tools /build/reduce/reduce_wwPDB_het_dict.txt /opt/molprobity/reduce_wwPDB_het_dict.txt
+COPY --from=validation-tools /build/reduce/LICENSE /opt/molprobity/LICENSE-reduce.txt
+COPY --from=validation-tools /build/probe/LICENSE.txt /opt/molprobity/LICENSE-probe.txt
+ENV REDUCE_HET_DICT=/opt/molprobity/reduce_wwPDB_het_dict.txt
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \

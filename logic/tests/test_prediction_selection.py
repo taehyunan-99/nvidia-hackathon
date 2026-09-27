@@ -17,7 +17,7 @@ from logic.tests.test_flow import StubClient, CoordinateClient, prediction_respo
 def test_selected_structure_and_confidence_stay_paired(tmp_path, scores, index, value):
     class Client(StubClient):
         def predict_complex(self, polymers, **kwargs):
-            assert kwargs.get("diffusion_samples", 1) == 1
+            assert kwargs.get("diffusion_samples") == 2
             base = prediction_response(polymers)['structures'][0]['structure']
             return {"structures": [{"structure": base.replace('data_predicted', f'data_sample_{i}')} for i in range(3)], "confidence_scores": scores}
 

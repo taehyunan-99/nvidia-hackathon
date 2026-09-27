@@ -128,6 +128,8 @@ class NvidiaClient:
         limit = self.timeout if timeout is None else timeout
         attempt = 0
         while True:
+            from .call_budget import reserve
+            reserve('boltz2' if kind == 'boltz2.predict' else 'nemotron', self.work_dir)
             started = time.monotonic()
             try:
                 response = requests.post(url, headers=headers, json=payload, timeout=limit)

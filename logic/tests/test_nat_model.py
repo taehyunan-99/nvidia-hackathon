@@ -18,6 +18,7 @@ def test_transport_paces_recovers_logs_and_only_skips_accepted_terminal(monkeypa
         paced.append(interval)
 
     async def stream(self, *args, **kwargs):
+        assert kwargs['chat_template_kwargs'] == {'enable_thinking': False}
         calls.append(1)
         status = 429 if len(calls) == 1 else 200
         self._async_client.last_response = SimpleNamespace(status=status, headers={

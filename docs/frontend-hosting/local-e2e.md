@@ -17,6 +17,10 @@ docker compose -p her2-user-e2e --env-file .env.local-e2e up --build -d --wait
 
 모델 호출 없이 로컬 기능만 먼저 확인할 때는 두 키(`NVIDIA_API_KEY`, `NGC_API_KEY`)를 비우고 `LOGIC_AGENT_MODE=rule`, `PDB_SEARCH_ENABLED=0`으로 실행한다. 이 결과를 모델 E2E 성공이라고 기록하지 않는다. NVIDIA 키가 없을 때 NAT가 규칙으로 복구한 경우도 모델 성공이 아니다.
 
+2026-09-27 사용자 승인 범위는 [분석 검증 계약](../topics/her2/analysis-validation-contract.md)을 따른다. 자료가 없는 전체 접근성의 사유 있는 보류는 허용하지만 정식 충돌·복수 자세 계산의 미구현이나 실행 오류를 완료로 처리하지 않는다. API 이미지가 고정 버전 Reduce·Probe와 원자 사전을 포함하며, 예측은 2샘플을 요청해 각각 보존한다. 추가 구조의 정렬은 원본 파일을 바꾸지 않는다.
+
+NVIDIA 실제 요청은 재시도 포함 실행당 Nemotron 40건·Boltz-2 4건으로 제한된다. `MODEL_BUDGET_PATH`를 지정하면 여러 실행이 같은 한도를 공유하므로 내부 검증 외의 사용자 테스트에서는 비워 둔다. 이 상한은 제공자의 계정 한도·무료 제공을 보증하지 않는다. NAT는 응답이 사고 토큰으로 소진되는 재현 오류를 피하도록 Nemotron의 `enable_thinking=false`를 명시하며 실제 도구 선택·실행 주체는 계속 기록한다.
+
 ## 확인할 흐름
 
 | 사례 | 직접 확인할 결과 |
@@ -46,3 +50,7 @@ docker compose -p her2-user-e2e --env-file .env.local-e2e up --build -d --wait
 `docker compose -p her2-user-e2e --env-file .env.local-e2e down`은 데이터를 보존한다. 입력·결과가 더 필요 없을 때만 이 **검사용 project**에 `down -v`를 사용한다. 기존 다른 project의 볼륨을 삭제하지 않는다.
 
 확인한 입력·실행 ID·오류·모델 복구 여부·화면/다운로드 일치와 느린 구간을 기록한다. 사용자의 실제 E2E가 끝나기 전에는 AWS·공개 HTTPS·배포를 진행하지 않는다.
+
+## 현재 로컬 서버와 남은 관문
+
+2026-09-27 `http://127.0.0.1:18095`의 `her2-user-e2e`를 실행해 유지 중이다. 소개·팀 별도 worktree 작업과 분리되어 있고 해당 수정은 자동 반영되지 않는다. 도구 거부 반복을 상태별 요청 스키마와 반복 중단 조건으로 수정했다. 새 영속 실행에서 공개 구조·실제 예측·비교·보고가 도구 거부와 규칙 복구 없이 완료돼 사용자 직접 E2E를 시작할 수 있다. 사용자 직접 확인과 공개 배포는 아직 수행하지 않았다. 상세 근거와 호출 한도는 [최종 내부 검증](../topics/her2/analysis-validation-contract.md#도구-거부-반복-수정과-최종-내부-검증)을 따른다.

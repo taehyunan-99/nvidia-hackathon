@@ -170,11 +170,8 @@ def _fallback_reason(session: CandidateSession, final: str | None,
     """
     if session.terminal:
         return None
-    if "could not produce a final answer" in (final or ""):
-        return "에이전트 반복 상한"
-    if max_iterations and len(session.calls) >= max_iterations:
-        return "에이전트 반복 상한"
-    reason = "에이전트가 종료 도구 없이 끝났다"
+    limited = "could not produce a final answer" in (final or "") or (max_iterations and len(session.calls) >= max_iterations)
+    reason = "에이전트 반복 상한" if limited else "에이전트가 종료 도구 없이 끝났다"
     note = _last_refusal_note(session)
     if note:
         reason = f"{reason} — 마지막 거부: {note}"
