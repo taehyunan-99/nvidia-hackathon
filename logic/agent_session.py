@@ -58,6 +58,8 @@ def allowed_tools(s: CandidateSession) -> set[str]:
         return {"check_input"}
     if s.match is None:
         return {"lookup_public_structure"}
+    if s.match.blocked_reason:
+        return {"hold_candidate"}
     if s.structure_id is None:
         out: set[str] = set()
         if s.lengths and all(n >= _min_length() for n in s.lengths.values()):
@@ -179,9 +181,8 @@ class CandidateTools:
         if (r := self._gate("lookup_public_structure")):
             return r
         self._accept("lookup_public_structure")
-        from . import structures
         c = self.s.candidate
-        self.s.match = structures.find_structure(c["heavy_chain_fasta"], c["light_chain_fasta"])
+        self.s.match = self.flow._lookup(c)
         self.s.lengths = self.flow._lengths(c)
         self.flow._emit(self.s.cid, "input_mapping", "completed", None)
         facts = self.flow._source_facts(c, self.s.match)

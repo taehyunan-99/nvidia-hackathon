@@ -20,6 +20,8 @@ import pytest
 @pytest.fixture(autouse=True)
 def _default_rule_mode(monkeypatch):
     monkeypatch.setenv("LOGIC_AGENT_MODE", "rule")
+    # Subprocess workers inherit this too; automatic-search tests opt in explicitly.
+    monkeypatch.setenv("PDB_SEARCH_ENABLED", "0")
 
 
 @pytest.fixture(autouse=True)

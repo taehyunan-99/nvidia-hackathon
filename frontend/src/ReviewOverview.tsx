@@ -6,7 +6,7 @@ const decisions: Record<string, string> = {
   hold: "판단 보류",
   not_assessed: "미검토",
   needs_confirmation: "추가 확인",
-  reviewable: "후속 실험 검토 가능",
+  reviewable: "해당 항목 검토 가능",
 };
 const states: Record<string, string> = {
   unknown: "미확인",
@@ -20,6 +20,8 @@ const topics: Record<string, string> = {
   accessibility: "접근성",
   clash: "충돌",
   confidence: "구조 신뢰도",
+  surface: "관측 단백질 표면",
+  glycan: "관측 당의 표면 영향",
   interface_contact_residues: "접촉 잔기",
   atom_clash: "원자 간 충돌",
   surface_exposure: "관측 단백질 표면적",

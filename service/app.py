@@ -85,10 +85,9 @@ _ARTIFACT_ID = re.compile(r"^af-(st-[A-Za-z0-9_-]{1,64})$")
 
 @app.get("/api/runs/{run_id}/artifacts/{artifact_id}")
 def artifact(run_id: str, artifact_id: str) -> Response:
-    """예측 구조 mmCIF를 내보낸다.
+    """실행에서 검증·보존한 실험 또는 예측 구조 mmCIF를 내보낸다.
 
-    Boltz-2가 돌려준 구조를 화면에서 보려면 파일이 나가야 한다. 공개 실험
-    구조는 이미 프런트가 직접 가지고 있으므로 여기서 다루지 않는다.
+    실험 구조도 실행 폴더에 보존하며 공개 구조 목록 밖의 출처를 함께 지원한다.
 
     sha256을 헤더로 같이 보낸다. 프런트는 공개 구조에 하던 것과 똑같이
     받은 내용을 직접 해시해서 대조할 수 있다.

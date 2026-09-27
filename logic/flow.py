@@ -170,6 +170,7 @@ class Flow:
         self.artifacts: list[dict[str, Any]] = []
         self.agent_traces: dict[str, list[dict[str, Any]]] = {}
         self.agent_errors: dict[str, str] = {}
+        self.rule_finishes: dict[str, str] = {}
 
     # ------------------------------------------------------------ 진행 보고
     def _emit(self, candidate_id: str | None, step_id: str, status: str, reason: str | None) -> None:
@@ -262,9 +263,14 @@ class Flow:
 
         # 공개 자료 조회
         if s.match is None:
-            s.match = structures.find_structure(candidate["heavy_chain_fasta"], candidate["light_chain_fasta"])
+            s.match = self._lookup(candidate)
             s.lengths = self._lengths(candidate)
             self._emit(cid, "input_mapping", "completed", None)
+
+        if s.match.blocked_reason:
+            self._hold_candidate(cid, s.match.blocked_reason)
+            s.terminal = "partial"
+            return
 
         # ③ 분기: 기존 구조 / 예측 / 자료 부족 — 판단 주체는 self.decider
         if s.structure_id is None:
@@ -298,6 +304,9 @@ class Flow:
 
     def _continue_by_rule(self, s: CandidateSession, why: str) -> None:
         """에이전트가 끝내지 못한 후보를 규칙으로 마무리한다. 모델을 다시 부르지 않는다."""
+        if s.terminal:
+            return
+        self.rule_finishes[s.cid] = why
         self._activity(s.cid, "fallback", "continue_by_rule", "running", "rule")
         saved = self.decider
         previous = self._stage_actor
@@ -365,6 +374,10 @@ class Flow:
         self._hold_opinion(cid, "structure_availability", "hold", reason)
 
     # ------------------------------------------------------------ 판단 분기
+    def _lookup(self, candidate: dict[str, Any]) -> structures.StructureMatch:
+        from .structure_sources import lookup
+        return lookup(candidate, self.request["input"]["target"]["fasta"], self.work_dir)
+
     def _source_facts(self, candidate: dict[str, Any], match: structures.StructureMatch) -> list[str]:
         # 예측에 쓸 자료가 있는지도 사실로 넣는다. 구조 검색 결과만 주면
         # 모델은 "일치하는 구조가 없다"를 "자료가 부족하다"로 읽는다.
@@ -380,6 +393,9 @@ class Flow:
             f"({'예측 입력으로 충분' if n >= MIN_CHAIN_LENGTH else f'{MIN_CHAIN_LENGTH}자 미만이라 예측 불가'})"
             for label, n in self._lengths(candidate).items()
         ]
+        facts.extend(match.notes)
+        if match.blocked_reason:
+            facts.append(match.blocked_reason)
         return facts
 
     def _lengths(self, candidate: dict[str, Any]) -> dict[str, int]:
@@ -443,7 +459,7 @@ class Flow:
     # ------------------------------------------------------------ 기존 구조 경로
     def _record_experimental(self, cid: str, match: structures.StructureMatch) -> str | None:
         catalog = structures.load_catalog()
-        public = catalog[match.pdb_id]
+        public = match.public or catalog[match.pdb_id]
         structure_id = f"st-{cid}-{public.pdb_id.lower()}"
         source = {
             "title": f"RCSB PDB {public.pdb_id}",
@@ -455,6 +471,8 @@ class Flow:
             self._chain("heavy", match.heavy_entity),
             self._chain("light", match.light_entity),
         ]
+        if match.chain_mapping:
+            chains = list(match.chain_mapping)
         actual_sha = structures.file_sha256(public.path)
         if actual_sha != public.verified_sha256:
             reason = "공개 구조 파일의 해시가 검증된 원본과 다르다."
@@ -465,6 +483,11 @@ class Flow:
             self.states[cid].reason = reason
             self._hold_opinion(cid, "structure_availability", "not_assessed", reason)
             return None
+        # Keep the reviewed bytes with this run so later requests cannot replace them.
+        saved_path = self.work_dir / f"{structure_id}.cif"
+        saved_path.write_bytes(public.path.read_bytes())
+        if structures.file_sha256(saved_path) != actual_sha:
+            raise ValueError("구조 복사 중 파일 무결성이 달라졌다.")
         self.structures.append(
             {
                 "structure_id": structure_id,
@@ -485,8 +508,8 @@ class Flow:
                 "role": "structure",
                 "format": "mmcif",
                 "status": "ready",
-                "file_name": public.path.name,
-                "size_bytes": public.path.stat().st_size,
+                "file_name": saved_path.name,
+                "size_bytes": saved_path.stat().st_size,
                 "sha256": actual_sha,
                 "reason": None,
             }
@@ -500,7 +523,7 @@ class Flow:
                 "kind": "core",
                 "structure_ids": [structure_id],
                 "included_components": ["target", "heavy", "light"],
-                "gaps": [],
+                "gaps": list(match.notes),
                 "sources": [source],
             }
         )
@@ -775,10 +798,15 @@ class Flow:
         core_id = f"cond-{cid}-core"
         record = next(s for s in self.structures if s["structure_id"] == structure_id)
         predicted = record["kind"] == "predicted"
-        path = (self.work_dir / f"{structure_id}.cif" if predicted else
-                structures.load_catalog()[record["source"]["record_id"]].path)
+        artifact = next(a for a in self.artifacts if a["artifact_id"] == record["artifact_id"])
+        path = self.work_dir / artifact["file_name"]
         source = record["source"]
-        contact = analysis.predicted_contact_measurement(path, record["chain_mapping"], source, predicted=predicted)
+        if not predicted and match.calculation_hold_reason:
+            contact = analysis.Measurement.not_run("interface_contact_residues", match.calculation_hold_reason)
+            contact.sources = [source]
+        else:
+            contact = analysis.predicted_contact_measurement(path, record["chain_mapping"], source, predicted=predicted,
+                        residue_ranges=None if predicted else {chain: (start, end) for chain, start, end in match.residue_ranges})
         self._add_evidence(cid, core_id, structure_id, contact)
         if predicted:
             self._add_evidence(cid, core_id, structure_id, analysis.reference_epitope_overlap_measurement(
@@ -805,7 +833,7 @@ class Flow:
         for kind, condition_id, topics in (("core", core_id, ("surface_exposure", "buried_sasa_sum")),
                                            ("context", context_id, ("surface_exposure", "observed_glycan_protein_sasa_reduction"))):
             condition = next(c for c in self.conditions if c["condition_id"] == condition_id)
-            condition["gaps"] = values["gaps"] + ["미관측 원자·전체 당쇄·세포막은 복원하지 않았다. 관측 좌표에 한정한 기하학 계산이다."]
+            condition["gaps"] = list(match.notes) + values["gaps"] + ["미관측 원자·전체 당쇄·세포막은 복원하지 않았다. 관측 좌표에 한정한 기하학 계산이다."]
             condition["included_components"] = ["target", "heavy", "light"] + (["glycan"] if kind == "context" and values[kind] else [])
             for topic in topics:
                 if values[kind] is not None:
@@ -853,59 +881,21 @@ class Flow:
         self._emit(cid, "reporting", "running", None)
         facts, measured, unmeasured = self._opinion_facts(cid)
 
-        # ⑥ 두 번째 분기. 지금까지 모은 근거로 검토 의견을 낼 수 있는가?
-        # 설계 문서의 "어느 부분까지 근거가 있고 어떤 질문이 남는가"다.
+        # Availability is a contract decision per topic; another model call cannot
+        # supply missing measurements. Keep the agent's submission in its trace.
+        from .review_policy import topic_opinions
         if verdict is None:
-            verdict = self.decider.choose(
-                "review_opinion",
-                question=(
-                    f"후보 {cid}에 대해 지금 검토 의견을 낼 수 있는가? "
-                    "결합력·효능이 아니라 구조상 검토 가능 여부만 본다."
-                ),
-                facts=facts,
-                options=[
-                    *([Option("reviewable", "확보한 근거로 구조상 검토 의견을 낼 수 있다.")]
-                      if measured and not unmeasured else []),
-                    Option("needs_confirmation", "근거가 모자라 사람의 확인이 필요하다."),
-                ],
-                # 규칙의 기본값을 모델의 입장에 맞춘다.
-                # 예전 규칙은 "측정된 근거가 하나라도 있으면 검토 가능"이었는데,
-                # 모델은 실측에서 늘 "충돌·표면 노출이 미계산이라 확인이 필요하다"를
-                # 골랐다. 둘이 엇갈리면 같은 입력에 NVIDIA 서버 상태에 따라 다른
-                # 결론이 나온다. 실제로 4회 실행 중 1회가 그랬다. 더 보수적인
-                # 쪽으로 맞춘다.
-                default="reviewable" if measured and not unmeasured else "needs_confirmation",
-            )
-
+            action = "reviewable" if measured and not unmeasured else "needs_confirmation"
+            verdict = RuleDecider("항목별 근거 상태로 판정한다.", decisions=self.decider.decisions,
+                                  model=self.decider.model).choose(
+                "review_opinion", question="확보한 근거의 검토 범위", facts=facts,
+                options=[Option(action, "각 항목의 근거 상태를 보존한다.")], default=action)
+        attribution = f"모델 {verdict.model}" if verdict.decided_by == "model" else "규칙"
+        if cid in self.rule_finishes:
+            attribution += f" — {self.rule_finishes[cid][:80]}"
         for condition in (c for c in self.conditions if c["candidate_id"] == cid):
             items = [e for e in self.evidence if e["condition_id"] == condition["condition_id"]]
-            available = [e for e in items if e["measurement_state"] == "measured"]
-            missing = [e for e in items if e["measurement_state"] != "measured"]
-            condition_name = "관측 당 포함" if condition["kind"] == "context" else "단백질 중심"
-            summary = f"{condition_name} 조건에서 확인된 계산 근거 {len(available)}건을 정리했다."
-            if missing:
-                summary += " 미확인 항목은 별도로 확인해야 한다."
-            # Only execution attribution is retained; model-written scientific claims are not published.
-            attribution = (f"판단: 모델 {verdict.model}" if verdict.decided_by == "model"
-                           else f"판단: 규칙 — {(verdict.fallback_reason or '조건별 근거 확인')[:80]}")
-            questions = []
-            topics = {e["topic"] for e in available}
-            if "buried_sasa_sum" in topics:
-                questions.append("누락 잔기·원자가 관측 구조의 매몰 면적 해석에 영향을 줄 수 있는가?")
-            if "observed_glycan_protein_sasa_reduction" in topics:
-                questions.append("관측되지 않은 당쇄를 포함해도 같은 표면 차이가 유지되는가?")
-            if missing:
-                questions.append("미실행 충돌·전체 접근성을 확인하려면 어떤 추가 구조·계산이 필요한가?")
-            self.opinions.append({
-                "opinion_id": f"op-{cid}-{condition['kind']}", "candidate_id": cid,
-                "condition_id": condition["condition_id"], "topic": "interface_review",
-                "decision": "needs_confirmation" if missing or not available else verdict.action,
-                "evidence_ids": [e["evidence_id"] for e in available], "conflicting_evidence_ids": [],
-                "reason": f"{summary} ({attribution})",
-                "limitations": list(dict.fromkeys([e["reason"] for e in missing if e["reason"]]
-                    + condition["gaps"] + ["구조 기반 계산이며 결합력·치료 효능·안전성 판단이 아니다."])),
-                "follow_up_questions": questions,
-            })
+            self.opinions.extend(topic_opinions(cid, condition, items, attribution))
         self._emit(cid, "reporting", "completed", None)
 
     # ------------------------------------------------------------ 보조

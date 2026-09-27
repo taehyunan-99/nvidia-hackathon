@@ -71,7 +71,10 @@ def _one(name: str, mode: str) -> dict:
         elapsed = round(time.time() - t, 1)
     cid = cand["candidate_id"]
     trace = flow.agent_traces.get(cid, [])
-    opinion = next((o for o in output["result"]["opinions"] if o["candidate_id"] == cid), {})
+    opinions = [o for o in output["result"]["opinions"] if o["candidate_id"] == cid]
+    opinion = opinions[0] if opinions else {}
+    overall = (opinion.get("decision") if len(opinions) <= 1 else
+               "reviewable" if all(o["decision"] == "reviewable" for o in opinions) else "needs_confirmation")
     notes = [c["note"] for c in trace if not c.get("accepted") and c.get("note")]
     reason = opinion.get("reason") or ""
     # 오류는 후보 단위로 본다. 같은 흐름의 대조용 후보가 받은 429를 이 행의
@@ -99,9 +102,10 @@ def _one(name: str, mode: str) -> dict:
         "http_attempts": attempts,
         "code_calls": sum(c.get("executed_by") == "code" for c in trace),
         "calls": len(trace), "refused": sum(1 for c in trace if not c["accepted"]),
-        "rule_finish": "판단: 규칙" in (opinion.get("reason") or ""),
-        "hit_limit": "반복 상한" in (opinion.get("reason") or ""),
-        "status": flow.states[cid].status, "decision": opinion.get("decision"),
+        "rule_finish": cid in flow.rule_finishes,
+        "hit_limit": "반복 상한" in flow.rule_finishes.get(cid, ""),
+        "status": flow.states[cid].status, "decision": overall,
+        "topic_decisions": [{k: o[k] for k in ("condition_id", "topic", "decision")} for o in opinions],
         "trace": [c["tool"] + ("" if c["accepted"] else "✗") for c in trace],
         "notes": notes,
     }
