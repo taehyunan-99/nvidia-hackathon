@@ -11,7 +11,7 @@ from urllib.request import HTTPCookieProcessor, Request, build_opener
 base = os.environ.get("BASE_URL", "http://127.0.0.1:8080").rstrip("/")
 opener = build_opener(HTTPCookieProcessor(CookieJar()))
 input_data = json.loads(Path("docs/frontend-hosting/fixtures/scenarios.json").read_text())["input"]
-input_data["target"]["fasta"] = ">user_target\nACDEFG"
+input_data["target"] = json.loads(Path("docs/frontend-hosting/fixtures/public-reference-input.json").read_text())["target"]
 input_data["candidates"][0]["name"] = "User candidate A"
 input_data["candidates"][1]["name"] = "User candidate B"
 
